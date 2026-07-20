@@ -6,6 +6,18 @@
 \usage{
 smuce_cost(y, gamma, sigma2 = 1, n = length(y))
 }
+\arguments{
+\item{y}{Numeric observations in the candidate segment.}
+
+\item{gamma}{SMUCE threshold.}
+
+\item{sigma2}{Known Gaussian variance.}
+
+\item{n}{Total series length.}
+}
+\value{
+Numeric constrained Gaussian residual cost.
+}
 \description{
 Constrained Gaussian cost for a SMUCE-valid segment
 }

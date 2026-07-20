@@ -6,6 +6,16 @@
 \usage{
 svp_smuce(y, gamma, sigma2 = 1)
 }
+\arguments{
+\item{y}{Numeric observations.}
+
+\item{gamma}{SMUCE threshold.}
+
+\item{sigma2}{Known Gaussian variance.}
+}
+\value{
+Integer segment-end indices.
+}
 \description{
 SVP with SMUCE validity and constrained Gaussian cost
 }

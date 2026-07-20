@@ -159,7 +159,13 @@ valid_SMUCE <- function(y, gamma, sigma2 = 1, n = length(y), theta = NULL)
   isTRUE(theta >= lower && theta <= upper)
 }
 
-# Internal helper: the admissible interval of constant means.
+#' Internal helper: admissible interval of constant means
+#' @param y Numeric observations.
+#' @param gamma SMUCE threshold.
+#' @param sigma2 Known Gaussian variance.
+#' @param n Total series length.
+#' @return Numeric lower and upper admissible bounds.
+#' @keywords internal
 smuce_theta_interval <- function(y, gamma, sigma2 = 1, n = length(y)) {
   lo <- -Inf; hi <- Inf; cs <- c(0, cumsum(y))
   for (u in seq_along(y)) for (v in u:length(y)) {
@@ -173,6 +179,11 @@ smuce_theta_interval <- function(y, gamma, sigma2 = 1, n = length(y)) {
 }
 
 #' Constrained Gaussian cost for a SMUCE-valid segment
+#' @param y Numeric observations in the candidate segment.
+#' @param gamma SMUCE threshold.
+#' @param sigma2 Known Gaussian variance.
+#' @param n Total series length.
+#' @return Numeric constrained Gaussian residual cost.
 #' @export
 smuce_cost <- function(y, gamma, sigma2 = 1, n = length(y)) {
   interval <- smuce_theta_interval(y, gamma, sigma2, n)
@@ -182,6 +193,10 @@ smuce_cost <- function(y, gamma, sigma2 = 1, n = length(y)) {
 }
 
 #' SVP with SMUCE validity and constrained Gaussian cost
+#' @param y Numeric observations.
+#' @param gamma SMUCE threshold.
+#' @param sigma2 Known Gaussian variance.
+#' @return Integer segment-end indices.
 #' @export
 svp_smuce <- function(y, gamma, sigma2 = 1) {
   n <- length(y); K <- rep(Inf, n + 1); C <- rep(Inf, n + 1)

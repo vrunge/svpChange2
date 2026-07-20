@@ -16,7 +16,7 @@ Maintainer: Vincent Runge <vincent.runge@univ-evry.fr>
 Description: We segment a univariate time series using the Smallest Valid Partition algorithm. 
     The method is a new change-point detection approach that enforces local segment quality through a validity test. 
     A segment is declared valid if it passes the test; otherwise (i.e., if a change-point is detected) it is invalid and excluded from the final segmentation.
-License: GPL-3
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: Rcpp (>= 1.0.10), methods
