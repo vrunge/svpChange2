@@ -68,12 +68,14 @@ compare_smuce_svp <- function(
   )
 
   constrained <- svpChange2::svp_smuce(y, q, sigma^2)
+  constrained_cpp <- svpChange2::svp_smuce_cpp(y, q, sigma^2)
 
   smuce_cp <- extract_step_boundaries(smuce_fit, n)
 
   list(
     smuce = smuce_cp,
-    svp_smuce = constrained
+    svp_smuce = constrained,
+    svp_smuce_cpp = constrained_cpp
   )
 }
 
@@ -86,8 +88,10 @@ run_smuce_replicates <- function(B = 20, n = 120, ...) {
     out[[b]] <- data.frame(
       replicate = b,
       equal = identical(z$smuce, z$svp_smuce),
+      equal_cpp = identical(z$svp_smuce, z$svp_smuce_cpp),
       smuce = paste(z$smuce, collapse = ","),
       svp_smuce = paste(z$svp_smuce, collapse = ","),
+      svp_smuce_cpp = paste(z$svp_smuce_cpp, collapse = ","),
       stringsAsFactors = FALSE
     )
   }
