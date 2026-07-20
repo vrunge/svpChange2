@@ -122,6 +122,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// svp_smuce_cpp
+IntegerVector svp_smuce_cpp(NumericVector y, double q, double sigma2);
+RcppExport SEXP _svpChange2_svp_smuce_cpp(SEXP ySEXP, SEXP qSEXP, SEXP sigma2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< double >::type q(qSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma2(sigma2SEXP);
+    rcpp_result_gen = Rcpp::wrap(svp_smuce_cpp(y, q, sigma2));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_svpChange2_OP", (DL_FUNC) &_svpChange2_OP, 2},
@@ -132,6 +145,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_svpChange2_svp0", (DL_FUNC) &_svpChange2_svp0, 5},
     {"_svpChange2_AR1_rho", (DL_FUNC) &_svpChange2_AR1_rho, 1},
     {"_svpChange2_AR1_single_change", (DL_FUNC) &_svpChange2_AR1_single_change, 5},
+    {"_svpChange2_svp_smuce_cpp", (DL_FUNC) &_svpChange2_svp_smuce_cpp, 3},
     {NULL, NULL, 0}
 };
 

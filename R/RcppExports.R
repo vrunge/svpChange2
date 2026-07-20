@@ -213,3 +213,12 @@ AR1_single_change <- function(data, gamma, rho = NA_real_, sigma2 = 1.0, profile
     .Call(`_svpChange2_AR1_single_change`, data, gamma, rho, sigma2, profile_sigma)
 }
 
+#' C++ SVP with SMUCE validity and constrained Gaussian cost
+#' @param y Numeric observations.
+#' @param q SMUCE threshold.
+#' @param sigma2 Known Gaussian variance.
+#' @return Integer segment-end indices.
+svp_smuce_cpp <- function(y, q, sigma2 = 1.0) {
+    .Call(`_svpChange2_svp_smuce_cpp`, y, q, sigma2)
+}
+
