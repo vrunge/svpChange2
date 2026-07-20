@@ -19,6 +19,14 @@ Then run from the svpChange2 package root:
 The random seed is unset by default, so every run generates a new signal.
 `run_smuce_replicates()` repeats the comparison and reports exact equality.
 
+`time_smuce_svp.R` benchmarks `stepR::smuceR()` and
+`svp_smuce_cpp()` for increasing sample sizes. The C++ routine updates
+SMUCE envelopes incrementally and prunes invalid extensions; its worst-case
+complexity is O(n^3), although pruning can substantially reduce runtime.
+The stepR implementation uses specialized multiscale algorithms and is
+typically approximately quadratic for n <= 1000 (larger n uses dyadic
+interval lengths). Timings depend on the signal and hardware.
+
 The function returns only:
 
   $smuce  the SMUCE segment-end indices
