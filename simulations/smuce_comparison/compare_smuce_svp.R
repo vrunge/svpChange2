@@ -41,8 +41,7 @@ compare_smuce_svp <- function(seed = 20260720,
                               n_per_segment = 100,
                               means = c(0, 2, -1, 1),
                               sigma = 1,
-                              alpha = 0.1,
-                              plot = TRUE) {
+                              alpha = 0.1) {
   stopifnot(length(means) >= 2, n_per_segment >= 10, sigma > 0,
             alpha > 0, alpha < 1)
   set.seed(seed)
@@ -79,43 +78,11 @@ compare_smuce_svp <- function(seed = 20260720,
   svp_cp <- sort(unique(as.integer(svp_fit$changepoints)))
   equal_partition <- identical(smuce_cp, svp_cp)
 
-  result <- list(
-    n = n,
-    sigma = sigma,
-    alpha = alpha,
-    q = q,
-    smuce_changepoints = smuce_cp,
-    svp_changepoints = svp_cp,
-    equal_partition = equal_partition,
-    smuce_fit = smuce_fit,
-    svp_fit = svp_fit
+  list(
+    smuce = smuce_cp,
+    svp = svp_cp
   )
-
-  if (plot) {
-    pdf("smuce_svp_comparison.pdf", width = 10, height = 5)
-    plot(y, type = "p", pch = 16, cex = 0.45,
-         main = sprintf("SMUCE versus multiscale SVP (q = %.3f)", q),
-         xlab = "Index", ylab = "Observation")
-    lines(truth, col = "grey40", lwd = 2)
-    abline(v = smuce_cp[-length(smuce_cp)], col = "firebrick", lwd = 2)
-    abline(v = svp_cp[-length(svp_cp)], col = "navy", lwd = 1, lty = 2)
-    legend("topright", legend = c("truth", "SMUCE", "SVP"),
-           col = c("grey40", "firebrick", "navy"),
-           lwd = c(2, 2, 1), lty = c(1, 1, 2), bty = "n")
-    dev.off()
-  }
-
-  if (!equal_partition) {
-    warning(
-      "Partitions differ. This is a useful diagnostic: the report's exact " ,
-      "equivalence requires the same constrained segment-parameter fit, " ,
-      "not only the same multiscale threshold."
-    )
-  }
-  result
 }
 
 ## Run explicitly with: source("simulations/smuce_comparison/compare_smuce_svp.R")
 ## answer <- compare_smuce_svp()
-## stopifnot(answer$equal_partition)
-

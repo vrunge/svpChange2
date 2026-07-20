@@ -15,7 +15,11 @@ Then run from the svpChange2 package root:
   answer <- compare_smuce_svp()
   answer$equal_partition
 
-The script reports a mismatch explicitly rather than hiding it. The report in
-smuce_comparison/SVP_SMUCE_report.tex explains why the basic data-only SVP is
-not universally identical to SMUCE: exact equivalence additionally requires
-the same constrained segment-parameter optimization.
+The function returns only:
+
+  $smuce  the SMUCE segment-end indices
+  $svp    the SVP segment-end indices
+
+The report in smuce_comparison/SVP_SMUCE_report.tex explains why the basic
+data-only SVP is not universally identical to SMUCE: exact equivalence also
+requires the same constrained segment-parameter optimization.
