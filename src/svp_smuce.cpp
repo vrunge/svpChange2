@@ -21,6 +21,9 @@ IntegerVector svp_smuce_cpp(NumericVector y, double q, double sigma2 = 1.0) {
   K[0] = 0; C[0] = 0.0;
   // For each start s, extend the segment and update constraints ending at t.
   for (int s = 0; s < n; ++s) {
+    // BEFORE-invalid pruning: a start with no finite optimal prefix can
+    // never contribute to a later partition.
+    if (K[s] > n || !R_finite(C[s])) continue;
     double lo = R_NegInf, hi = R_PosInf;
     for (int t = s; t < n; ++t) {
       int m = t - s + 1;
@@ -33,7 +36,10 @@ IntegerVector svp_smuce_cpp(NumericVector y, double q, double sigma2 = 1.0) {
         lo = std::max(lo, mean-rad);
         hi = std::min(hi, mean+rad);
       }
-      if (lo > hi || K[s] > n) continue;
+      // AFTER-invalid pruning: SMUCE feasibility is hereditary under
+      // extension. Once the admissible theta interval is empty, every
+      // longer segment with this same start is invalid as well.
+      if (lo > hi) break;
       double mean_seg = (cs[t+1]-cs[s])/m;
       double theta = std::min(std::max(mean_seg, lo), hi);
       double rss = (cs2[t+1]-cs2[s]) - 2.0*theta*(cs[t+1]-cs[s]) + m*theta*theta;
