@@ -28,6 +28,8 @@ be replaced by the calibration selected for the paper.
 6. `time_robust/` contains the corresponding heavy-tail runtime studies.
 7. `time_pruning/` isolates the four SVP pruning strategies and compares them
    with PELT.
+8. `smuce_comparison/` compares multiscale Gaussian SVP with SMUCE from
+   `stepR`.
 5. `well_log/` contains the real-data well-log analysis.
 
 Each folder contains a `README.txt` describing its scripts, inputs, outputs,
