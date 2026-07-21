@@ -17,6 +17,7 @@ library(changepoint)
 library(svpChange2)
 library(robseg) #devtools::install_github("guillemr/robust-fpop", force = TRUE)
 library(progressr)
+source(file.path("simulations", "metrics.R"))
 
 
 ################################################################################
@@ -54,6 +55,9 @@ generate_signal <- function(n,
     rand1 = map2(rand1Jump, r1, ~rep(.x * jumpSize, .y)) %>% unlist()
   )
 }
+
+## Use the shared Romano additional-results metrics.
+cp_metrics <- change_point_metrics
 
 
 ################################################################################
@@ -240,6 +244,8 @@ run_robust_power_study <- function(n = 1000,
           F1 = c(metrics_pelt$F1, metrics_svp_wilk$F1, metrics_svp_mood$F1, metrics_rfpop$F1),
           NumSegments = c(nseg_pelt, nseg_svp_wilk, nseg_svp_mood, nseg_rfpop),
           MSE = c(mse_pelt, mse_svp_wilk, mse_svp_mood, mse_rfpop),
+          LocalizationError = c(metrics_pelt$LocalizationError, metrics_svp_wilk$LocalizationError, metrics_svp_mood$LocalizationError, metrics_rfpop$LocalizationError),
+          CorrectNumCP = c(metrics_pelt$CorrectNumCP, metrics_svp_wilk$CorrectNumCP, metrics_svp_mood$CorrectNumCP, metrics_rfpop$CorrectNumCP),
           changepoints = list(cp_pelt, cp_svp_wilk, cp_svp_mood, cp_rfpop)
         )
         tib
@@ -288,7 +294,7 @@ plot_robust_power_metrics <- function(results_df)
                     .groups = "drop")
   }
   long <- results_df %>%
-    pivot_longer(cols = c(Precision, Recall, F1, NumSegments, MSE),
+    pivot_longer(cols = c(Precision, Recall, F1, NumSegments, MSE, LocalizationError, CorrectNumCP),
                  names_to = "metric", values_to = "value")
     # Ensure pattern is a factor with consistent levels
   long$pattern <- factor(long$pattern, levels = c("none", "up", "updown", "rand1"))
@@ -306,7 +312,7 @@ plot_robust_power_metrics <- function(results_df)
 
   stopifnot("metric" %in% names(stats_df))
 
-  metrics <- c("F1", "Precision", "Recall", "NumSegments", "MSE")
+  metrics <- c("F1", "Precision", "Recall", "NumSegments", "MSE", "LocalizationError", "CorrectNumCP")
   for (m in metrics) {
     dat <- dplyr::filter(stats_df, metric == m)
 

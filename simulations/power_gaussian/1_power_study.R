@@ -17,6 +17,7 @@ library(purrr)
 library(changepoint)
 library(svpChange2)
 library(progressr)
+source(file.path("simulations", "metrics.R"))
 
 ################################################################################
 
@@ -53,6 +54,9 @@ generate_signal <- function(n,
     rand1 = map2(rand1Jump, r1, ~rep(.x * jumpSize, .y)) %>% unlist()
   )
 }
+
+## Use the shared Romano additional-results metrics.
+cp_metrics <- change_point_metrics
 
 ################################################################################
 
@@ -198,6 +202,8 @@ run_power_study <- function(n = 1000,
           F1 = c(metrics_pelt$F1, metrics_svp$F1, metrics_svp_bic$F1),
           NumSegments = c(nseg_pelt, nseg_svp, nseg_svp_bic),
           MSE = c(mse_pelt, mse_svp, mse_svp_bic),
+          LocalizationError = c(metrics_pelt$LocalizationError, metrics_svp$LocalizationError, metrics_svp_bic$LocalizationError),
+          CorrectNumCP = c(metrics_pelt$CorrectNumCP, metrics_svp$CorrectNumCP, metrics_svp_bic$CorrectNumCP),
           changepoints = list(cp_pelt, cp_svp, cp_svp_bic)
         )
         tib
@@ -243,7 +249,7 @@ plot_power_metrics <- function(df)
                     .groups = "drop")
   }
 
-  long <- df %>% pivot_longer(cols = c(Precision, Recall, F1, NumSegments, MSE), names_to = "metric", values_to = "value")
+  long <- df %>% pivot_longer(cols = c(Precision, Recall, F1, NumSegments, MSE, LocalizationError, CorrectNumCP), names_to = "metric", values_to = "value")
   # Ensure pattern is a factor with consistent levels
   long$pattern <- factor(long$pattern, levels = c("none", "up", "updown", "rand1"))
   stats_df <- long %>%
@@ -260,7 +266,7 @@ plot_power_metrics <- function(df)
 
   stopifnot("metric" %in% names(stats_df))
 
-  metrics <- c("F1", "Precision", "Recall", "NumSegments", "MSE")
+  metrics <- c("F1", "Precision", "Recall", "NumSegments", "MSE", "LocalizationError", "CorrectNumCP")
   for (m in metrics) {
     dat <- dplyr::filter(stats_df, metric == m)
 
