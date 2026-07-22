@@ -250,13 +250,19 @@ List svp_impl(const std::vector<double>& data,
 
         if (valid) {
           const size_t candidate_K = K[s] + 1;
-          const double candidate_Q = Q[s] + segment_cost(S1, S2, s, t);
+          // Equation (4) optimization: once a valid candidate requires
+          // strictly more segments than the current lexicographic optimum,
+          // its cost cannot affect the result. We still retain/update it
+          // below when pruning requires the candidate state.
+          if (candidate_K <= best_K) {
+            const double candidate_Q = Q[s] + segment_cost(S1, S2, s, t);
 
-          if (candidate_K < best_K ||
-              (candidate_K == best_K && candidate_Q < best_Q)) {
-            best_Q = candidate_Q;
-            best_K = candidate_K;
-            best_s = s;
+            if (candidate_K < best_K ||
+                (candidate_K == best_K && candidate_Q < best_Q)) {
+              best_Q = candidate_Q;
+              best_K = candidate_K;
+              best_s = s;
+            }
           }
         }
 
