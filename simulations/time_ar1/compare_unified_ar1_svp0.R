@@ -1,23 +1,6 @@
-## Compare exact AR1 SVP, AR1Focus SVP, and svp0 with unified_focus ARP
-## validity. Install with remotes::install_github("gtromano/unified_focus",
-## subdir = "focus") before running.
+## Compare exact AR1 SVP, AR1Focus SVP, and svp0 with the exact AR1 validity.
 
 library(svpChange2)
-if (!requireNamespace("focus", quietly = TRUE))
-  stop("Install unified_focus with remotes::install_github('gtromano/unified_focus', subdir='focus')")
-
-unified_ar1_validity <- function(rho) {
-  force(rho)
-  function(segment, gamma) {
-    ans <- focus::focus_offline(
-      segment, threshold = gamma, type = "arp", family = "arp",
-      rho = rho
-    )
-    stat <- as.numeric(ans$stat)
-    stat <- stat[is.finite(stat)]
-    !length(stat) || max(stat) < gamma
-  }
-}
 
 ## Exact AR1 validity adapter. This is the fair svp0 comparison: svp0 still
 ## uses the same ordinary SSE segment cost as SVP, while the validity decision
@@ -47,10 +30,6 @@ compare_one <- function(y, rho = .7, sigma2 = 1, gamma = 8) {
                                  sigma2=sigma2,
                                  prune_after_if_unvalid=TRUE,
                                  prune_before_if_invalid=FALSE))
-  test <- unified_ar1_validity(rho)
-  tv <- system.time(unified <- svp0(y, gamma, test,
-                                    prune_after_if_unvalid=TRUE,
-                                    prune_if_PELT=FALSE))
   exact_test <- exact_ar1_validity(rho, sigma2)
   te <- system.time(exact_svp0 <- svp0(
     y, gamma, exact_test, prune_after_if_unvalid=TRUE,
@@ -58,10 +37,10 @@ compare_one <- function(y, rho = .7, sigma2 = 1, gamma = 8) {
   ))
   list(partitions = list(AR1=exact$changepoints,
                          AR1Focus=focus$changepoints,
-                         unified_svp0=unified$changepoints),
+                         exact_svp0=exact_svp0$changepoints),
        exact_svp0 = exact_svp0$changepoints,
        elapsed = c(AR1=tm[["elapsed"]], AR1Focus=tf[["elapsed"]],
-                   unified_svp0=tv[["elapsed"]], exact_svp0=te[["elapsed"]]))
+                   exact_svp0=te[["elapsed"]]))
 }
 
 ## Example:
