@@ -547,7 +547,8 @@ List SVP(std::vector<double> data,
         use_multiscale_gamma,
         sigma2,
         q_alpha_n,
-        rho_used
+        rho_used,
+        sigma2
       );
       result["rho"] = rho_used;
       result["sigma2"] = sigma2;

@@ -22,6 +22,62 @@ test_that("quantile is only accepted on its valid parameter range", {
   expect_silent(SVP(y, 5, "quantile", quantile = 0.1))
 })
 
+test_that("rank cost tests retain exact tie handling", {
+  wilcoxon_valid <- function(x, gamma) {
+    if (length(x) < 2) return(TRUE)
+    best <- 0
+    for (u in seq_len(length(x) - 1)) {
+      score <- outer(
+        x[seq_len(u)], x[(u + 1):length(x)],
+        function(a, b) ifelse(a < b, 0.5, ifelse(a > b, -0.5, 0))
+      )
+      best <- max(best, abs(sum(score)))
+    }
+    best < gamma
+  }
+
+  mood_valid <- function(x, gamma) {
+    n <- length(x)
+    if (n < 2) return(TRUE)
+    med <- sort(x, partial = n %/% 2 + 1)[n %/% 2 + 1]
+    below <- x < med
+    above <- x > med
+    total_below <- sum(below)
+    total_above <- sum(above)
+    best <- 0
+    for (u in seq_len(n - 1)) {
+      a11 <- sum(below[seq_len(u)])
+      a12 <- sum(above[seq_len(u)])
+      a21 <- total_below - a11
+      a22 <- total_above - a12
+      nA <- a11 + a12
+      nB <- a21 + a22
+      if (nA > 0 && nB > 0 && total_below > 0 && total_above > 0) {
+        determinant <- a11 * a22 - a12 * a21
+        best <- max(
+          best,
+          (nA + nB) * determinant^2 /
+            (nA * nB * total_below * total_above)
+        )
+      }
+    }
+    best < gamma
+  }
+
+  set.seed(1)
+  data <- round(c(rnorm(20), rnorm(20, 1)), 1)
+  for (gamma in c(3, 7, 15)) {
+    expect_equal(
+      SVP(data, gamma, "WilcoxonCost")$changepoints,
+      svp0(data, gamma, wilcoxon_valid)$changepoints
+    )
+    expect_equal(
+      SVP(data, gamma, "MedianMoodCost")$changepoints,
+      svp0(data, gamma, mood_valid)$changepoints
+    )
+  }
+})
+
 test_that("integrated AR1 cost tests retain rho metadata", {
   set.seed(321)
   y <- numeric(80)

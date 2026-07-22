@@ -1,5 +1,7 @@
 #pragma once
 #include "focus.h"
+#include "unified_Costs.h"
+#include "unified_CostsArp.h"
 #include <memory>
 #include <algorithm>
 #include <cmath>
@@ -22,19 +24,10 @@ class TestBase
 class GaussianMean : public TestBase
 {
   public:
-    std::unique_ptr<Info> info;
+    std::unique_ptr<changepoint::UnivariateInfo> info;
 
     GaussianMean()
-    {
-      auto newP = [](double St, int tau, double m0){
-        std::unique_ptr<Piece> p = std::make_unique<PieceGau>();
-        p->St = St;
-        p->tau = tau;
-        p->m0 = m0;
-        return p;
-      };
-      info = std::make_unique<Info>(newP, NAN);
-    }
+      : info(std::make_unique<changepoint::UnivariateInfo>()) {}
 
     void update(double y) override
     {
@@ -43,13 +36,16 @@ class GaussianMean : public TestBase
 
     double statistic() const override
     {
-      return info->statistic();
+      // The unified Gaussian cost is twice the half-log-likelihood scale used
+      // by SVP and by the former FOCuS implementation.
+      return 0.5 * info->gaussian_max_cost();
     }
 
     int changepoint() const
     {
-      const Cost& cost = (info->Ql.opt > info->Qr.opt) ? info->Ql : info->Qr;
-      return get_tau_max(cost, info->cs, info->theta0, 0.0);
+      const auto result = changepoint::compute_costs_gaussian(*info, {});
+      return result.changepoint.has_value()
+        ? static_cast<int>(*result.changepoint) : -1;
     }
 };
 
@@ -113,41 +109,44 @@ class GaussianVariance : public TestBase
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Mean-change test after AR(1) decorrelation. The first observation establishes
-// the lag at a candidate boundary; subsequent innovations are passed to the
-// incremental Gaussian FOCuS detector.
+// Exact fixed-rho AR(1) FOCuS likelihood recurrence.
 ////////////////////////////////////////////////////////////////////////////////
 
 class AR1MeanChange : public TestBase
 {
 public:
-  explicit AR1MeanChange(double rho)
-    : rho_(rho), previous_(0.0), has_previous_(false), focus_() {}
+  explicit AR1MeanChange(double rho, double sigma2 = 1.0)
+    : sigma2_(sigma2), observation_count_(0),
+      info_(std::make_unique<changepoint::ARpInfo>(
+        std::vector<double>{rho}, false, 0.0)) {}
 
   void update(double y) override
   {
-    if (has_previous_) {
-      focus_.update(y - rho_ * previous_);
-    }
-    previous_ = y;
-    has_previous_ = true;
+    ++observation_count_;
+    info_->update(y);
   }
 
   double statistic() const override
   {
-    return has_previous_ ? focus_.statistic() : 0.0;
+    if (observation_count_ < 4) return 0.0;
+    const auto result = changepoint::compute_costs_arp_typed(*info_);
+    if (!result.stat.has_value()) return 0.0;
+    // Unified AR FOCuS returns the conventional 2 log-likelihood ratio;
+    // SVP's gamma and exact AR1 test use the half-log-likelihood scale.
+    return std::max(0.0, 0.5 * std::get<double>(*result.stat) / sigma2_);
   }
 
   int changepoint() const
   {
-    return focus_.changepoint();
+    const auto result = changepoint::compute_costs_arp_typed(*info_);
+    return result.changepoint.has_value()
+      ? static_cast<int>(*result.changepoint) : -1;
   }
 
 private:
-  double rho_;
-  double previous_;
-  bool has_previous_;
-  GaussianMean focus_;
+  double sigma2_;
+  std::size_t observation_count_;
+  std::unique_ptr<changepoint::ARpInfo> info_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -457,6 +456,30 @@ public:
 
   int size() const {
     return get_size(root_);
+  }
+
+  int count_less(double key) const {
+    int result = 0;
+    Node* node = root_;
+    while (node) {
+      if (key <= node->key) {
+        node = node->left;
+      } else {
+        result += get_size(node->left) + node->count;
+        node = node->right;
+      }
+    }
+    return result;
+  }
+
+  int count_equal(double key) const {
+    Node* node = root_;
+    while (node) {
+      if (key < node->key) node = node->left;
+      else if (key > node->key) node = node->right;
+      else return node->count;
+    }
+    return 0;
   }
 
   double kth(int k) const {
@@ -779,18 +802,15 @@ private:
 class WilcoxonCost : public TestBase
 {
 public:
-  WilcoxonCost() : statistic_(0.0) {}
+  WilcoxonCost() : doubled_statistic_(0) {}
 
   void update(double y) override
   {
     const std::size_t old_n = values_.size();
-    double contribution = 0.0;
+    std::int64_t contribution = 0;
     for (std::size_t i = 0; i < old_n; ++i) {
-      if (values_[i] > y) {
-        contribution += 0.5;
-      } else if (values_[i] < y) {
-        contribution -= 0.5;
-      }
+      contribution += static_cast<std::int64_t>(values_[i] > y) -
+        static_cast<std::int64_t>(values_[i] < y);
 
       // Existing split t = i + 1 gains the contribution of y to its
       // right-hand group. The final contribution is the new last split.
@@ -804,9 +824,10 @@ public:
       split_statistics_.push_back(contribution);
     }
 
-    statistic_ = 0.0;
-    for (double value : split_statistics_) {
-      statistic_ = std::max(statistic_, std::fabs(value));
+    doubled_statistic_ = 0;
+    for (std::int64_t value : split_statistics_) {
+      const std::int64_t magnitude = value < 0 ? -value : value;
+      doubled_statistic_ = std::max(doubled_statistic_, magnitude);
     }
   }
 
@@ -815,13 +836,13 @@ public:
     if (values_.empty()) {
       return std::numeric_limits<double>::quiet_NaN();
     }
-    return statistic_;
+    return 0.5 * static_cast<double>(doubled_statistic_);
   }
 
 private:
   std::vector<double> values_;
-  std::vector<double> split_statistics_;
-  double statistic_;
+  std::vector<std::int64_t> split_statistics_;
+  std::int64_t doubled_statistic_;
 };
 
 
@@ -859,13 +880,9 @@ public:
     // without copying and partitioning the complete segment on every call.
     const double med = tree_.kth(static_cast<int>(n / 2));
 
-    int total_below = 0;
-    int total_above = 0;
-
-    for (double value : values_) {
-      if (value < med) ++total_below;
-      else if (value > med) ++total_above;
-    }
+    const int total_below = tree_.count_less(med);
+    const int total_above = static_cast<int>(n) - total_below -
+      tree_.count_equal(med);
 
     const int N_effective   = total_below + total_above;
 
@@ -900,34 +917,15 @@ public:
         continue;
       }
 
-      double N    = static_cast<double>(nA + nB);
-      double Btot = static_cast<double>(total_below);
-      double Atot = static_cast<double>(total_above);
+      if (total_below == 0 || total_above == 0) continue;
 
-      // Expected counts under independence
-      double E11 = nA * Btot / N;
-      double E12 = nA * Atot / N;
-      double E21 = nB * Btot / N;
-      double E22 = nB * Atot / N;
-
-      double chisq = 0.0;
-
-      if (E11 > 0.0) {
-        double diff = a11 - E11;
-        chisq += diff * diff / E11;
-      }
-      if (E12 > 0.0) {
-        double diff = a12 - E12;
-        chisq += diff * diff / E12;
-      }
-      if (E21 > 0.0) {
-        double diff = a21 - E21;
-        chisq += diff * diff / E21;
-      }
-      if (E22 > 0.0) {
-        double diff = a22 - E22;
-        chisq += diff * diff / E22;
-      }
+      // Algebraically identical Pearson chi-square formula for a 2x2 table.
+      const double determinant =
+        static_cast<double>(a11) * a22 - static_cast<double>(a12) * a21;
+      const double N = static_cast<double>(nA + nB);
+      const double denominator = static_cast<double>(nA) * nB *
+        total_below * total_above;
+      const double chisq = N * determinant * determinant / denominator;
 
       if (chisq > best_chisq) {
         best_chisq = chisq;
