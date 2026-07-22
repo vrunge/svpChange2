@@ -106,3 +106,39 @@ test_that("AR1 validity test works inside main SVP with pruning options", {
   expect_equal(tail(result$changepoints, 1), length(data))
   expect_true(any(abs(head(result$changepoints, -1) - 200) <= 10))
 })
+
+test_that("AR1Focus reproduces exact AR1 SVP partitions", {
+  exact_validity <- function(rho, sigma2 = 1) {
+    force(rho)
+    force(sigma2)
+    function(segment, gamma) {
+      AR1_single_change(
+        segment, gamma = gamma, rho = rho, sigma2 = sigma2,
+        profile_sigma = FALSE
+      )$valid
+    }
+  }
+
+  for (rho in c(0, 0.3, 0.7, -0.4)) {
+    set.seed(1)
+    data <- simulate_ar1_change(300, 90, c(0, 1.5), rho)
+    exact <- SVP(
+      data, gamma = 8, test = "AR1", rho = rho, sigma2 = 1,
+      prune_after_if_unvalid = TRUE,
+      prune_before_if_invalid = FALSE
+    )
+    focus <- SVP(
+      data, gamma = 8, test = "AR1Focus", rho = rho, sigma2 = 1,
+      prune_after_if_unvalid = TRUE,
+      prune_before_if_invalid = FALSE
+    )
+    reference <- svp0(
+      data, gamma = 8, test = exact_validity(rho),
+      prune_after_if_unvalid = TRUE,
+      prune_if_PELT = FALSE
+    )
+
+    expect_equal(focus$changepoints, exact$changepoints)
+    expect_equal(focus$changepoints, reference$changepoints)
+  }
+})
