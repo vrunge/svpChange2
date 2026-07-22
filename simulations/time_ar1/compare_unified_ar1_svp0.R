@@ -44,4 +44,4 @@ compare_one <- function(y, rho = .7, sigma2 = 1, gamma = 8) {
 }
 
 ## Example:
-## set.seed(1); z <- compare_one(simulate_ar1()); z$partitions; z$elapsed
+set.seed(1); z <- compare_one(simulate_ar1()); z$partitions; z$elapsed

@@ -57,4 +57,4 @@ compare_replicates <- function(B = 10, n = 1000, rho = 0.7,
 }
 
 ## Run with an unfixed seed so every call simulates new data:
-## compare_replicates(B = 10)
+compare_replicates(B = 10)
