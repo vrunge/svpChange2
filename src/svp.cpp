@@ -119,6 +119,29 @@ List svp_impl(const std::vector<double>& data,
     size_t best_K = std::numeric_limits<size_t>::max();
     size_t best_s = 0;
 
+    // Equation (4), including the K=1 special case. With after-pruning,
+    // K_s is non-decreasing in candidate order. If the full prefix is valid,
+    // it is the lexicographic optimum and later candidates are deferred.
+    // Their incremental states remain untouched and are caught up if the
+    // prefix becomes invalid at a later endpoint.
+    if (prune_after_if_unvalid && !index.empty() && index[0] == 0) {
+      for (size_t u = last_updates[0] + 1; u <= t; ++u)
+        tests[0].update(data[u - 1]);
+      last_updates[0] = t;
+      const double prefix_threshold = validity_threshold(
+        n, t, gamma, use_multiscale_gamma, sigma2, q_alpha_n
+      );
+      if (tests[0].statistic() < prefix_threshold) {
+        Q[t] = segment_cost(S1, S2, 0, t);
+        K[t] = 1;
+        previous[t] = 0;
+        index.push_back(t);
+        tests.emplace_back(std::forward<Args>(args)...);
+        last_updates.push_back(t);
+        continue;
+      }
+    }
+
     if (!prune_before_if_invalid && prune_after_if_unvalid) {
       size_t write = 0;
 
