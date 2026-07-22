@@ -25,9 +25,9 @@ exact_ar1_reference <- function(data, rho, sigma2 = 1, profile_sigma = FALSE) {
   }, numeric(1))
   best <- which.min(rss1)
   statistic <- if (profile_sigma) {
-    (n - 1) * log(rss0 / rss1[best])
+    0.5 * (n - 1) * log(rss0 / rss1[best])
   } else {
-    (rss0 - rss1[best]) / sigma2
+    (rss0 - rss1[best]) / (2 * sigma2)
   }
   list(
     statistic = statistic,

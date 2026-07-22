@@ -289,13 +289,15 @@ private:
           std::numeric_limits<double>::epsilon() * cached_rss0_) {
         cached_statistic_ = std::numeric_limits<double>::infinity();
       } else if (best_rss > 0.0 && cached_rss0_ > best_rss) {
+        // Use the log-likelihood-ratio scale (FOCuS uses this convention).
         cached_statistic_ =
-          static_cast<double>(transition_count) *
+          0.5 * static_cast<double>(transition_count) *
           std::log(cached_rss0_ / best_rss);
       }
     } else {
+      // Half the usual 2 log-likelihood ratio, matching Gaussian FOCuS.
       cached_statistic_ =
-        std::max(0.0, (cached_rss0_ - best_rss) / sigma2_);
+        std::max(0.0, (cached_rss0_ - best_rss) / (2.0 * sigma2_));
     }
     dirty_ = false;
   }
