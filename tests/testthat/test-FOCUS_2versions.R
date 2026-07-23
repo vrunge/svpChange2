@@ -102,6 +102,19 @@ test_that("SVP accepts all before/after pruning combinations",
             }
           })
 
+test_that("SVP defaults to the Gaussian mean validity test",
+          {
+            set.seed(17)
+            data <- rnorm(80)
+            gamma <- 1.5 * log(length(data))
+
+            default <- SVP(data, gamma)
+            explicit <- SVP(data, gamma, test = "gaussian_mean")
+
+            expect_equal(default$changepoints, explicit$changepoints)
+            expect_equal(default$R, explicit$R)
+          })
+
 test_that("TRUE/TRUE Gaussian pruning is invariant to reversing the data",
           {
             set.seed(2)

@@ -6,7 +6,7 @@
 SVP(
   data,
   gamma,
-  test,
+  test = "gaussian_mean",
   prune_after_if_unvalid = TRUE,
   prune_before_if_invalid = FALSE,
   use_multiscale_gamma = FALSE,
@@ -25,7 +25,8 @@ non-finite values are not supported.}
 FALSE}. Larger values accept less homogeneous segments and generally produce
 fewer changes.}
 
-\item{test}{Character scalar selecting a validity test; see Details.}
+\item{test}{Character scalar selecting a validity test; see Details. Defaults
+to \code{"gaussian_mean"}.}
 
 \item{prune_after_if_unvalid}{If \code{TRUE}, discard a candidate boundary
 after its current segment fails the test.}
@@ -112,7 +113,7 @@ argument and use the same pruning options as the Gaussian tests.
 \examples{
 set.seed(1)
 x <- rep(c(0, 2, -1), each = 40) + rnorm(120)
-SVP(x, gamma = 1.5 * log(length(x)), test = "gaussian_mean")$changepoints
+SVP(x, gamma = 1.5 * log(length(x)))$changepoints
 
 SVP(x, gamma = 0, test = "gaussian_mean",
     prune_after_if_unvalid = TRUE,

@@ -457,7 +457,7 @@ bool focus_valid_cpp(std::vector<double> data,
 //'   `use_multiscale_gamma = FALSE`. A larger value accepts longer or less
 //'   homogeneous segments and therefore generally produces fewer changes.
 //' @param test Character scalar selecting one of the validity tests listed in
-//'   Details.
+//'   Details. Defaults to `"gaussian_mean"`.
 //' @param prune_after_if_unvalid Logical; discard a candidate boundary after
 //'   its current segment fails the test.
 //' @param prune_before_if_invalid Logical; when a candidate segment fails,
@@ -485,7 +485,7 @@ bool focus_valid_cpp(std::vector<double> data,
 //' @examples
 //' set.seed(1)
 //' x <- rep(c(0, 2, -1), each = 40) + rnorm(120)
-//' SVP(x, gamma = 1.5 * log(length(x)), test = "gaussian_mean")$changepoints
+//' SVP(x, gamma = 1.5 * log(length(x)))$changepoints
 //'
 //' # Aggressive pruning and a multiscale threshold:
 //' SVP(x, gamma = 0, test = "gaussian_mean",
@@ -499,7 +499,7 @@ bool focus_valid_cpp(std::vector<double> data,
 // [[Rcpp::export]]
 List SVP(std::vector<double> data,
          double gamma,
-         std::string test,
+         std::string test = "gaussian_mean",
          bool prune_after_if_unvalid = true,
          bool prune_before_if_invalid = false,
          bool use_multiscale_gamma = false,

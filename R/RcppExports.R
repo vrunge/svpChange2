@@ -127,7 +127,7 @@ SN <- function(data, Kmax) {
 #'   `use_multiscale_gamma = FALSE`. A larger value accepts longer or less
 #'   homogeneous segments and therefore generally produces fewer changes.
 #' @param test Character scalar selecting one of the validity tests listed in
-#'   Details.
+#'   Details. Defaults to `"gaussian_mean"`.
 #' @param prune_after_if_unvalid Logical; discard a candidate boundary after
 #'   its current segment fails the test.
 #' @param prune_before_if_invalid Logical; when a candidate segment fails,
@@ -155,7 +155,7 @@ SN <- function(data, Kmax) {
 #' @examples
 #' set.seed(1)
 #' x <- rep(c(0, 2, -1), each = 40) + rnorm(120)
-#' SVP(x, gamma = 1.5 * log(length(x)), test = "gaussian_mean")$changepoints
+#' SVP(x, gamma = 1.5 * log(length(x)))$changepoints
 #'
 #' # Aggressive pruning and a multiscale threshold:
 #' SVP(x, gamma = 0, test = "gaussian_mean",
@@ -166,7 +166,7 @@ SN <- function(data, Kmax) {
 #' @seealso [svp0()] for arbitrary R validity functions, [AR1_rho()], and
 #'   [AR1_single_change()].
 #' @export
-SVP <- function(data, gamma, test, prune_after_if_unvalid = TRUE, prune_before_if_invalid = FALSE, use_multiscale_gamma = FALSE, sigma2 = 1.0, q_alpha_n = 0.0, rho = NA_real_, profile_sigma = FALSE, quantile = 0.01) {
+SVP <- function(data, gamma, test = "gaussian_mean", prune_after_if_unvalid = TRUE, prune_before_if_invalid = FALSE, use_multiscale_gamma = FALSE, sigma2 = 1.0, q_alpha_n = 0.0, rho = NA_real_, profile_sigma = FALSE, quantile = 0.01) {
     .Call(`_svpChange2_SVP`, data, gamma, test, prune_after_if_unvalid, prune_before_if_invalid, use_multiscale_gamma, sigma2, q_alpha_n, rho, profile_sigma, quantile)
 }
 
