@@ -2,6 +2,31 @@
 
 POWER_PATTERNS <- c("none", "up", "updown", "rand1")
 
+power_default_workers <- function() {
+  detected <- parallel::detectCores(logical = FALSE)
+  if (is.na(detected)) return(1L)
+  max(1L, as.integer(detected) - 1L)
+}
+
+power_lapply <- function(X, FUN, workers = power_default_workers(), ...) {
+  workers <- as.integer(workers)
+  if (length(workers) != 1L || is.na(workers) || workers < 1L) {
+    stop("workers must be one positive integer")
+  }
+  if (workers == 1L || .Platform$OS.type == "windows") {
+    return(lapply(X, FUN, ...))
+  }
+  parallel::mclapply(
+    X, FUN, ..., mc.cores = workers, mc.preschedule = FALSE,
+    mc.set.seed = FALSE
+  )
+}
+
+set_power_seed <- function(seed) {
+  set.seed(seed, kind = "Mersenne-Twister",
+           normal.kind = "Inversion", sample.kind = "Rejection")
+}
+
 generate_power_signal <- function(n, pattern, jump, segments = 8L) {
   pattern <- match.arg(pattern, POWER_PATTERNS)
   if (pattern == "none") return(rep(0, n))
@@ -35,6 +60,39 @@ generate_power_signal <- function(n, pattern, jump, segments = 8L) {
 
 normalise_boundaries <- function(boundaries, n) {
   sort(unique(c(as.integer(unlist(boundaries)), n)))
+}
+
+refine_svp_boundaries <- function(y, boundaries, robust = FALSE,
+                                  minimum_segment = 5L) {
+  boundaries <- normalise_boundaries(boundaries, length(y))
+  if (length(boundaries) <= 1L) return(boundaries)
+  original <- boundaries
+  previous <- c(0L, head(original, -1L))
+  refined <- original
+
+  for (j in seq_len(length(original) - 1L)) {
+    left <- max(previous[j] + minimum_segment,
+                floor((previous[j] + original[j]) / 2))
+    right <- min(original[j + 1L] - minimum_segment,
+                 ceiling((original[j] + original[j + 1L]) / 2))
+    if (left > right) next
+    first <- previous[j] + 1L
+    last <- original[j + 1L]
+    values <- y[first:last]
+    if (robust) {
+      values <- rank(values, ties.method = "average")
+    }
+    sums <- c(0, cumsum(values))
+    candidates <- left:right
+    relative <- candidates - first + 1L
+    left_n <- relative
+    right_n <- length(values) - relative
+    left_sum <- sums[relative + 1L]
+    right_sum <- sums[length(sums)] - left_sum
+    gain <- left_sum^2 / left_n + right_sum^2 / right_n
+    refined[j] <- candidates[which.max(gain)]
+  }
+  normalise_boundaries(refined, length(y))
 }
 
 paper_metrics <- function(true_boundaries, estimated_boundaries, tolerance) {

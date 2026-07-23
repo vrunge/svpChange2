@@ -4,12 +4,11 @@ library(svpChange2)
 library(changepoint)
 library(dplyr)
 library(ggplot2)
-library(future)
-library(future.apply)
 
 source(file.path("simulations", "power_common.R"))
 
 GAUSSIAN_ROOT <- file.path("simulations", "power_gaussian")
+GAUSSIAN_TRUE_TRUE_CONSTANT <- 1.8
 
 fit_gaussian_methods <- function(y) {
   n <- length(y)
@@ -24,25 +23,24 @@ fit_gaussian_methods <- function(y) {
     "SVP (BIC)" = normalise_boundaries(
       SVP(y, 2 * log(n), "gaussian_mean")$changepoints, n
     ),
-    "SVP FOCUS TRUE/TRUE c=1.8" = normalise_boundaries(
-      SVP(y, 1.8 * log(n), "gaussian_mean",
+    "SVP FOCUS TRUE/TRUE c=1.8 refined" = refine_svp_boundaries(
+      y,
+      SVP(y, GAUSSIAN_TRUE_TRUE_CONSTANT * log(n), "gaussian_mean",
           prune_after_if_unvalid = TRUE,
           prune_before_if_invalid = TRUE)$changepoints,
-      n
+      robust = FALSE
     )
   )
 }
 
 run_gaussian_power <- function(
     n = 1000L, jump_sizes = seq(0.1, 2, 0.1), reps = 100L,
-    workers = 1L, seed = 123L) {
+    workers = power_default_workers(), seed = 123L) {
   design <- expand.grid(pattern = POWER_PATTERNS, jump = jump_sizes,
                         rep = seq_len(reps), stringsAsFactors = FALSE)
-  future::plan(future::multisession, workers = workers)
-  on.exit(future::plan(future::sequential), add = TRUE)
-  rows <- future.apply::future_lapply(seq_len(nrow(design)), function(i) {
+  rows <- power_lapply(seq_len(nrow(design)), function(i) {
     d <- design[i, ]
-    set.seed(seed + i)
+    set_power_seed(seed + i)
     mu <- generate_power_signal(n, d$pattern, d$jump)
     y <- mu + stats::rnorm(n)
     truth <- normalise_boundaries(which(diff(mu) != 0), n)
@@ -55,7 +53,7 @@ run_gaussian_power <- function(
     }))
     output$changepoints <- unname(fits)
     output
-  }, future.seed = TRUE)
+  }, workers = workers)
   dplyr::bind_rows(rows)
 }
 
@@ -75,7 +73,7 @@ gaussian_scenario_plot <- function(n = 1000L, jump = 0.6, seed = 999L) {
     paper_theme() + ggplot2::theme(legend.position = "none")
 }
 
-run_and_save_gaussian <- function(workers = 1L) {
+run_and_save_gaussian <- function(workers = power_default_workers()) {
   results <- run_gaussian_power(workers = workers)
   save_power_outputs(results, GAUSSIAN_ROOT, gaussian_scenario_plot())
   invisible(results)

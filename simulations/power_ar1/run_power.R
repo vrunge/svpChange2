@@ -4,12 +4,11 @@ library(svpChange2)
 library(changepoint)
 library(dplyr)
 library(ggplot2)
-library(future)
-library(future.apply)
 
 source(file.path("simulations", "power_common.R"))
 
 AR1_ROOT <- file.path("simulations", "power_ar1")
+AR1_TRUE_TRUE_CONSTANT <- 1.75
 
 simulate_ar1_noise <- function(n, rho = 0.8, marginal_sd = 1) {
   innovation_sd <- marginal_sd * sqrt(1 - rho^2)
@@ -66,7 +65,36 @@ ar1_approximate_partition <- function(y, rho, innovation_variance, penalty) {
   boundaries
 }
 
-fit_ar1_methods <- function(y, rho = 0.8, svp_constant = 3.75) {
+refine_ar1_boundaries <- function(y, boundaries, rho, innovation_variance,
+                                  minimum_segment = 5L) {
+  boundaries <- normalise_boundaries(boundaries, length(y))
+  if (length(boundaries) <= 1L) return(boundaries)
+  original <- boundaries
+  previous <- c(0L, head(original, -1L))
+  refined <- original
+  for (j in seq_len(length(original) - 1L)) {
+    left <- max(previous[j] + minimum_segment,
+                floor((previous[j] + original[j]) / 2))
+    right <- min(original[j + 1L] - minimum_segment,
+                 ceiling((original[j] + original[j + 1L]) / 2))
+    if (left > right) next
+    first <- previous[j] + 1L
+    last <- original[j + 1L]
+    values <- y[first:last]
+    costs <- ar1_cost_matrix(values, rho, innovation_variance)
+    candidates <- left:right
+    relative <- candidates - first + 1L
+    full_cost <- costs[1L, length(values)]
+    gain <- vapply(relative, function(split) {
+      full_cost - costs[1L, split] - costs[split + 1L, length(values)]
+    }, numeric(1))
+    refined[j] <- candidates[which.max(gain)]
+  }
+  normalise_boundaries(refined, length(y))
+}
+
+fit_ar1_methods <- function(y, rho = 0.8, svp_constant = 3.75,
+                            true_true_constant = AR1_TRUE_TRUE_CONSTANT) {
   n <- length(y)
   innovation_variance <- 1 - rho^2
   inflated <- changepoint::cpt.mean(
@@ -85,26 +113,25 @@ fit_ar1_methods <- function(y, rho = 0.8, svp_constant = 3.75) {
           rho = rho, sigma2 = innovation_variance)$changepoints,
       n
     ),
-    "SVP AR1Focus TRUE/TRUE" = normalise_boundaries(
-      SVP(y, svp_constant * log(n), "AR1Focus",
+    "SVP AR1Focus TRUE/TRUE c=1.75 refined" = refine_ar1_boundaries(
+      y,
+      SVP(y, true_true_constant * log(n), "AR1Focus",
           prune_after_if_unvalid = TRUE,
           prune_before_if_invalid = TRUE,
           rho = rho, sigma2 = innovation_variance)$changepoints,
-      n
+      rho, innovation_variance
     )
   )
 }
 
 run_ar1_power <- function(
-    n = 600L, rho = 0.8, jump_sizes = seq(1, 3, 0.2), reps = 30L,
-    workers = 1L, seed = 123L) {
+    n = 600L, rho = 0.8, jump_sizes = seq(1, 3, 0.1), reps = 100L,
+    workers = power_default_workers(), seed = 123L) {
   design <- expand.grid(pattern = POWER_PATTERNS, jump = jump_sizes,
                         rep = seq_len(reps), stringsAsFactors = FALSE)
-  future::plan(future::multisession, workers = workers)
-  on.exit(future::plan(future::sequential), add = TRUE)
-  rows <- future.apply::future_lapply(seq_len(nrow(design)), function(i) {
+  rows <- power_lapply(seq_len(nrow(design)), function(i) {
     d <- design[i, ]
-    set.seed(seed + i)
+    set_power_seed(seed + i)
     mu <- generate_power_signal(n, d$pattern, d$jump)
     y <- mu + simulate_ar1_noise(n, rho)
     truth <- normalise_boundaries(which(diff(mu) != 0), n)
@@ -117,7 +144,7 @@ run_ar1_power <- function(
     }))
     output$changepoints <- unname(fits)
     output
-  }, future.seed = TRUE)
+  }, workers = workers)
   dplyr::bind_rows(rows)
 }
 
@@ -138,7 +165,7 @@ ar1_scenario_plot <- function(n = 600L, rho = 0.8, jump = 0.8,
     paper_theme() + ggplot2::theme(legend.position = "none")
 }
 
-run_and_save_ar1 <- function(workers = 1L) {
+run_and_save_ar1 <- function(workers = power_default_workers()) {
   results <- run_ar1_power(workers = workers)
   save_power_outputs(results, AR1_ROOT, ar1_scenario_plot(),
                      selected_jump = 1.4)

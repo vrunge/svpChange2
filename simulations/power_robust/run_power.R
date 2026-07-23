@@ -5,12 +5,11 @@ library(changepoint)
 library(robseg)
 library(dplyr)
 library(ggplot2)
-library(future)
-library(future.apply)
 
 source(file.path("simulations", "power_common.R"))
 
 ROBUST_ROOT <- file.path("simulations", "power_robust")
+ROBUST_TRUE_TRUE_CONSTANT <- 1.75
 
 mood_threshold <- function(n, segments, alpha = 0.01) {
   splits <- n / segments - 1
@@ -32,16 +31,17 @@ fit_rfpop <- function(y, penalty_constant) {
 
 calibrate_rfpop_penalty <- function(
     n = 1000L, grid = seq(2, 6, 0.25), reps = 200L,
-    target_no_change = 0.98, seed = 90210L) {
-  scores <- lapply(grid, function(constant) {
+    target_no_change = 0.98, seed = 90210L,
+    workers = power_default_workers()) {
+  scores <- power_lapply(grid, function(constant) {
     correct <- logical(reps)
     for (rep in seq_len(reps)) {
-      set.seed(seed + rep)
+      set_power_seed(seed + rep)
       fit <- fit_rfpop(stats::rt(n, df = 2), constant)
       correct[rep] <- length(fit$boundaries) == 1L
     }
     data.frame(constant = constant, no_change_probability = mean(correct))
-  }) |>
+  }, workers = workers) |>
     dplyr::bind_rows()
   admissible <- dplyr::filter(scores, no_change_probability >= target_no_change)
   if (!nrow(admissible)) stop("RFPOP calibration grid does not attain null target")
@@ -66,11 +66,12 @@ fit_robust_methods <- function(y, true_segments, rfpop_constant) {
     "SVP (Wilcoxon)" = normalise_boundaries(
       SVP(y, 1.5 * wilcoxon_gamma, "WilcoxonCost")$changepoints, n
     ),
-    "SVP Wilcoxon TRUE/TRUE c=1.8" = normalise_boundaries(
-      SVP(y, 1.8 * wilcoxon_gamma, "WilcoxonCost",
+    "SVP Wilcoxon TRUE/TRUE c=1.75 refined" = refine_svp_boundaries(
+      y,
+      SVP(y, ROBUST_TRUE_TRUE_CONSTANT * wilcoxon_gamma, "WilcoxonCost",
           prune_after_if_unvalid = TRUE,
           prune_before_if_invalid = TRUE)$changepoints,
-      n
+      robust = TRUE
     )
   )
   boundaries[[calibrated_label]] <- calibrated_rfpop$boundaries
@@ -82,10 +83,10 @@ fit_robust_methods <- function(y, true_segments, rfpop_constant) {
 
 run_robust_power <- function(
     n = 1000L, jump_sizes = seq(0.1, 4, 0.1), reps = 100L,
-    workers = 1L, seed = 123L,
+    workers = power_default_workers(), seed = 123L,
     rfpop_constant = NULL) {
   if (is.null(rfpop_constant)) {
-    calibration <- calibrate_rfpop_penalty(n = n)
+    calibration <- calibrate_rfpop_penalty(n = n, workers = workers)
     rfpop_constant <- calibration$constant
     utils::write.csv(calibration$table,
                      file.path(ROBUST_ROOT, "rfpop_null_calibration.csv"),
@@ -93,11 +94,9 @@ run_robust_power <- function(
   }
   design <- expand.grid(pattern = POWER_PATTERNS, jump = jump_sizes,
                         rep = seq_len(reps), stringsAsFactors = FALSE)
-  future::plan(future::multisession, workers = workers)
-  on.exit(future::plan(future::sequential), add = TRUE)
-  rows <- future.apply::future_lapply(seq_len(nrow(design)), function(i) {
+  rows <- power_lapply(seq_len(nrow(design)), function(i) {
     d <- design[i, ]
-    set.seed(seed + i)
+    set_power_seed(seed + i)
     mu <- generate_power_signal(n, d$pattern, d$jump)
     y <- mu + stats::rt(n, df = 2)
     truth <- normalise_boundaries(which(diff(mu) != 0), n)
@@ -109,7 +108,7 @@ run_robust_power <- function(
     }))
     output$changepoints <- unname(fits$boundaries)
     output
-  }, future.seed = TRUE)
+  }, workers = workers)
   dplyr::bind_rows(rows)
 }
 
@@ -130,7 +129,7 @@ robust_scenario_plot <- function(n = 1000L, jump = 0.6, seed = 999L) {
     paper_theme() + ggplot2::theme(legend.position = "none")
 }
 
-run_and_save_robust <- function(workers = 1L) {
+run_and_save_robust <- function(workers = power_default_workers()) {
   results <- run_robust_power(workers = workers)
   save_power_outputs(results, ROBUST_ROOT, robust_scenario_plot())
   invisible(results)
