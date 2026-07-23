@@ -38,9 +38,10 @@ generate_signal <- function(n,
     return(rep(means * jump_size, sizes))
   }
 
+  if (pattern == "none") return(rep(0, n))
+
   means <- switch(
     pattern,
-    none = 0,
     up = seq(0, nb_segments - 1) * jump_size,
     updown = (seq(0, nb_segments - 1) %% 2) * jump_size
   )

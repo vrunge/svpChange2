@@ -101,6 +101,45 @@ List svp_impl(const std::vector<double>& data,
     S2[i + 1] = S2[i] + data[i] * data[i];
   }
 
+  // A bidirectional whole-series check preserves the linear one-segment case
+  // for TRUE/TRUE without using the directional prefix shortcut. If both
+  // orientations accept every prefix, one segment is feasible and therefore
+  // lexicographically optimal.
+  if (prune_after_if_unvalid && prune_before_if_invalid) {
+    Test forward_test(args...);
+    Test backward_test(args...);
+    bool whole_series_valid = true;
+    for (size_t length = 1; length <= n; ++length) {
+      forward_test.update(data[length - 1]);
+      backward_test.update(data[n - length]);
+      const double threshold = validity_threshold(
+        n, length, gamma, use_multiscale_gamma, sigma2, q_alpha_n
+      );
+      if (forward_test.statistic() >= threshold ||
+          backward_test.statistic() >= threshold) {
+        whole_series_valid = false;
+        break;
+      }
+    }
+    if (whole_series_valid) {
+      std::vector<size_t> all_candidates(n + 1);
+      for (size_t t = 1; t <= n; ++t) {
+        Q[t] = segment_cost(S1, S2, 0, t);
+        K[t] = 1;
+        previous[t] = 0;
+        nb[t - 1] = t;
+      }
+      for (size_t i = 0; i <= n; ++i) all_candidates[i] = n - i;
+      return List::create(
+        _["changepoints"] = std::vector<size_t>{n},
+        _["lastIndexSet"] = all_candidates,
+        _["nb"] = nb,
+        _["costQ"] = NULL,
+        _["R"] = build_R_matrix(Q, K, previous)
+      );
+    }
+  }
+
   std::vector<size_t> index;
   std::vector<Test> tests;
   std::vector<size_t> last_updates;
@@ -124,7 +163,8 @@ List svp_impl(const std::vector<double>& data,
     // it is the lexicographic optimum and later candidates are deferred.
     // Their incremental states remain untouched and are caught up if the
     // prefix becomes invalid at a later endpoint.
-    if (prune_after_if_unvalid && !index.empty() && index[0] == 0) {
+    if (prune_after_if_unvalid && !prune_before_if_invalid &&
+        !index.empty() && index[0] == 0) {
       for (size_t u = last_updates[0] + 1; u <= t; ++u)
         tests[0].update(data[u - 1]);
       last_updates[0] = t;
@@ -268,7 +308,13 @@ List svp_impl(const std::vector<double>& data,
         const bool valid = tests[k].statistic() < threshold;
 
         if (!valid) {
+          // Left-pruning discards every earlier candidate, including any
+          // candidate provisionally selected as the optimum for this endpoint.
+          // Recompute the optimum from the candidates that remain to the right.
           write = 0;
+          best_Q = std::numeric_limits<double>::infinity();
+          best_K = std::numeric_limits<size_t>::max();
+          best_s = 0;
         }
 
         if (valid) {

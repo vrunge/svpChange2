@@ -16,7 +16,7 @@ simulate_ar1 <- function(n = 1000, tau = c(300, 650), means = c(0, 2, -1),
 }
 
 fit_three_methods <- function(y, rho = 0.7, sigma2 = 1, gamma = 8) {
-  methods <- c("AR1", "AR1Profile", "AR1Focus")
+  methods <- c("AR1Profile", "AR1", "AR1Focus")
   fits <- setNames(lapply(methods, function(method) {
     SVP(y, gamma = gamma, test = method, rho = rho, sigma2 = sigma2,
         profile_sigma = method == "AR1Profile",
