@@ -14,7 +14,7 @@ exact_ar1_validity <- function(rho, sigma2 = 1) {
 }
 
 simulate_ar1 <- function(n = 1000, tau = c(300, 650), means = c(0, 2, -1),
-                         rho = .7, sigma = 1) {
+                         rho = .7, sigma = 3) {
   mu <- rep(means, diff(c(0, tau, n))); y <- numeric(n)
   y[1] <- mu[1] + rnorm(1, sd = sigma / sqrt(1-rho^2))
   for (i in 2:n)
@@ -44,4 +44,4 @@ compare_one <- function(y, rho = .7, sigma2 = 1, gamma = 8) {
 }
 
 ## Example:
-set.seed(1); z <- compare_one(simulate_ar1()); z$partitions; z$elapsed
+z <- compare_one(simulate_ar1()); z$partitions; z$elapsed

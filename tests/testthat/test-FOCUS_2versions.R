@@ -101,3 +101,60 @@ test_that("SVP accepts all before/after pruning combinations",
               expect_equal(tail(res$changepoints, 1), n)
             }
           })
+
+test_that("TRUE/TRUE Gaussian pruning is invariant to reversing the data",
+          {
+            set.seed(2)
+            n <- 100
+            data <- rnorm(n)
+            gamma <- 0.3
+
+            forward <- SVP(
+              data,
+              gamma,
+              test = "gaussian_mean",
+              sigma2 = 1,
+              prune_after_if_unvalid = TRUE,
+              prune_before_if_invalid = TRUE
+            )
+            backward <- SVP(
+              rev(data),
+              gamma,
+              test = "gaussian_mean",
+              sigma2 = 1,
+              prune_after_if_unvalid = TRUE,
+              prune_before_if_invalid = TRUE
+            )
+            backward_changepoints <- c(
+              n - rev(head(backward$changepoints, -1L)),
+              n
+            )
+
+            expect_equal(forward$changepoints, backward_changepoints)
+          })
+
+test_that("TRUE/TRUE keeps the bidirectionally valid one-segment fast path",
+          {
+            set.seed(3)
+            data <- rnorm(1000)
+
+            forward <- SVP(
+              data,
+              gamma = 1e12,
+              test = "gaussian_mean",
+              sigma2 = 1,
+              prune_after_if_unvalid = TRUE,
+              prune_before_if_invalid = TRUE
+            )
+            backward <- SVP(
+              rev(data),
+              gamma = 1e12,
+              test = "gaussian_mean",
+              sigma2 = 1,
+              prune_after_if_unvalid = TRUE,
+              prune_before_if_invalid = TRUE
+            )
+
+            expect_equal(forward$changepoints, 1000)
+            expect_equal(backward$changepoints, 1000)
+          })
