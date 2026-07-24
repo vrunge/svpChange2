@@ -66,7 +66,7 @@ fit_robust_methods <- function(y, true_segments, rfpop_constant) {
     "SVP (Wilcoxon)" = normalise_boundaries(
       SVP(y, 1.5 * wilcoxon_gamma, "WilcoxonCost")$changepoints, n
     ),
-    "SVP Wilcoxon TRUE/TRUE c=1.75 refined" = refine_svp_boundaries(
+    "SVP Wilcoxon Multiscale" = refine_svp_boundaries(
       y,
       SVP(y, ROBUST_TRUE_TRUE_CONSTANT * wilcoxon_gamma, "WilcoxonCost",
           prune_after_if_unvalid = TRUE,
