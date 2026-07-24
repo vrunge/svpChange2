@@ -165,10 +165,27 @@ ar1_scenario_plot <- function(n = 600L, rho = 0.8, jump = 0.8,
     paper_theme() + ggplot2::theme(legend.position = "none")
 }
 
+ar1_plot_results <- function(results) {
+  set_algorithm_display(
+    results,
+    labels = c(
+      "PELT AR1 approximate" = "PELT AR1 approximate",
+      "PELT inflated" = "PELT inflated",
+      "SVP AR1Focus" = "SVP AR1Focus",
+      "SVP AR1Focus TRUE/TRUE c=1.75 refined" =
+        "SVP AR1Focus multiscale"
+    ),
+    order = c("PELT AR1 approximate", "PELT inflated", "SVP AR1Focus",
+              "SVP AR1Focus multiscale")
+  )
+}
+
 run_and_save_ar1 <- function(workers = power_default_workers()) {
   results <- run_ar1_power(workers = workers)
-  save_power_outputs(results, AR1_ROOT, ar1_scenario_plot(),
-                     selected_jump = 1.4)
+  save_power_outputs(
+    results, AR1_ROOT, ar1_scenario_plot(), selected_jump = 1.4,
+    plot_results = ar1_plot_results(results)
+  )
   invisible(results)
 }
 

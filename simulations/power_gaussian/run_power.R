@@ -73,9 +73,26 @@ gaussian_scenario_plot <- function(n = 1000L, jump = 0.6, seed = 999L) {
     paper_theme() + ggplot2::theme(legend.position = "none")
 }
 
+gaussian_plot_results <- function(results) {
+  set_algorithm_display(
+    results,
+    labels = c(
+      "PELT" = "PELT",
+      "SVP (BIC)" = "SVP (BIC)",
+      "SVP" = "SVP (BIC calibrated)",
+      "SVP FOCUS TRUE/TRUE c=1.8 refined" = "SVP multiscale"
+    ),
+    order = c("PELT", "SVP (BIC)", "SVP (BIC calibrated)",
+              "SVP multiscale")
+  )
+}
+
 run_and_save_gaussian <- function(workers = power_default_workers()) {
   results <- run_gaussian_power(workers = workers)
-  save_power_outputs(results, GAUSSIAN_ROOT, gaussian_scenario_plot())
+  save_power_outputs(
+    results, GAUSSIAN_ROOT, gaussian_scenario_plot(),
+    plot_results = gaussian_plot_results(results)
+  )
   invisible(results)
 }
 

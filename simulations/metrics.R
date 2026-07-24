@@ -3,11 +3,18 @@
 ## point is recovered; otherwise it is NA. CorrectNumCP records exact model
 ## size recovery and is therefore directly estimable as a proportion.
 
+localization_error <- function(cp_true, cp_est) {
+  cp_true <- sort(as.integer(cp_true))
+  cp_est <- sort(as.integer(cp_est))
+  if (!length(cp_true) || length(cp_true) != length(cp_est)) return(NA_real_)
+  max(abs(cp_est - cp_true))
+}
+
 change_point_metrics <- function(cp_true, cp_est, tol = 5L) {
   cp_true <- sort(as.integer(cp_true)); cp_est <- sort(as.integer(cp_est))
   if (!length(cp_true) && !length(cp_est))
     return(list(Precision = NA_real_, Recall = NA_real_, F1 = NA_real_,
-                LocalizationError = 0, CorrectNumCP = TRUE))
+                LocalizationError = NA_real_, CorrectNumCP = TRUE))
   if (!length(cp_true) || !length(cp_est))
     return(list(Precision = if (length(cp_est)) 0 else NA_real_,
                 Recall = if (length(cp_true)) 0 else NA_real_, F1 = NA_real_,
@@ -26,6 +33,6 @@ change_point_metrics <- function(cp_true, cp_est, tol = 5L) {
   f1 <- if (is.finite(precision) && is.finite(recall) && precision + recall > 0)
     2*precision*recall/(precision+recall) else NA_real_
   list(Precision = precision, Recall = recall, F1 = f1,
-       LocalizationError = if (length(cp_true) == length(cp_est) && length(distances) == length(cp_true)) max(distances) else NA_real_,
+       LocalizationError = localization_error(cp_true, cp_est),
        CorrectNumCP = length(cp_true) == length(cp_est))
 }

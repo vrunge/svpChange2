@@ -129,9 +129,29 @@ robust_scenario_plot <- function(n = 1000L, jump = 0.6, seed = 999L) {
     paper_theme() + ggplot2::theme(legend.position = "none")
 }
 
+robust_plot_results <- function(results) {
+  set_algorithm_display(
+    results,
+    labels = c(
+      "PELT" = "PELT",
+      "RFPOP (null-matched c=2.75)" = "RFPOP",
+      "SVP (MedianMood)" = "SVP (MedianMood)",
+      "SVP (Wilcoxon)" = "SVP (Wilcoxon)",
+      "SVP Wilcoxon TRUE/TRUE c=1.75 refined" =
+        "SVP (Wilcoxon multiscale)"
+    ),
+    order = c("PELT", "RFPOP", "SVP (MedianMood)", "SVP (Wilcoxon)",
+              "SVP (Wilcoxon multiscale)"),
+    drop = "RFPOP (paper)"
+  )
+}
+
 run_and_save_robust <- function(workers = power_default_workers()) {
   results <- run_robust_power(workers = workers)
-  save_power_outputs(results, ROBUST_ROOT, robust_scenario_plot())
+  save_power_outputs(
+    results, ROBUST_ROOT, robust_scenario_plot(),
+    plot_results = robust_plot_results(results)
+  )
   invisible(results)
 }
 

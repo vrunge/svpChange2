@@ -1,5 +1,7 @@
 ## Shared infrastructure for the three paper power studies.
 
+source(file.path("simulations", "metrics.R"))
+
 POWER_PATTERNS <- c("none", "up", "updown", "rand1")
 
 power_default_workers <- function() {
@@ -113,7 +115,10 @@ paper_metrics <- function(true_boundaries, estimated_boundaries, tolerance) {
   recall <- matched / length(truth)
   f1 <- if (precision + recall) 2 * precision * recall / (precision + recall) else 0
   c(Precision = precision, Recall = recall, F1 = f1,
-    CorrectNumCP = as.numeric(length(estimate) == length(truth)))
+    CorrectNumCP = as.numeric(length(estimate) == length(truth)),
+    LocalizationError = localization_error(
+      head(truth, -1L), head(estimate, -1L)
+    ))
 }
 
 fitted_piecewise_mean <- function(y, boundaries) {
@@ -130,6 +135,7 @@ result_row <- function(pattern, jump, rep, algorithm, boundaries,
     pattern = pattern, jump = jump, rep = rep, algorithm = algorithm,
     Precision = metric[["Precision"]], Recall = metric[["Recall"]],
     F1 = metric[["F1"]], CorrectNumCP = metric[["CorrectNumCP"]],
+    LocalizationError = metric[["LocalizationError"]],
     MSE = mean((mu - fitted)^2), NumSegments = length(boundaries),
     stringsAsFactors = FALSE
   )
@@ -196,6 +202,70 @@ precision_recall_plot <- function(results) {
     ggplot2::theme(legend.position = "right")
 }
 
+localization_error_plot <- function(results) {
+  eligible <- results[
+    results$CorrectNumCP == 1 & results$pattern != "none" &
+      is.finite(results$LocalizationError),
+  ]
+  eligible$pattern <- factor(
+    eligible$pattern, c("up", "updown", "rand1")
+  )
+  summary <- eligible |>
+    dplyr::group_by(algorithm, pattern, jump) |>
+    dplyr::summarise(
+      mean = mean(LocalizationError),
+      se = if (dplyr::n() > 1L) {
+        stats::sd(LocalizationError) / sqrt(dplyr::n())
+      } else {
+        0
+      },
+      lower = pmax(0, mean - 1.96 * se),
+      upper = mean + 1.96 * se,
+      .groups = "drop"
+    )
+  ggplot2::ggplot(
+    summary, ggplot2::aes(jump, mean, colour = algorithm, fill = algorithm)
+  ) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(ymin = lower, ymax = upper), alpha = 0.12, colour = NA
+    ) +
+    ggplot2::geom_line(linewidth = 0.8) +
+    ggplot2::geom_point(size = 1.1) +
+    ggplot2::facet_wrap(~pattern, nrow = 1L) +
+    ggplot2::labs(
+      x = "Jump size",
+      y = "Maximum localization error | correct number of changes",
+      colour = "algorithm", fill = "algorithm"
+    ) +
+    paper_theme()
+}
+
+add_localization_error <- function(results, n) {
+  results$LocalizationError <- vapply(seq_len(nrow(results)), function(i) {
+    mu <- generate_power_signal(n, results$pattern[i], results$jump[i])
+    truth <- which(diff(mu) != 0)
+    estimate <- as.integer(results$changepoints[[i]])
+    estimate <- estimate[estimate < n]
+    localization_error(truth, estimate)
+  }, numeric(1))
+  results
+}
+
+set_algorithm_display <- function(results, labels, order,
+                                  drop = character()) {
+  results <- results[!(as.character(results$algorithm) %in% drop), ,
+                     drop = FALSE]
+  displayed <- as.character(results$algorithm)
+  matched <- match(displayed, names(labels))
+  displayed[!is.na(matched)] <- unname(labels[matched[!is.na(matched)]])
+  unexpected <- setdiff(unique(displayed), order)
+  if (length(unexpected)) {
+    stop("Missing display order for: ", paste(unexpected, collapse = ", "))
+  }
+  results$algorithm <- factor(displayed, levels = order)
+  results
+}
+
 changepoint_distribution_plot <- function(results, n, selected_jump = 0.6,
                                           bins = 100L) {
   selected <- results[
@@ -210,6 +280,10 @@ changepoint_distribution_plot <- function(results, n, selected_jump = 0.6,
   })
   data <- dplyr::bind_rows(rows)
   data$pattern <- factor(data$pattern, c("rand1", "up", "updown"))
+  if (is.factor(results$algorithm)) {
+    data$algorithm <- factor(as.character(data$algorithm),
+                             levels = levels(results$algorithm))
+  }
   ggplot2::ggplot(data, ggplot2::aes(changepoint)) +
     ggplot2::geom_histogram(bins = bins, fill = "steelblue",
                             alpha = 0.75, colour = "black", linewidth = 0.15) +
@@ -222,13 +296,17 @@ changepoint_distribution_plot <- function(results, n, selected_jump = 0.6,
 }
 
 save_power_outputs <- function(results, root, scenario_plot,
-                               selected_jump = 0.6) {
+                               selected_jump = 0.6,
+                               plot_results = results,
+                               save_results = TRUE) {
   dir.create(file.path(root, "plots"), recursive = TRUE, showWarnings = FALSE)
-  saveRDS(results, file.path(root, "results.rds"))
-  utils::write.csv(dplyr::select(results, -changepoints),
-                   file.path(root, "results.csv"), row.names = FALSE)
-  mse_plot <- metric_plot(results, "MSE", "Signal MSE")
-  mse_summary <- summarise_metric(results, "MSE")
+  if (save_results) {
+    saveRDS(results, file.path(root, "results.rds"))
+    utils::write.csv(dplyr::select(results, -changepoints),
+                     file.path(root, "results.csv"), row.names = FALSE)
+  }
+  mse_plot <- metric_plot(plot_results, "MSE", "Signal MSE")
+  mse_summary <- summarise_metric(plot_results, "MSE")
   positive <- mse_summary$mean[is.finite(mse_summary$mean) & mse_summary$mean > 0]
   if (length(positive) && max(positive) > 20 * stats::median(positive)) {
     mse_plot <- mse_plot +
@@ -241,17 +319,20 @@ save_power_outputs <- function(results, root, scenario_plot,
   }
   plots <- list(
     "01_scenarios.pdf" = scenario_plot,
-    "02_f1.pdf" = metric_plot(results, "F1", "F1", TRUE),
-    "03_precision_recall.pdf" = precision_recall_plot(results),
+    "02_f1.pdf" = metric_plot(plot_results, "F1", "F1", TRUE),
+    "03_precision_recall.pdf" = precision_recall_plot(plot_results),
     "04_changepoint_distributions.pdf" =
-      changepoint_distribution_plot(results, max(unlist(results$changepoints)),
-                                    selected_jump),
+      changepoint_distribution_plot(
+        plot_results, max(unlist(plot_results$changepoints)), selected_jump
+      ),
     "05_correct_number_probability.pdf" =
-      metric_plot(results, "CorrectNumCP",
+      metric_plot(plot_results, "CorrectNumCP",
                   "Probability of the correct number of changepoints", TRUE),
-    "06_signal_mse.pdf" = mse_plot
+    "06_signal_mse.pdf" = mse_plot,
+    "07_loc_error.pdf" = localization_error_plot(plot_results)
   )
-  sizes <- list(c(10, 5), c(10, 5), c(10, 10), c(15, 10), c(10, 5), c(10, 5))
+  sizes <- list(c(10, 5), c(10, 5), c(10, 10), c(15, 10), c(10, 5),
+                c(10, 5), c(12, 4.5))
   for (i in seq_along(plots)) {
     ggplot2::ggsave(file.path(root, "plots", names(plots)[i]), plots[[i]],
                     width = sizes[[i]][1], height = sizes[[i]][2])
