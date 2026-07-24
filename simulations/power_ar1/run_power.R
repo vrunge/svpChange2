@@ -113,7 +113,7 @@ fit_ar1_methods <- function(y, rho = 0.8, svp_constant = 3.75,
           rho = rho, sigma2 = innovation_variance)$changepoints,
       n
     ),
-    "SVP AR1Focus TRUE/TRUE c=1.75 refined" = refine_ar1_boundaries(
+    "SVP AR1Focus Multiscale" = refine_ar1_boundaries(
       y,
       SVP(y, true_true_constant * log(n), "AR1Focus",
           prune_after_if_unvalid = TRUE,

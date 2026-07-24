@@ -23,7 +23,7 @@ fit_gaussian_methods <- function(y) {
     "SVP (BIC)" = normalise_boundaries(
       SVP(y, 2 * log(n), "gaussian_mean")$changepoints, n
     ),
-    "SVP FOCUS TRUE/TRUE c=1.8 refined" = refine_svp_boundaries(
+    "SVP FOCUS Multiscale" = refine_svp_boundaries(
       y,
       SVP(y, GAUSSIAN_TRUE_TRUE_CONSTANT * log(n), "gaussian_mean",
           prune_after_if_unvalid = TRUE,
