@@ -9,9 +9,7 @@ SVP(
   test = "gaussian_mean",
   prune_after_if_unvalid = TRUE,
   prune_before_if_invalid = FALSE,
-  use_multiscale_gamma = FALSE,
   sigma2 = 1,
-  q_alpha_n = 0,
   rho = NA_real_,
   profile_sigma = FALSE,
   quantile = 0.01
@@ -21,9 +19,8 @@ SVP(
 \item{data}{Numeric vector containing the univariate series. Missing and
 non-finite values are not supported.}
 
-\item{gamma}{Scalar validity threshold when \code{use_multiscale_gamma =
-FALSE}. Larger values accept less homogeneous segments and generally produce
-fewer changes.}
+\item{gamma}{Scalar validity threshold. Larger values accept less homogeneous
+segments and generally produce fewer changes.}
 
 \item{test}{Character scalar selecting a validity test; see Details. Defaults
 to \code{"gaussian_mean"}.}
@@ -34,14 +31,7 @@ after its current segment fails the test.}
 \item{prune_before_if_invalid}{If \code{TRUE}, when a candidate segment fails,
 also discard candidate boundaries older than its start.}
 
-\item{use_multiscale_gamma}{If \code{TRUE}, use the length-dependent threshold
-described in Details instead of \code{gamma}.}
-
-\item{sigma2}{Positive finite variance. It scales the multiscale threshold and
-is the innovation variance for \code{test = "AR1"}.}
-
-\item{q_alpha_n}{Global multiscale calibration constant. This must be
-calibrated externally for the desired error level and sample size.}
+\item{sigma2}{Positive finite innovation variance for the AR1 tests.}
 
 \item{rho}{AR(1) coefficient for the AR1 tests. It must be finite and strictly
   between -1 and 1. If omitted, it is estimated robustly from the full series.}
@@ -100,11 +90,6 @@ configuration enables both after- and before-invalid pruning and is the most
 aggressive FOCUS variant. Disabling pruning retains more candidates and can
 substantially increase run time.
 
-With multiscale thresholds, a candidate segment of length \code{l} in a series
-of length \code{n} uses
-\deqn{sigma2 \{q_alpha_n + 2 \log(e n/l)\}.}
-The function does not calibrate \code{q_alpha_n}.
-
 The available nonparametric and robust cost tests are \code{"quantile"},
 \code{"quantileExact"}, \code{"varCost"}, \code{"WilcoxonCost"}, and
 \code{"MedianMoodCost"}. They are selected through the same \code{test}
@@ -115,10 +100,9 @@ set.seed(1)
 x <- rep(c(0, 2, -1), each = 40) + rnorm(120)
 SVP(x, gamma = 1.5 * log(length(x)))$changepoints
 
-SVP(x, gamma = 0, test = "gaussian_mean",
+SVP(x, gamma = 1.5 * log(length(x)), test = "gaussian_mean",
     prune_after_if_unvalid = TRUE,
-    prune_before_if_invalid = TRUE,
-    use_multiscale_gamma = TRUE, sigma2 = 1, q_alpha_n = 3)
+    prune_before_if_invalid = TRUE)
 }
 \seealso{
 \code{\link{svp0}}, \code{\link{AR1_rho}}, \code{\link{AR1_single_change}}

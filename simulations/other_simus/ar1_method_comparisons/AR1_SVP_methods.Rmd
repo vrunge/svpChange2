@@ -1,0 +1,83 @@
+---
+title: "AR(1) SVP segmentation in svpChange2"
+output: html_document
+---
+
+## Common model
+
+The AR(1) mean-change model is
+
+$$X_t=\mu_t+\rho(X_{t-1}-\mu_{t-1})+\varepsilon_t,
+\qquad \varepsilon_t\stackrel{iid}{\sim}N(0,\sigma^2),$$
+
+with $|\rho|<1$ and piecewise-constant $\mu_t$. For a change after $\tau$,
+the transition residual is
+
+$$X_{\tau+1}-\rho X_\tau-\mu_2+\rho\mu_1,$$
+
+which must be included in an exact likelihood calculation.
+
+## SVP criterion
+
+For each candidate segment $I=[s,t]$, a validity test decides whether it is
+admissible. SVP minimizes lexicographically
+
+$$\left(K(\mathcal P),\;\sum_{I\in\mathcal P}C(I)\right),$$
+
+over valid partitions: first the number of segments, then the total cost.
+
+## Exact fixed-variance test: `AR1`
+
+`AR1` scans every possible change-point using the exact fixed-$\rho$ Gaussian
+log-likelihood ratio. Prefix sums make each candidate calculation constant time
+after updating sufficient statistics. Use it when `rho` and `sigma2` are known.
+
+```r
+SVP(y, gamma=8, test="AR1", rho=.7, sigma2=1)
+```
+
+## Profiled exact test: `AR1Profile`
+
+`AR1Profile` uses the same transition-corrected likelihood but profiles out
+the innovation variance. Its statistic is based on
+
+$$T=\frac{m}{2}\log(RSS_0/RSS_1),$$
+
+where $m$ is the number of usable AR transitions. Its threshold calibration
+is different from the fixed-variance test.
+
+```r
+SVP(y, gamma=8, test="AR1Profile", rho=.7, profile_sigma=TRUE)
+```
+
+## Fast innovation/FOCuS test: `AR1Focus`
+
+`AR1Focus` applies Gaussian FOCuS to the innovations
+
+$$Z_t=X_t-\rho X_{t-1}.$$
+
+It updates candidate likelihood states online and prunes candidates. It is
+fast and suitable for streaming data, but is an innovation-based method and
+need not return the exact likelihood partition.
+
+```r
+SVP(y, gamma=8, test="AR1Focus", rho=.7, sigma2=1)
+```
+
+## Parameters
+
+| Parameter | Meaning |
+|---|---|
+| `y`/`data` | Observed numeric series. |
+| `gamma` | Validity threshold; larger values accept more segments. |
+| `test` | `AR1`, `AR1Profile`, or `AR1Focus`. |
+| `rho` | Fixed AR coefficient, strictly between -1 and 1. |
+| `sigma2` | Innovation variance for fixed-variance tests. |
+| `profile_sigma` | Profile the innovation variance. |
+| `prune_after_if_unvalid` | Permanently remove starts after invalid extensions when stability is justified. |
+| `prune_before_if_invalid` | Remove earlier starts at the current endpoint when inverse stability is justified. |
+| `quantile` | Quantile used for robust nuisance-parameter estimation. |
+
+Estimate an unknown AR coefficient with `AR1_rho(y)` and pass the same estimate
+to every method in a comparison. The script
+`compare_ar1_svp.R` reports partitions and runtimes without writing figures.

@@ -8,3 +8,4 @@ src/*.dll
 .Rproj.user/
 .Rhistory
 .DS_Store
+.r-library/

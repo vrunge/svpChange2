@@ -80,16 +80,6 @@ SVP(y, gamma = 10, test = "gaussian_mean",
 The usual setting is `TRUE/FALSE`. `TRUE/TRUE` is more aggressive and should
 be assessed by simulation for the chosen validity test.
 
-For a length-dependent multiscale threshold:
-
-```r
-SVP(y, gamma = 0, test = "gaussian_mean",
-    use_multiscale_gamma = TRUE, sigma2 = 1, q_alpha_n = 3)
-```
-
-`q_alpha_n` is a global calibration constant and should be calibrated under
-the intended null model. It is not estimated automatically.
-
 ## User-defined validity tests
 
 Use `svp0()` when the validity rule is an R function:
@@ -119,11 +109,10 @@ power_robust/    Heavy-tailed power studies
 time_gaussian/   Gaussian runtime studies
 time_ar1/        AR(1) runtime studies
 time_robust/     Robust runtime studies
-time_pruning/    Four pruning strategies versus PELT
-well_log/        Well-log application
+other_simus/     Supporting, historical, and application studies
 ```
 
-Each folder contains a `README.txt`. Large Monte Carlo studies are opt-in; see
+Each primary folder contains a `README.md`. Large Monte Carlo studies are opt-in; see
 `simulations/README.md` for the run convention.
 
 ## Testing

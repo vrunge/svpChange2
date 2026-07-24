@@ -58,30 +58,11 @@ NumericMatrix build_R_matrix(const std::vector<double>& Q,
   return R;
 }
 
-inline double validity_threshold(size_t n,
-                                 size_t segment_length,
-                                 double gamma,
-                                 bool use_multiscale_gamma,
-                                 double sigma2,
-                                 double q_alpha_n)
-{
-  if (!use_multiscale_gamma) return gamma;
-
-  return sigma2 * (
-    q_alpha_n +
-    2.0 * std::log(std::exp(1.0) * static_cast<double>(n) /
-                   static_cast<double>(segment_length))
-  );
-}
-
 template <typename Test, typename... Args>
 List svp_impl(const std::vector<double>& data,
               double gamma,
               bool prune_after_if_unvalid,
               bool prune_before_if_invalid,
-              bool use_multiscale_gamma,
-              double sigma2,
-              double q_alpha_n,
               Args&&... args)
 {
   const size_t n = data.size();
@@ -112,11 +93,8 @@ List svp_impl(const std::vector<double>& data,
     for (size_t length = 1; length <= n; ++length) {
       forward_test.update(data[length - 1]);
       backward_test.update(data[n - length]);
-      const double threshold = validity_threshold(
-        n, length, gamma, use_multiscale_gamma, sigma2, q_alpha_n
-      );
-      if (forward_test.statistic() >= threshold ||
-          backward_test.statistic() >= threshold) {
+      if (forward_test.statistic() >= gamma ||
+          backward_test.statistic() >= gamma) {
         whole_series_valid = false;
         break;
       }
@@ -168,10 +146,7 @@ List svp_impl(const std::vector<double>& data,
       for (size_t u = last_updates[0] + 1; u <= t; ++u)
         tests[0].update(data[u - 1]);
       last_updates[0] = t;
-      const double prefix_threshold = validity_threshold(
-        n, t, gamma, use_multiscale_gamma, sigma2, q_alpha_n
-      );
-      if (tests[0].statistic() < prefix_threshold) {
+      if (tests[0].statistic() < gamma) {
         Q[t] = segment_cost(S1, S2, 0, t);
         K[t] = 1;
         previous[t] = 0;
@@ -197,16 +172,7 @@ List svp_impl(const std::vector<double>& data,
             }
             last_up = t;
 
-            const double threshold = validity_threshold(
-              n,
-              t - index[j],
-              gamma,
-              use_multiscale_gamma,
-              sigma2,
-              q_alpha_n
-            );
-
-            if (tests[j].statistic() < threshold) {
+            if (tests[j].statistic() < gamma) {
               if (write != j) {
                 index[write] = index[j];
                 tests[write] = std::move(tests[j]);
@@ -224,16 +190,7 @@ List svp_impl(const std::vector<double>& data,
         }
         last_up = t;
 
-        const double threshold = validity_threshold(
-          n,
-          t - s,
-          gamma,
-          use_multiscale_gamma,
-          sigma2,
-          q_alpha_n
-        );
-
-        if (tests[k].statistic() < threshold) {
+        if (tests[k].statistic() < gamma) {
           const double candidate_Q = Q[s] + segment_cost(S1, S2, s, t);
 
           if (candidate_K < best_K ||
@@ -264,16 +221,7 @@ List svp_impl(const std::vector<double>& data,
         }
         last_updates[k] = t;
 
-        const double threshold = validity_threshold(
-          n,
-          t - s,
-          gamma,
-          use_multiscale_gamma,
-          sigma2,
-          q_alpha_n
-        );
-
-        if (tests[k].statistic() < threshold) {
+        if (tests[k].statistic() < gamma) {
           const size_t candidate_K = K[s] + 1;
           const double candidate_Q = Q[s] + segment_cost(S1, S2, s, t);
 
@@ -297,15 +245,7 @@ List svp_impl(const std::vector<double>& data,
         }
         last_up = t;
 
-        const double threshold = validity_threshold(
-          n,
-          t - s,
-          gamma,
-          use_multiscale_gamma,
-          sigma2,
-          q_alpha_n
-        );
-        const bool valid = tests[k].statistic() < threshold;
+        const bool valid = tests[k].statistic() < gamma;
 
         if (!valid) {
           // Left-pruning discards every earlier candidate, including any
@@ -381,14 +321,11 @@ List svp_cost_impl(const std::vector<double>& data,
                    double gamma,
                    bool prune_after_if_unvalid,
                    bool prune_before_if_invalid,
-                   bool use_multiscale_gamma,
-                   double sigma2,
-                   double q_alpha_n,
                    Args&&... args)
 {
   return svp_impl<Test>(data, gamma, prune_after_if_unvalid,
-                        prune_before_if_invalid, use_multiscale_gamma,
-                        sigma2, q_alpha_n, std::forward<Args>(args)...);
+                        prune_before_if_invalid,
+                        std::forward<Args>(args)...);
 }
 
 } // namespace
@@ -444,30 +381,18 @@ bool focus_valid_cpp(std::vector<double> data,
 //' option to `FALSE` only when comparing pruning rules; doing so can retain more
 //' candidates and increase run time.
 //'
-//' With `use_multiscale_gamma = FALSE`, every segment uses the scalar `gamma`.
-//' With it set to `TRUE`, a candidate of length `l` in a series of length `n`
-//' instead uses
-//' `sigma2 * (q_alpha_n + 2 * log(exp(1) * n / l))`.
-//' The user must supply a calibration `q_alpha_n` appropriate to the desired
-//' global error level and sample size; it is not estimated by this function.
-//'
 //' @param data Numeric vector containing the univariate series. Missing or
 //'   non-finite values are not supported.
-//' @param gamma Positive scalar validity threshold used when
-//'   `use_multiscale_gamma = FALSE`. A larger value accepts longer or less
-//'   homogeneous segments and therefore generally produces fewer changes.
+//' @param gamma Positive scalar validity threshold. A larger value accepts
+//'   longer or less homogeneous segments and therefore generally produces
+//'   fewer changes.
 //' @param test Character scalar selecting one of the validity tests listed in
 //'   Details. Defaults to `"gaussian_mean"`.
 //' @param prune_after_if_unvalid Logical; discard a candidate boundary after
 //'   its current segment fails the test.
 //' @param prune_before_if_invalid Logical; when a candidate segment fails,
 //'   also discard candidate boundaries older than its start.
-//' @param use_multiscale_gamma Logical; use a segment-length-dependent threshold
-//'   instead of `gamma`.
-//' @param sigma2 Positive finite variance. It scales the multiscale threshold
-//'   and is the innovation variance for `test = "AR1"`.
-//' @param q_alpha_n Numeric global calibration constant for the multiscale
-//'   threshold. It must be calibrated externally under the relevant null model.
+//' @param sigma2 Positive finite innovation variance for the AR1 tests.
 //' @param rho AR(1) coefficient for the three AR1 tests. It must be finite and
 //'   strictly between -1 and 1. Use [AR1_rho()] to obtain a robust estimate if
 //'   `rho` is unknown, it is estimated robustly from the full series.
@@ -487,11 +412,10 @@ bool focus_valid_cpp(std::vector<double> data,
 //' x <- rep(c(0, 2, -1), each = 40) + rnorm(120)
 //' SVP(x, gamma = 1.5 * log(length(x)))$changepoints
 //'
-//' # Aggressive pruning and a multiscale threshold:
-//' SVP(x, gamma = 0, test = "gaussian_mean",
+//' # Aggressive TRUE/TRUE pruning:
+//' SVP(x, gamma = 1.5 * log(length(x)), test = "gaussian_mean",
 //'     prune_after_if_unvalid = TRUE,
-//'     prune_before_if_invalid = TRUE,
-//'     use_multiscale_gamma = TRUE, sigma2 = 1, q_alpha_n = 3)
+//'     prune_before_if_invalid = TRUE)
 //'
 //' @seealso [svp0()] for arbitrary R validity functions, [AR1_rho()], and
 //'   [AR1_single_change()].
@@ -502,9 +426,7 @@ List SVP(std::vector<double> data,
          std::string test = "gaussian_mean",
          bool prune_after_if_unvalid = true,
          bool prune_before_if_invalid = false,
-         bool use_multiscale_gamma = false,
          double sigma2 = 1.0,
-         double q_alpha_n = 0.0,
          double rho = NA_REAL,
          bool profile_sigma = false,
          double quantile = 0.01)
@@ -522,10 +444,7 @@ List SVP(std::vector<double> data,
       data,
       gamma,
       prune_after_if_unvalid,
-      prune_before_if_invalid,
-      use_multiscale_gamma,
-      sigma2,
-      q_alpha_n
+      prune_before_if_invalid
     );
   }
   if (test == "gamma_rate") {
@@ -533,10 +452,7 @@ List SVP(std::vector<double> data,
       data,
       gamma,
       prune_after_if_unvalid,
-      prune_before_if_invalid,
-      use_multiscale_gamma,
-      sigma2,
-      q_alpha_n
+      prune_before_if_invalid
     );
   }
   if (test == "gaussian_variance") {
@@ -544,40 +460,34 @@ List SVP(std::vector<double> data,
       data,
       gamma,
       prune_after_if_unvalid,
-      prune_before_if_invalid,
-      use_multiscale_gamma,
-      sigma2,
-      q_alpha_n
+      prune_before_if_invalid
     );
   }
   if (test == "quantileExact") {
     return svp_cost_impl<QuantileCostExact>(
       data, gamma, prune_after_if_unvalid, prune_before_if_invalid,
-      use_multiscale_gamma, sigma2, q_alpha_n, quantile
+      quantile
     );
   }
   if (test == "quantile") {
     return svp_cost_impl<QuantileCost>(
       data, gamma, prune_after_if_unvalid, prune_before_if_invalid,
-      use_multiscale_gamma, sigma2, q_alpha_n, quantile
+      quantile
     );
   }
   if (test == "varCost") {
     return svp_cost_impl<varCost>(
-      data, gamma, prune_after_if_unvalid, prune_before_if_invalid,
-      use_multiscale_gamma, sigma2, q_alpha_n
+      data, gamma, prune_after_if_unvalid, prune_before_if_invalid
     );
   }
   if (test == "WilcoxonCost") {
     return svp_cost_impl<WilcoxonCost>(
-      data, gamma, prune_after_if_unvalid, prune_before_if_invalid,
-      use_multiscale_gamma, sigma2, q_alpha_n
+      data, gamma, prune_after_if_unvalid, prune_before_if_invalid
     );
   }
   if (test == "MedianMoodCost") {
     return svp_cost_impl<MedianMoodCost>(
-      data, gamma, prune_after_if_unvalid, prune_before_if_invalid,
-      use_multiscale_gamma, sigma2, q_alpha_n
+      data, gamma, prune_after_if_unvalid, prune_before_if_invalid
     );
   }
   if (test == "AR1" || test == "AR1Profile" || test == "AR1Focus") {
@@ -590,9 +500,6 @@ List SVP(std::vector<double> data,
         gamma,
         prune_after_if_unvalid,
         prune_before_if_invalid,
-        use_multiscale_gamma,
-        sigma2,
-        q_alpha_n,
         rho_used,
         sigma2
       );
@@ -605,10 +512,7 @@ List SVP(std::vector<double> data,
       gamma,
       prune_after_if_unvalid,
       prune_before_if_invalid,
-      use_multiscale_gamma,
-      sigma2,
-      q_alpha_n,
-        rho_used,
+      rho_used,
       sigma2,
       test == "AR1Profile" || profile_sigma
     );

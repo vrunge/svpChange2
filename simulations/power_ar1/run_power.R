@@ -9,6 +9,7 @@ source(file.path("simulations", "power_common.R"))
 
 AR1_ROOT <- file.path("simulations", "power_ar1")
 AR1_TRUE_TRUE_CONSTANT <- 1.75
+AR1_DECAFS_CONSTANT <- 4.75
 
 simulate_ar1_noise <- function(n, rho = 0.8, marginal_sd = 1) {
   innovation_sd <- marginal_sd * sqrt(1 - rho^2)
@@ -65,36 +66,26 @@ ar1_approximate_partition <- function(y, rho, innovation_variance, penalty) {
   boundaries
 }
 
-refine_ar1_boundaries <- function(y, boundaries, rho, innovation_variance,
-                                  minimum_segment = 5L) {
-  boundaries <- normalise_boundaries(boundaries, length(y))
-  if (length(boundaries) <= 1L) return(boundaries)
-  original <- boundaries
-  previous <- c(0L, head(original, -1L))
-  refined <- original
-  for (j in seq_len(length(original) - 1L)) {
-    left <- max(previous[j] + minimum_segment,
-                floor((previous[j] + original[j]) / 2))
-    right <- min(original[j + 1L] - minimum_segment,
-                 ceiling((original[j] + original[j + 1L]) / 2))
-    if (left > right) next
-    first <- previous[j] + 1L
-    last <- original[j + 1L]
-    values <- y[first:last]
-    costs <- ar1_cost_matrix(values, rho, innovation_variance)
-    candidates <- left:right
-    relative <- candidates - first + 1L
-    full_cost <- costs[1L, length(values)]
-    gain <- vapply(relative, function(split) {
-      full_cost - costs[1L, split] - costs[split + 1L, length(values)]
-    }, numeric(1))
-    refined[j] <- candidates[which.max(gain)]
-  }
-  normalise_boundaries(refined, length(y))
+decafs_boundaries <- function(y, rho, innovation_variance,
+                              penalty = AR1_DECAFS_CONSTANT * log(length(y))) {
+  n <- length(y)
+  fit <- DeCAFS::DeCAFS(
+    y,
+    beta = penalty,
+    modelParam = list(
+      sdEta = 0,
+      sdNu = sqrt(innovation_variance),
+      phi = rho
+    )
+  )
+  normalise_boundaries(fit$changepoints, n)
 }
 
 fit_ar1_methods <- function(y, rho = 0.8, svp_constant = 3.75,
                             true_true_constant = AR1_TRUE_TRUE_CONSTANT) {
+  if (!requireNamespace("DeCAFS", quietly = TRUE)) {
+    stop("the optional package 'DeCAFS' is required for the AR(1) power study")
+  }
   n <- length(y)
   innovation_variance <- 1 - rho^2
   inflated <- changepoint::cpt.mean(
@@ -106,6 +97,8 @@ fit_ar1_methods <- function(y, rho = 0.8, svp_constant = 3.75,
       normalise_boundaries(changepoint::cpts(inflated), n),
     "PELT AR1 approximate" =
       ar1_approximate_partition(y, rho, innovation_variance, 3 * log(n)),
+    "DeCAFS AR1" =
+      decafs_boundaries(y, rho, innovation_variance),
     "SVP AR1Focus" = normalise_boundaries(
       SVP(y, svp_constant * log(n), "AR1Focus",
           prune_after_if_unvalid = TRUE,
@@ -113,13 +106,12 @@ fit_ar1_methods <- function(y, rho = 0.8, svp_constant = 3.75,
           rho = rho, sigma2 = innovation_variance)$changepoints,
       n
     ),
-    "SVP AR1Focus TRUE/TRUE c=1.75 refined" = refine_ar1_boundaries(
-      y,
+    "SVP AR1Focus multiscale" = normalise_boundaries(
       SVP(y, true_true_constant * log(n), "AR1Focus",
           prune_after_if_unvalid = TRUE,
           prune_before_if_invalid = TRUE,
           rho = rho, sigma2 = innovation_variance)$changepoints,
-      rho, innovation_variance
+      n
     )
   )
 }
@@ -127,64 +119,29 @@ fit_ar1_methods <- function(y, rho = 0.8, svp_constant = 3.75,
 run_ar1_power <- function(
     n = 600L, rho = 0.8, jump_sizes = seq(1, 3, 0.1), reps = 100L,
     workers = power_default_workers(), seed = 123L) {
-  design <- expand.grid(pattern = POWER_PATTERNS, jump = jump_sizes,
-                        rep = seq_len(reps), stringsAsFactors = FALSE)
-  rows <- power_lapply(seq_len(nrow(design)), function(i) {
-    d <- design[i, ]
-    set_power_seed(seed + i)
-    mu <- generate_power_signal(n, d$pattern, d$jump)
-    y <- mu + simulate_ar1_noise(n, rho)
-    truth <- normalise_boundaries(which(diff(mu) != 0), n)
-    fits <- fit_ar1_methods(y, rho)
-    output <- dplyr::bind_rows(lapply(names(fits), function(method) {
-      boundaries <- fits[[method]]
-      result_row(d$pattern, d$jump, d$rep, method, boundaries, truth,
-                 mu, fitted_piecewise_mean(y, boundaries),
-                 tolerance = max(5L, round(n * 0.0025)))
-    }))
-    output$changepoints <- unname(fits)
-    output
-  }, workers = workers)
-  dplyr::bind_rows(rows)
-}
-
-ar1_scenario_plot <- function(n = 600L, rho = 0.8, jump = 0.8,
-                              seed = 999L) {
-  set.seed(seed)
-  data <- dplyr::bind_rows(lapply(POWER_PATTERNS, function(pattern) {
-    mu <- generate_power_signal(n, pattern, jump)
-    data.frame(time = seq_len(n), value = mu + simulate_ar1_noise(n, rho),
-               mean = mu, pattern = pattern)
-  }))
-  data$pattern <- factor(data$pattern, POWER_PATTERNS)
-  ggplot2::ggplot(data, ggplot2::aes(time, value)) +
-    ggplot2::geom_point(alpha = 0.2, size = 0.35) +
-    ggplot2::geom_line(ggplot2::aes(y = mean), colour = "red", linewidth = 0.8) +
-    ggplot2::facet_wrap(~pattern, nrow = 2L) +
-    ggplot2::labs(x = "Time (Index)", y = "Value") +
-    paper_theme() + ggplot2::theme(legend.position = "none")
-}
-
-ar1_plot_results <- function(results) {
-  set_algorithm_display(
-    results,
-    labels = c(
-      "PELT AR1 approximate" = "PELT AR1 approximate",
-      "PELT inflated" = "PELT inflated",
-      "SVP AR1Focus" = "SVP AR1Focus",
-      "SVP AR1Focus TRUE/TRUE c=1.75 refined" =
-        "SVP AR1Focus multiscale"
-    ),
-    order = c("PELT AR1 approximate", "PELT inflated", "SVP AR1Focus",
-              "SVP AR1Focus multiscale")
+  run_power_grid(
+    n, jump_sizes, reps,
+    simulate_noise = function(size) simulate_ar1_noise(size, rho),
+    fit_methods = function(y, true_segments) fit_ar1_methods(y, rho),
+    tolerance = max(5L, round(n * 0.0025)),
+    workers = workers,
+    seed = seed
   )
 }
 
 run_and_save_ar1 <- function(workers = power_default_workers()) {
   results <- run_ar1_power(workers = workers)
   save_power_outputs(
-    results, AR1_ROOT, ar1_scenario_plot(), selected_jump = 1.4,
-    plot_results = ar1_plot_results(results)
+    results, AR1_ROOT,
+    power_scenario_plot(
+      600L, 0.8, function(size) simulate_ar1_noise(size, 0.8)
+    ),
+    selected_jump = 1.4,
+    plot_results = set_algorithm_order(
+      results,
+      c("PELT AR1 approximate", "PELT inflated", "DeCAFS AR1",
+        "SVP AR1Focus", "SVP AR1Focus multiscale")
+    )
   )
   invisible(results)
 }

@@ -32,27 +32,6 @@ test_that("test svp0 result = SVP result with prune_after_if_unvalid == TRUE",
             expect_equal(res_svp0$R[,1], res_svp$R[,1])
           })
 
-test_that("SVP accepts multiscale gamma",
-          {
-            n <- 80
-            data <- rep(c(0, 1, -0.5, 0.8), each = n / 4) + rnorm(n)
-            gamma <- 2 * log(n)
-
-            res <- SVP(
-              data = data,
-              gamma = gamma,
-              test = "gaussian_mean",
-              prune_after_if_unvalid = TRUE,
-              prune_before_if_invalid = TRUE,
-              use_multiscale_gamma = TRUE,
-              sigma2 = 1,
-              q_alpha_n = 3
-            )
-
-            expect_equal(tail(res$changepoints, 1), n)
-          })
-
-
 test_that("svp0 and SVP return the same Gaussian FOCUS result",
           {
             n <- 50

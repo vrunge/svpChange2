@@ -1,7 +1,5 @@
 ## Shared infrastructure for the three paper power studies.
 
-source(file.path("simulations", "metrics.R"))
-
 POWER_PATTERNS <- c("none", "up", "updown", "rand1")
 
 power_default_workers <- function() {
@@ -60,41 +58,76 @@ generate_power_signal <- function(n, pattern, jump, segments = 8L) {
   rep(levels, each = n / segments)
 }
 
+localization_error <- function(cp_true, cp_est) {
+  cp_true <- sort(as.integer(cp_true))
+  cp_est <- sort(as.integer(cp_est))
+  if (!length(cp_true) || length(cp_true) != length(cp_est)) return(NA_real_)
+  max(abs(cp_est - cp_true))
+}
+
 normalise_boundaries <- function(boundaries, n) {
   sort(unique(c(as.integer(unlist(boundaries)), n)))
 }
 
-refine_svp_boundaries <- function(y, boundaries, robust = FALSE,
-                                  minimum_segment = 5L) {
-  boundaries <- normalise_boundaries(boundaries, length(y))
-  if (length(boundaries) <= 1L) return(boundaries)
-  original <- boundaries
-  previous <- c(0L, head(original, -1L))
-  refined <- original
-
-  for (j in seq_len(length(original) - 1L)) {
-    left <- max(previous[j] + minimum_segment,
-                floor((previous[j] + original[j]) / 2))
-    right <- min(original[j + 1L] - minimum_segment,
-                 ceiling((original[j] + original[j + 1L]) / 2))
-    if (left > right) next
-    first <- previous[j] + 1L
-    last <- original[j + 1L]
-    values <- y[first:last]
-    if (robust) {
-      values <- rank(values, ties.method = "average")
+run_power_grid <- function(n, jump_sizes, reps, simulate_noise, fit_methods,
+                           tolerance, workers, seed) {
+  design <- expand.grid(
+    pattern = POWER_PATTERNS,
+    jump = jump_sizes,
+    rep = seq_len(reps),
+    stringsAsFactors = FALSE
+  )
+  rows <- power_lapply(seq_len(nrow(design)), function(i) {
+    task <- design[i, ]
+    set_power_seed(seed + i)
+    mu <- generate_power_signal(n, task$pattern, task$jump)
+    y <- mu + simulate_noise(n)
+    truth <- normalise_boundaries(which(diff(mu) != 0), n)
+    fits <- fit_methods(y, length(truth))
+    if (is.null(fits$boundaries)) {
+      fits <- list(
+        boundaries = fits,
+        fitted = lapply(fits, function(x) fitted_piecewise_mean(y, x))
+      )
     }
-    sums <- c(0, cumsum(values))
-    candidates <- left:right
-    relative <- candidates - first + 1L
-    left_n <- relative
-    right_n <- length(values) - relative
-    left_sum <- sums[relative + 1L]
-    right_sum <- sums[length(sums)] - left_sum
-    gain <- left_sum^2 / left_n + right_sum^2 / right_n
-    refined[j] <- candidates[which.max(gain)]
+    output <- dplyr::bind_rows(lapply(names(fits$boundaries), function(method) {
+      result_row(
+        task$pattern, task$jump, task$rep, method,
+        fits$boundaries[[method]], truth, mu, fits$fitted[[method]], tolerance
+      )
+    }))
+    output$changepoints <- unname(fits$boundaries)
+    output
+  }, workers = workers)
+  dplyr::bind_rows(rows)
+}
+
+power_scenario_plot <- function(n, jump, simulate_noise, seed = 999L,
+                                y_limits = NULL) {
+  set_power_seed(seed)
+  data <- dplyr::bind_rows(lapply(POWER_PATTERNS, function(pattern) {
+    mu <- generate_power_signal(n, pattern, jump)
+    data.frame(
+      time = seq_len(n),
+      value = mu + simulate_noise(n),
+      mean = mu,
+      pattern = pattern
+    )
+  }))
+  data$pattern <- factor(data$pattern, POWER_PATTERNS)
+  plot <- ggplot2::ggplot(data, ggplot2::aes(time, value)) +
+    ggplot2::geom_point(alpha = 0.2, size = 0.35) +
+    ggplot2::geom_line(
+      ggplot2::aes(y = mean), colour = "red", linewidth = 0.8
+    ) +
+    ggplot2::facet_wrap(~pattern, nrow = 2L) +
+    ggplot2::labs(x = "Time (Index)", y = "Value") +
+    paper_theme() +
+    ggplot2::theme(legend.position = "none")
+  if (!is.null(y_limits)) {
+    plot <- plot + ggplot2::coord_cartesian(ylim = y_limits)
   }
-  normalise_boundaries(refined, length(y))
+  plot
 }
 
 paper_metrics <- function(true_boundaries, estimated_boundaries, tolerance) {
@@ -150,6 +183,12 @@ paper_theme <- function() {
     )
 }
 
+empty_power_plot <- function(message) {
+  ggplot2::ggplot() +
+    ggplot2::annotate("text", x = 0, y = 0, label = message) +
+    ggplot2::theme_void()
+}
+
 summarise_metric <- function(results, metric) {
   summary <- results |>
     dplyr::group_by(algorithm, pattern, jump) |>
@@ -203,10 +242,16 @@ precision_recall_plot <- function(results) {
 }
 
 localization_error_plot <- function(results) {
+  results <- complete_localization_error(results)
   eligible <- results[
     results$CorrectNumCP == 1 & results$pattern != "none" &
       is.finite(results$LocalizationError),
   ]
+  if (!nrow(eligible)) {
+    return(empty_power_plot(
+      "No fits with the correct number of changepoints"
+    ))
+  }
   eligible$pattern <- factor(
     eligible$pattern, c("up", "updown", "rand1")
   )
@@ -251,18 +296,28 @@ add_localization_error <- function(results, n) {
   results
 }
 
-set_algorithm_display <- function(results, labels, order,
-                                  drop = character()) {
+complete_localization_error <- function(results) {
+  if (!is.list(results$changepoints)) {
+    stop("A changepoints list column is required for localization errors")
+  }
+  terminal_boundaries <- vapply(
+    results$changepoints,
+    function(x) if (length(x)) max(as.integer(x)) else NA_integer_,
+    integer(1)
+  )
+  n <- max(terminal_boundaries, na.rm = TRUE)
+  add_localization_error(results, n)
+}
+
+set_algorithm_order <- function(results, order, drop = character()) {
   results <- results[!(as.character(results$algorithm) %in% drop), ,
                      drop = FALSE]
-  displayed <- as.character(results$algorithm)
-  matched <- match(displayed, names(labels))
-  displayed[!is.na(matched)] <- unname(labels[matched[!is.na(matched)]])
-  unexpected <- setdiff(unique(displayed), order)
+  algorithms <- as.character(results$algorithm)
+  unexpected <- setdiff(unique(algorithms), order)
   if (length(unexpected)) {
     stop("Missing display order for: ", paste(unexpected, collapse = ", "))
   }
-  results$algorithm <- factor(displayed, levels = order)
+  results$algorithm <- factor(algorithms, levels = order)
   results
 }
 
@@ -279,6 +334,11 @@ changepoint_distribution_plot <- function(results, n, selected_jump = 0.6,
                algorithm = selected$algorithm[i], changepoint = cps)
   })
   data <- dplyr::bind_rows(rows)
+  if (!nrow(data)) {
+    return(empty_power_plot(
+      "No changepoints detected for the selected jump"
+    ))
+  }
   data$pattern <- factor(data$pattern, c("rand1", "up", "updown"))
   if (is.factor(results$algorithm)) {
     data$algorithm <- factor(as.character(data$algorithm),
@@ -300,6 +360,8 @@ save_power_outputs <- function(results, root, scenario_plot,
                                plot_results = results,
                                save_results = TRUE) {
   dir.create(file.path(root, "plots"), recursive = TRUE, showWarnings = FALSE)
+  results <- complete_localization_error(results)
+  plot_results <- complete_localization_error(plot_results)
   if (save_results) {
     saveRDS(results, file.path(root, "results.rds"))
     utils::write.csv(dplyr::select(results, -changepoints),

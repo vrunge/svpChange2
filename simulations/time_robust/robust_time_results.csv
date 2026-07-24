@@ -1,0 +1,1301 @@
+"experiment","n","k","rep","method","time","detected"
+"vary_n",256,0,1,"PELT",0.004,27
+"vary_n",256,0,1,"SVP Wilcoxon",0,18
+"vary_n",256,0,1,"SVP MedianMood",0.005,2
+"vary_n",256,0,1,"SVP BIC multiscale",0,29
+"vary_n",256,0,2,"PELT",0.001,27
+"vary_n",256,0,2,"SVP Wilcoxon",0,18
+"vary_n",256,0,2,"SVP MedianMood",0,1
+"vary_n",256,0,2,"SVP BIC multiscale",0,31
+"vary_n",256,0,3,"PELT",0.001,29
+"vary_n",256,0,3,"SVP Wilcoxon",0,19
+"vary_n",256,0,3,"SVP MedianMood",0.001,1
+"vary_n",256,0,3,"SVP BIC multiscale",0,36
+"vary_n",256,0,4,"PELT",0.001,16
+"vary_n",256,0,4,"SVP Wilcoxon",0,20
+"vary_n",256,0,4,"SVP MedianMood",0,1
+"vary_n",256,0,4,"SVP BIC multiscale",0,19
+"vary_n",256,0,5,"PELT",0,17
+"vary_n",256,0,5,"SVP Wilcoxon",0,18
+"vary_n",256,0,5,"SVP MedianMood",0,1
+"vary_n",256,0,5,"SVP BIC multiscale",0,26
+"vary_n",256,0,6,"PELT",0.00100000000000011,32
+"vary_n",256,0,6,"SVP Wilcoxon",0,20
+"vary_n",256,0,6,"SVP MedianMood",0,1
+"vary_n",256,0,6,"SVP BIC multiscale",0,42
+"vary_n",256,0,7,"PELT",0.00099999999999989,24
+"vary_n",256,0,7,"SVP Wilcoxon",0,19
+"vary_n",256,0,7,"SVP MedianMood",0.00900000000000012,2
+"vary_n",256,0,7,"SVP BIC multiscale",0,26
+"vary_n",256,0,8,"PELT",0,19
+"vary_n",256,0,8,"SVP Wilcoxon",0,20
+"vary_n",256,0,8,"SVP MedianMood",0,1
+"vary_n",256,0,8,"SVP BIC multiscale",0.00099999999999989,25
+"vary_n",256,0,9,"PELT",0.00100000000000011,19
+"vary_n",256,0,9,"SVP Wilcoxon",0,19
+"vary_n",256,0,9,"SVP MedianMood",0,1
+"vary_n",256,0,9,"SVP BIC multiscale",0.00100000000000011,23
+"vary_n",256,0,10,"PELT",0,35
+"vary_n",256,0,10,"SVP Wilcoxon",0,19
+"vary_n",256,0,10,"SVP MedianMood",0.00900000000000012,2
+"vary_n",256,0,10,"SVP BIC multiscale",0,39
+"vary_n",290,0,1,"PELT",0,18
+"vary_n",290,0,1,"SVP Wilcoxon",0,21
+"vary_n",290,0,1,"SVP MedianMood",0,1
+"vary_n",290,0,1,"SVP BIC multiscale",0.00099999999999989,20
+"vary_n",290,0,2,"PELT",0.00099999999999989,21
+"vary_n",290,0,2,"SVP Wilcoxon",0.00099999999999989,21
+"vary_n",290,0,2,"SVP MedianMood",0,1
+"vary_n",290,0,2,"SVP BIC multiscale",0.00100000000000033,29
+"vary_n",290,0,3,"PELT",0,29
+"vary_n",290,0,3,"SVP Wilcoxon",0,24
+"vary_n",290,0,3,"SVP MedianMood",0.00700000000000012,2
+"vary_n",290,0,3,"SVP BIC multiscale",0.00099999999999989,32
+"vary_n",290,0,4,"PELT",0.00099999999999989,30
+"vary_n",290,0,4,"SVP Wilcoxon",0,22
+"vary_n",290,0,4,"SVP MedianMood",0,1
+"vary_n",290,0,4,"SVP BIC multiscale",0,34
+"vary_n",290,0,5,"PELT",0.00099999999999989,41
+"vary_n",290,0,5,"SVP Wilcoxon",0,21
+"vary_n",290,0,5,"SVP MedianMood",0,1
+"vary_n",290,0,5,"SVP BIC multiscale",0.00099999999999989,45
+"vary_n",290,0,6,"PELT",0.00099999999999989,35
+"vary_n",290,0,6,"SVP Wilcoxon",0,21
+"vary_n",290,0,6,"SVP MedianMood",0.0110000000000001,2
+"vary_n",290,0,6,"SVP BIC multiscale",0.00099999999999989,42
+"vary_n",290,0,7,"PELT",0,34
+"vary_n",290,0,7,"SVP Wilcoxon",0,21
+"vary_n",290,0,7,"SVP MedianMood",0.00600000000000023,2
+"vary_n",290,0,7,"SVP BIC multiscale",0,36
+"vary_n",290,0,8,"PELT",0.00100000000000033,30
+"vary_n",290,0,8,"SVP Wilcoxon",0,21
+"vary_n",290,0,8,"SVP MedianMood",0,1
+"vary_n",290,0,8,"SVP BIC multiscale",0,30
+"vary_n",290,0,9,"PELT",0.00099999999999989,31
+"vary_n",290,0,9,"SVP Wilcoxon",0,22
+"vary_n",290,0,9,"SVP MedianMood",0,1
+"vary_n",290,0,9,"SVP BIC multiscale",0.00099999999999989,36
+"vary_n",290,0,10,"PELT",0,32
+"vary_n",290,0,10,"SVP Wilcoxon",0,20
+"vary_n",290,0,10,"SVP MedianMood",0.012,2
+"vary_n",290,0,10,"SVP BIC multiscale",0,36
+"vary_n",328,0,1,"PELT",0.00100000000000033,35
+"vary_n",328,0,1,"SVP Wilcoxon",0.00099999999999989,23
+"vary_n",328,0,1,"SVP MedianMood",0.00099999999999989,1
+"vary_n",328,0,1,"SVP BIC multiscale",0.00099999999999989,37
+"vary_n",328,0,2,"PELT",0.00100000000000033,36
+"vary_n",328,0,2,"SVP Wilcoxon",0,22
+"vary_n",328,0,2,"SVP MedianMood",0,1
+"vary_n",328,0,2,"SVP BIC multiscale",0.00099999999999989,39
+"vary_n",328,0,3,"PELT",0.00099999999999989,28
+"vary_n",328,0,3,"SVP Wilcoxon",0,24
+"vary_n",328,0,3,"SVP MedianMood",0,1
+"vary_n",328,0,3,"SVP BIC multiscale",0.00100000000000033,29
+"vary_n",328,0,4,"PELT",0.000999999999999446,24
+"vary_n",328,0,4,"SVP Wilcoxon",0,22
+"vary_n",328,0,4,"SVP MedianMood",0,1
+"vary_n",328,0,4,"SVP BIC multiscale",0,28
+"vary_n",328,0,5,"PELT",0.00100000000000033,39
+"vary_n",328,0,5,"SVP Wilcoxon",0,24
+"vary_n",328,0,5,"SVP MedianMood",0.00800000000000001,2
+"vary_n",328,0,5,"SVP BIC multiscale",0.00100000000000033,39
+"vary_n",328,0,6,"PELT",0.000999999999999446,26
+"vary_n",328,0,6,"SVP Wilcoxon",0,23
+"vary_n",328,0,6,"SVP MedianMood",0,1
+"vary_n",328,0,6,"SVP BIC multiscale",0.00100000000000033,27
+"vary_n",328,0,7,"PELT",0.00100000000000033,27
+"vary_n",328,0,7,"SVP Wilcoxon",0.000999999999999446,23
+"vary_n",328,0,7,"SVP MedianMood",0,1
+"vary_n",328,0,7,"SVP BIC multiscale",0,32
+"vary_n",328,0,8,"PELT",0.000999999999999446,31
+"vary_n",328,0,8,"SVP Wilcoxon",0,23
+"vary_n",328,0,8,"SVP MedianMood",0.0190000000000001,2
+"vary_n",328,0,8,"SVP BIC multiscale",0.00100000000000033,34
+"vary_n",328,0,9,"PELT",0.000999999999999446,39
+"vary_n",328,0,9,"SVP Wilcoxon",0,24
+"vary_n",328,0,9,"SVP MedianMood",0,1
+"vary_n",328,0,9,"SVP BIC multiscale",0.00100000000000033,42
+"vary_n",328,0,10,"PELT",0.000999999999999446,25
+"vary_n",328,0,10,"SVP Wilcoxon",0.000999999999999446,24
+"vary_n",328,0,10,"SVP MedianMood",0.00599999999999934,2
+"vary_n",328,0,10,"SVP BIC multiscale",0,29
+"vary_n",371,0,1,"PELT",0.000999999999999446,26
+"vary_n",371,0,1,"SVP Wilcoxon",0,26
+"vary_n",371,0,1,"SVP MedianMood",0,1
+"vary_n",371,0,1,"SVP BIC multiscale",0,33
+"vary_n",371,0,2,"PELT",0.000999999999999446,34
+"vary_n",371,0,2,"SVP Wilcoxon",0,27
+"vary_n",371,0,2,"SVP MedianMood",0,1
+"vary_n",371,0,2,"SVP BIC multiscale",0,42
+"vary_n",371,0,3,"PELT",0.00100000000000033,36
+"vary_n",371,0,3,"SVP Wilcoxon",0,27
+"vary_n",371,0,3,"SVP MedianMood",0.0250000000000004,2
+"vary_n",371,0,3,"SVP BIC multiscale",0.00100000000000033,49
+"vary_n",371,0,4,"PELT",0.00100000000000033,32
+"vary_n",371,0,4,"SVP Wilcoxon",0,27
+"vary_n",371,0,4,"SVP MedianMood",0.00100000000000033,1
+"vary_n",371,0,4,"SVP BIC multiscale",0.00100000000000033,45
+"vary_n",371,0,5,"PELT",0,28
+"vary_n",371,0,5,"SVP Wilcoxon",0,26
+"vary_n",371,0,5,"SVP MedianMood",0.0270000000000001,2
+"vary_n",371,0,5,"SVP BIC multiscale",0.000999999999999446,38
+"vary_n",371,0,6,"PELT",0.00100000000000033,33
+"vary_n",371,0,6,"SVP Wilcoxon",0,28
+"vary_n",371,0,6,"SVP MedianMood",0.000999999999999446,1
+"vary_n",371,0,6,"SVP BIC multiscale",0.000999999999999446,49
+"vary_n",371,0,7,"PELT",0.000999999999999446,25
+"vary_n",371,0,7,"SVP Wilcoxon",0,28
+"vary_n",371,0,7,"SVP MedianMood",0.0229999999999997,3
+"vary_n",371,0,7,"SVP BIC multiscale",0,31
+"vary_n",371,0,8,"PELT",0.000999999999999446,36
+"vary_n",371,0,8,"SVP Wilcoxon",0,26
+"vary_n",371,0,8,"SVP MedianMood",0.0119999999999996,3
+"vary_n",371,0,8,"SVP BIC multiscale",0,38
+"vary_n",371,0,9,"PELT",0.00100000000000033,28
+"vary_n",371,0,9,"SVP Wilcoxon",0,26
+"vary_n",371,0,9,"SVP MedianMood",0.00100000000000033,1
+"vary_n",371,0,9,"SVP BIC multiscale",0,36
+"vary_n",371,0,10,"PELT",0.00100000000000033,35
+"vary_n",371,0,10,"SVP Wilcoxon",0,25
+"vary_n",371,0,10,"SVP MedianMood",0,1
+"vary_n",371,0,10,"SVP BIC multiscale",0.00100000000000033,35
+"vary_n",420,0,1,"PELT",0,34
+"vary_n",420,0,1,"SVP Wilcoxon",0,29
+"vary_n",420,0,1,"SVP MedianMood",0.0170000000000003,2
+"vary_n",420,0,1,"SVP BIC multiscale",0.000999999999999446,44
+"vary_n",420,0,2,"PELT",0.00100000000000033,40
+"vary_n",420,0,2,"SVP Wilcoxon",0,27
+"vary_n",420,0,2,"SVP MedianMood",0,1
+"vary_n",420,0,2,"SVP BIC multiscale",0.00100000000000033,49
+"vary_n",420,0,3,"PELT",0.00100000000000033,37
+"vary_n",420,0,3,"SVP Wilcoxon",0,30
+"vary_n",420,0,3,"SVP MedianMood",0,1
+"vary_n",420,0,3,"SVP BIC multiscale",0.00100000000000033,43
+"vary_n",420,0,4,"PELT",0.000999999999999446,49
+"vary_n",420,0,4,"SVP Wilcoxon",0,30
+"vary_n",420,0,4,"SVP MedianMood",0.0279999999999996,2
+"vary_n",420,0,4,"SVP BIC multiscale",0.000999999999999446,54
+"vary_n",420,0,5,"PELT",0.00100000000000033,35
+"vary_n",420,0,5,"SVP Wilcoxon",0,30
+"vary_n",420,0,5,"SVP MedianMood",0.0279999999999996,4
+"vary_n",420,0,5,"SVP BIC multiscale",0,39
+"vary_n",420,0,6,"PELT",0.00100000000000033,46
+"vary_n",420,0,6,"SVP Wilcoxon",0.00100000000000033,29
+"vary_n",420,0,6,"SVP MedianMood",0,1
+"vary_n",420,0,6,"SVP BIC multiscale",0,47
+"vary_n",420,0,7,"PELT",0.000999999999999446,35
+"vary_n",420,0,7,"SVP Wilcoxon",0,27
+"vary_n",420,0,7,"SVP MedianMood",0.00699999999999967,2
+"vary_n",420,0,7,"SVP BIC multiscale",0.00100000000000122,42
+"vary_n",420,0,8,"PELT",0.00100000000000122,30
+"vary_n",420,0,8,"SVP Wilcoxon",0,29
+"vary_n",420,0,8,"SVP MedianMood",0,1
+"vary_n",420,0,8,"SVP BIC multiscale",0.000999999999999446,36
+"vary_n",420,0,9,"PELT",0.00100000000000122,27
+"vary_n",420,0,9,"SVP Wilcoxon",0,30
+"vary_n",420,0,9,"SVP MedianMood",0,1
+"vary_n",420,0,9,"SVP BIC multiscale",0.000999999999999446,36
+"vary_n",420,0,10,"PELT",0.00100000000000122,41
+"vary_n",420,0,10,"SVP Wilcoxon",0,28
+"vary_n",420,0,10,"SVP MedianMood",0,1
+"vary_n",420,0,10,"SVP BIC multiscale",0.00100000000000122,49
+"vary_n",476,0,1,"PELT",0.000999999999999446,35
+"vary_n",476,0,1,"SVP Wilcoxon",0.000999999999999446,33
+"vary_n",476,0,1,"SVP MedianMood",0.000999999999999446,1
+"vary_n",476,0,1,"SVP BIC multiscale",0.000999999999999446,42
+"vary_n",476,0,2,"PELT",0.00100000000000122,32
+"vary_n",476,0,2,"SVP Wilcoxon",0,31
+"vary_n",476,0,2,"SVP MedianMood",0,1
+"vary_n",476,0,2,"SVP BIC multiscale",0.00100000000000122,44
+"vary_n",476,0,3,"PELT",0,35
+"vary_n",476,0,3,"SVP Wilcoxon",0,34
+"vary_n",476,0,3,"SVP MedianMood",0,1
+"vary_n",476,0,3,"SVP BIC multiscale",0.000999999999999446,46
+"vary_n",476,0,4,"PELT",0.000999999999999446,45
+"vary_n",476,0,4,"SVP Wilcoxon",0.000999999999999446,31
+"vary_n",476,0,4,"SVP MedianMood",0,1
+"vary_n",476,0,4,"SVP BIC multiscale",0.000999999999999446,54
+"vary_n",476,0,5,"PELT",0.00100000000000122,49
+"vary_n",476,0,5,"SVP Wilcoxon",0,30
+"vary_n",476,0,5,"SVP MedianMood",0.00799999999999912,2
+"vary_n",476,0,5,"SVP BIC multiscale",0.000999999999999446,50
+"vary_n",476,0,6,"PELT",0.000999999999999446,45
+"vary_n",476,0,6,"SVP Wilcoxon",0,32
+"vary_n",476,0,6,"SVP MedianMood",0,1
+"vary_n",476,0,6,"SVP BIC multiscale",0.00100000000000122,57
+"vary_n",476,0,7,"PELT",0.000999999999999446,53
+"vary_n",476,0,7,"SVP Wilcoxon",0,33
+"vary_n",476,0,7,"SVP MedianMood",0.0389999999999997,2
+"vary_n",476,0,7,"SVP BIC multiscale",0.00100000000000122,60
+"vary_n",476,0,8,"PELT",0.000999999999999446,47
+"vary_n",476,0,8,"SVP Wilcoxon",0,33
+"vary_n",476,0,8,"SVP MedianMood",0.016,2
+"vary_n",476,0,8,"SVP BIC multiscale",0.00100000000000122,47
+"vary_n",476,0,9,"PELT",0.000999999999999446,27
+"vary_n",476,0,9,"SVP Wilcoxon",0.000999999999999446,32
+"vary_n",476,0,9,"SVP MedianMood",0.00100000000000122,1
+"vary_n",476,0,9,"SVP BIC multiscale",0.000999999999999446,44
+"vary_n",476,0,10,"PELT",0,28
+"vary_n",476,0,10,"SVP Wilcoxon",0.000999999999999446,34
+"vary_n",476,0,10,"SVP MedianMood",0,1
+"vary_n",476,0,10,"SVP BIC multiscale",0.00100000000000122,37
+"vary_n",538,0,1,"PELT",0.000999999999999446,54
+"vary_n",538,0,1,"SVP Wilcoxon",0.00100000000000122,38
+"vary_n",538,0,1,"SVP MedianMood",0.016,2
+"vary_n",538,0,1,"SVP BIC multiscale",0.000999999999999446,54
+"vary_n",538,0,2,"PELT",0.000999999999999446,38
+"vary_n",538,0,2,"SVP Wilcoxon",0,34
+"vary_n",538,0,2,"SVP MedianMood",0,1
+"vary_n",538,0,2,"SVP BIC multiscale",0.000999999999999446,52
+"vary_n",538,0,3,"PELT",0.00100000000000122,43
+"vary_n",538,0,3,"SVP Wilcoxon",0.00100000000000122,39
+"vary_n",538,0,3,"SVP MedianMood",0,1
+"vary_n",538,0,3,"SVP BIC multiscale",0.00200000000000067,50
+"vary_n",538,0,4,"PELT",0.00100000000000122,49
+"vary_n",538,0,4,"SVP Wilcoxon",0,34
+"vary_n",538,0,4,"SVP MedianMood",0,1
+"vary_n",538,0,4,"SVP BIC multiscale",0.00200000000000067,53
+"vary_n",538,0,5,"PELT",0.000999999999999446,47
+"vary_n",538,0,5,"SVP Wilcoxon",0.00100000000000122,36
+"vary_n",538,0,5,"SVP MedianMood",0.0350000000000001,2
+"vary_n",538,0,5,"SVP BIC multiscale",0.000999999999999446,56
+"vary_n",538,0,6,"PELT",0.00100000000000122,56
+"vary_n",538,0,6,"SVP Wilcoxon",0,37
+"vary_n",538,0,6,"SVP MedianMood",0,1
+"vary_n",538,0,6,"SVP BIC multiscale",0.00100000000000122,64
+"vary_n",538,0,7,"PELT",0.000999999999999446,61
+"vary_n",538,0,7,"SVP Wilcoxon",0,36
+"vary_n",538,0,7,"SVP MedianMood",0.000999999999999446,1
+"vary_n",538,0,7,"SVP BIC multiscale",0,70
+"vary_n",538,0,8,"PELT",0.00100000000000122,55
+"vary_n",538,0,8,"SVP Wilcoxon",0,37
+"vary_n",538,0,8,"SVP MedianMood",0,1
+"vary_n",538,0,8,"SVP BIC multiscale",0.000999999999999446,63
+"vary_n",538,0,9,"PELT",0.00100000000000122,52
+"vary_n",538,0,9,"SVP Wilcoxon",0,36
+"vary_n",538,0,9,"SVP MedianMood",0,1
+"vary_n",538,0,9,"SVP BIC multiscale",0.00100000000000122,58
+"vary_n",538,0,10,"PELT",0.000999999999999446,51
+"vary_n",538,0,10,"SVP Wilcoxon",0,36
+"vary_n",538,0,10,"SVP MedianMood",0,1
+"vary_n",538,0,10,"SVP BIC multiscale",0.000999999999999446,64
+"vary_n",609,0,1,"PELT",0.000999999999999446,58
+"vary_n",609,0,1,"SVP Wilcoxon",0,42
+"vary_n",609,0,1,"SVP MedianMood",0,1
+"vary_n",609,0,1,"SVP BIC multiscale",0.000999999999999446,71
+"vary_n",609,0,2,"PELT",0.000999999999999446,46
+"vary_n",609,0,2,"SVP Wilcoxon",0.000999999999999446,43
+"vary_n",609,0,2,"SVP MedianMood",0.0429999999999993,2
+"vary_n",609,0,2,"SVP BIC multiscale",0.00100000000000122,58
+"vary_n",609,0,3,"PELT",0.000999999999999446,53
+"vary_n",609,0,3,"SVP Wilcoxon",0,42
+"vary_n",609,0,3,"SVP MedianMood",0.0790000000000006,2
+"vary_n",609,0,3,"SVP BIC multiscale",0.000999999999999446,60
+"vary_n",609,0,4,"PELT",0,51
+"vary_n",609,0,4,"SVP Wilcoxon",0.00100000000000122,43
+"vary_n",609,0,4,"SVP MedianMood",0,1
+"vary_n",609,0,4,"SVP BIC multiscale",0.00100000000000122,63
+"vary_n",609,0,5,"PELT",0.00200000000000067,53
+"vary_n",609,0,5,"SVP Wilcoxon",0.000999999999999446,39
+"vary_n",609,0,5,"SVP MedianMood",0.00100000000000122,1
+"vary_n",609,0,5,"SVP BIC multiscale",0.00200000000000067,66
+"vary_n",609,0,6,"PELT",0.000999999999999446,39
+"vary_n",609,0,6,"SVP Wilcoxon",0,40
+"vary_n",609,0,6,"SVP MedianMood",0,1
+"vary_n",609,0,6,"SVP BIC multiscale",0.00200000000000067,53
+"vary_n",609,0,7,"PELT",0.00100000000000122,46
+"vary_n",609,0,7,"SVP Wilcoxon",0,41
+"vary_n",609,0,7,"SVP MedianMood",0.0180000000000007,2
+"vary_n",609,0,7,"SVP BIC multiscale",0.000999999999999446,62
+"vary_n",609,0,8,"PELT",0.00100000000000122,60
+"vary_n",609,0,8,"SVP Wilcoxon",0,41
+"vary_n",609,0,8,"SVP MedianMood",0,1
+"vary_n",609,0,8,"SVP BIC multiscale",0.00100000000000122,68
+"vary_n",609,0,9,"PELT",0.000999999999999446,39
+"vary_n",609,0,9,"SVP Wilcoxon",0.000999999999999446,43
+"vary_n",609,0,9,"SVP MedianMood",0,1
+"vary_n",609,0,9,"SVP BIC multiscale",0.000999999999999446,42
+"vary_n",609,0,10,"PELT",0,41
+"vary_n",609,0,10,"SVP Wilcoxon",0,41
+"vary_n",609,0,10,"SVP MedianMood",0.000999999999999446,1
+"vary_n",609,0,10,"SVP BIC multiscale",0.00200000000000067,55
+"vary_n",690,0,1,"PELT",0.000999999999999446,64
+"vary_n",690,0,1,"SVP Wilcoxon",0,46
+"vary_n",690,0,1,"SVP MedianMood",0.00100000000000122,1
+"vary_n",690,0,1,"SVP BIC multiscale",0.000999999999999446,78
+"vary_n",690,0,2,"PELT",0.000999999999999446,53
+"vary_n",690,0,2,"SVP Wilcoxon",0,45
+"vary_n",690,0,2,"SVP MedianMood",0,1
+"vary_n",690,0,2,"SVP BIC multiscale",0.00200000000000067,70
+"vary_n",690,0,3,"PELT",0.000999999999999446,61
+"vary_n",690,0,3,"SVP Wilcoxon",0,44
+"vary_n",690,0,3,"SVP MedianMood",0,1
+"vary_n",690,0,3,"SVP BIC multiscale",0.00100000000000122,70
+"vary_n",690,0,4,"PELT",0.00100000000000122,60
+"vary_n",690,0,4,"SVP Wilcoxon",0.000999999999999446,44
+"vary_n",690,0,4,"SVP MedianMood",0.000999999999999446,1
+"vary_n",690,0,4,"SVP BIC multiscale",0.00200000000000067,70
+"vary_n",690,0,5,"PELT",0.00100000000000122,63
+"vary_n",690,0,5,"SVP Wilcoxon",0,44
+"vary_n",690,0,5,"SVP MedianMood",0.0579999999999998,2
+"vary_n",690,0,5,"SVP BIC multiscale",0.000999999999999446,73
+"vary_n",690,0,6,"PELT",0.00100000000000122,61
+"vary_n",690,0,6,"SVP Wilcoxon",0,44
+"vary_n",690,0,6,"SVP MedianMood",0,1
+"vary_n",690,0,6,"SVP BIC multiscale",0.00200000000000067,76
+"vary_n",690,0,7,"PELT",0.000999999999999446,74
+"vary_n",690,0,7,"SVP Wilcoxon",0.000999999999999446,45
+"vary_n",690,0,7,"SVP MedianMood",0.00100000000000122,1
+"vary_n",690,0,7,"SVP BIC multiscale",0.00200000000000067,84
+"vary_n",690,0,8,"PELT",0.000999999999999446,65
+"vary_n",690,0,8,"SVP Wilcoxon",0,43
+"vary_n",690,0,8,"SVP MedianMood",0,1
+"vary_n",690,0,8,"SVP BIC multiscale",0.00200000000000067,73
+"vary_n",690,0,9,"PELT",0.000999999999999446,55
+"vary_n",690,0,9,"SVP Wilcoxon",0.000999999999999446,45
+"vary_n",690,0,9,"SVP MedianMood",0,1
+"vary_n",690,0,9,"SVP BIC multiscale",0.00200000000000067,61
+"vary_n",690,0,10,"PELT",0.00100000000000122,54
+"vary_n",690,0,10,"SVP Wilcoxon",0.000999999999999446,45
+"vary_n",690,0,10,"SVP MedianMood",0.000999999999999446,1
+"vary_n",690,0,10,"SVP BIC multiscale",0.000999999999999446,66
+"vary_n",781,0,1,"PELT",0.000999999999999446,60
+"vary_n",781,0,1,"SVP Wilcoxon",0,49
+"vary_n",781,0,1,"SVP MedianMood",0.000999999999999446,1
+"vary_n",781,0,1,"SVP BIC multiscale",0.000999999999999446,65
+"vary_n",781,0,2,"PELT",0.000999999999999446,64
+"vary_n",781,0,2,"SVP Wilcoxon",0,51
+"vary_n",781,0,2,"SVP MedianMood",0,1
+"vary_n",781,0,2,"SVP BIC multiscale",0.00200000000000067,82
+"vary_n",781,0,3,"PELT",0.000999999999999446,75
+"vary_n",781,0,3,"SVP Wilcoxon",0.000999999999999446,51
+"vary_n",781,0,3,"SVP MedianMood",0.000999999999999446,1
+"vary_n",781,0,3,"SVP BIC multiscale",0.000999999999999446,88
+"vary_n",781,0,4,"PELT",0.000999999999999446,66
+"vary_n",781,0,4,"SVP Wilcoxon",0.000999999999999446,51
+"vary_n",781,0,4,"SVP MedianMood",0,1
+"vary_n",781,0,4,"SVP BIC multiscale",0.00200000000000067,70
+"vary_n",781,0,5,"PELT",0.000999999999999446,64
+"vary_n",781,0,5,"SVP Wilcoxon",0,50
+"vary_n",781,0,5,"SVP MedianMood",0.119,2
+"vary_n",781,0,5,"SVP BIC multiscale",0.00199999999999889,76
+"vary_n",781,0,6,"PELT",0.00199999999999889,71
+"vary_n",781,0,6,"SVP Wilcoxon",0,48
+"vary_n",781,0,6,"SVP MedianMood",0,1
+"vary_n",781,0,6,"SVP BIC multiscale",0.00200000000000244,88
+"vary_n",781,0,7,"PELT",0.000999999999997669,72
+"vary_n",781,0,7,"SVP Wilcoxon",0.00100000000000122,50
+"vary_n",781,0,7,"SVP MedianMood",0,1
+"vary_n",781,0,7,"SVP BIC multiscale",0.00199999999999889,77
+"vary_n",781,0,8,"PELT",0.00100000000000122,52
+"vary_n",781,0,8,"SVP Wilcoxon",0,51
+"vary_n",781,0,8,"SVP MedianMood",0.000999999999997669,1
+"vary_n",781,0,8,"SVP BIC multiscale",0.00199999999999889,59
+"vary_n",781,0,9,"PELT",0.000999999999997669,59
+"vary_n",781,0,9,"SVP Wilcoxon",0.000999999999997669,50
+"vary_n",781,0,9,"SVP MedianMood",0.00100000000000122,1
+"vary_n",781,0,9,"SVP BIC multiscale",0.000999999999997669,78
+"vary_n",781,0,10,"PELT",0.00100000000000122,62
+"vary_n",781,0,10,"SVP Wilcoxon",0.00100000000000122,52
+"vary_n",781,0,10,"SVP MedianMood",0.00100000000000122,1
+"vary_n",781,0,10,"SVP BIC multiscale",0.00299999999999656,76
+"vary_n",883,0,1,"PELT",0.000999999999997669,64
+"vary_n",883,0,1,"SVP Wilcoxon",0,57
+"vary_n",883,0,1,"SVP MedianMood",0.00200000000000244,1
+"vary_n",883,0,1,"SVP BIC multiscale",0.00199999999999889,68
+"vary_n",883,0,2,"PELT",0.00199999999999889,69
+"vary_n",883,0,2,"SVP Wilcoxon",0,55
+"vary_n",883,0,2,"SVP MedianMood",0,1
+"vary_n",883,0,2,"SVP BIC multiscale",0.00199999999999889,78
+"vary_n",883,0,3,"PELT",0.000999999999997669,85
+"vary_n",883,0,3,"SVP Wilcoxon",0.00100000000000122,57
+"vary_n",883,0,3,"SVP MedianMood",0.00100000000000122,1
+"vary_n",883,0,3,"SVP BIC multiscale",0.00199999999999889,96
+"vary_n",883,0,4,"PELT",0.00100000000000122,75
+"vary_n",883,0,4,"SVP Wilcoxon",0.00100000000000122,59
+"vary_n",883,0,4,"SVP MedianMood",0,1
+"vary_n",883,0,4,"SVP BIC multiscale",0.00199999999999889,97
+"vary_n",883,0,5,"PELT",0.00199999999999889,70
+"vary_n",883,0,5,"SVP Wilcoxon",0.00100000000000122,58
+"vary_n",883,0,5,"SVP MedianMood",0.032,2
+"vary_n",883,0,5,"SVP BIC multiscale",0.00199999999999889,85
+"vary_n",883,0,6,"PELT",0.00100000000000122,80
+"vary_n",883,0,6,"SVP Wilcoxon",0.00100000000000122,57
+"vary_n",883,0,6,"SVP MedianMood",0,1
+"vary_n",883,0,6,"SVP BIC multiscale",0.00199999999999889,92
+"vary_n",883,0,7,"PELT",0.00100000000000122,67
+"vary_n",883,0,7,"SVP Wilcoxon",0.00100000000000122,56
+"vary_n",883,0,7,"SVP MedianMood",0,1
+"vary_n",883,0,7,"SVP BIC multiscale",0.00300000000000011,70
+"vary_n",883,0,8,"PELT",0.004999999999999,70
+"vary_n",883,0,8,"SVP Wilcoxon",0.0069999999999979,58
+"vary_n",883,0,8,"SVP MedianMood",0.00199999999999889,1
+"vary_n",883,0,8,"SVP BIC multiscale",0.00300000000000011,81
+"vary_n",883,0,9,"PELT",0.00100000000000122,57
+"vary_n",883,0,9,"SVP Wilcoxon",0.00100000000000122,57
+"vary_n",883,0,9,"SVP MedianMood",0.298000000000002,2
+"vary_n",883,0,9,"SVP BIC multiscale",0.00199999999999889,71
+"vary_n",883,0,10,"PELT",0.00100000000000122,74
+"vary_n",883,0,10,"SVP Wilcoxon",0.00100000000000122,56
+"vary_n",883,0,10,"SVP MedianMood",0.000999999999997669,1
+"vary_n",883,0,10,"SVP BIC multiscale",0.00199999999999889,89
+"vary_n",1000,0,1,"PELT",0.00100000000000122,75
+"vary_n",1000,0,1,"SVP Wilcoxon",0.00100000000000122,63
+"vary_n",1000,0,1,"SVP MedianMood",0.00100000000000122,1
+"vary_n",1000,0,1,"SVP BIC multiscale",0.00199999999999889,93
+"vary_n",1000,0,2,"PELT",0.00300000000000011,91
+"vary_n",1000,0,2,"SVP Wilcoxon",0.000999999999997669,64
+"vary_n",1000,0,2,"SVP MedianMood",0.000999999999997669,1
+"vary_n",1000,0,2,"SVP BIC multiscale",0.00300000000000011,110
+"vary_n",1000,0,3,"PELT",0.00100000000000122,76
+"vary_n",1000,0,3,"SVP Wilcoxon",0.000999999999997669,64
+"vary_n",1000,0,3,"SVP MedianMood",0.181000000000001,3
+"vary_n",1000,0,3,"SVP BIC multiscale",0.00199999999999889,94
+"vary_n",1000,0,4,"PELT",0,76
+"vary_n",1000,0,4,"SVP Wilcoxon",0,63
+"vary_n",1000,0,4,"SVP MedianMood",0,1
+"vary_n",1000,0,4,"SVP BIC multiscale",0.00199999999999889,100
+"vary_n",1000,0,5,"PELT",0.00100000000000122,80
+"vary_n",1000,0,5,"SVP Wilcoxon",0,64
+"vary_n",1000,0,5,"SVP MedianMood",0.00399999999999778,1
+"vary_n",1000,0,5,"SVP BIC multiscale",0.00199999999999889,95
+"vary_n",1000,0,6,"PELT",0.00100000000000122,94
+"vary_n",1000,0,6,"SVP Wilcoxon",0.00100000000000122,63
+"vary_n",1000,0,6,"SVP MedianMood",0.00100000000000122,1
+"vary_n",1000,0,6,"SVP BIC multiscale",0.00199999999999889,113
+"vary_n",1000,0,7,"PELT",0,67
+"vary_n",1000,0,7,"SVP Wilcoxon",0,63
+"vary_n",1000,0,7,"SVP MedianMood",0.408999999999999,2
+"vary_n",1000,0,7,"SVP BIC multiscale",0.00300000000000011,81
+"vary_n",1000,0,8,"PELT",0.000999999999997669,90
+"vary_n",1000,0,8,"SVP Wilcoxon",0.00100000000000122,66
+"vary_n",1000,0,8,"SVP MedianMood",0.0489999999999995,2
+"vary_n",1000,0,8,"SVP BIC multiscale",0.00199999999999889,111
+"vary_n",1000,0,9,"PELT",0.000999999999997669,82
+"vary_n",1000,0,9,"SVP Wilcoxon",0.00100000000000122,64
+"vary_n",1000,0,9,"SVP MedianMood",0.00100000000000122,1
+"vary_n",1000,0,9,"SVP BIC multiscale",0.00200000000000244,96
+"vary_n",1000,0,10,"PELT",0.00100000000000122,84
+"vary_n",1000,0,10,"SVP Wilcoxon",0,64
+"vary_n",1000,0,10,"SVP MedianMood",0.00100000000000122,1
+"vary_n",1000,0,10,"SVP BIC multiscale",0.00200000000000244,96
+"vary_k",1000,0,1,"PELT",0,94
+"vary_k",1000,0,1,"SVP Wilcoxon",0.00100000000000122,64
+"vary_k",1000,0,1,"SVP MedianMood",0.0500000000000007,2
+"vary_k",1000,0,1,"SVP BIC multiscale",0.00300000000000011,106
+"vary_k",1000,0,2,"PELT",0.00100000000000122,98
+"vary_k",1000,0,2,"SVP Wilcoxon",0,66
+"vary_k",1000,0,2,"SVP MedianMood",0.00100000000000122,1
+"vary_k",1000,0,2,"SVP BIC multiscale",0.00199999999999889,104
+"vary_k",1000,0,3,"PELT",0.000999999999997669,52
+"vary_k",1000,0,3,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,0,3,"SVP MedianMood",0.00100000000000122,1
+"vary_k",1000,0,3,"SVP BIC multiscale",0.00300000000000011,61
+"vary_k",1000,0,4,"PELT",0.00100000000000122,91
+"vary_k",1000,0,4,"SVP Wilcoxon",0.000999999999997669,66
+"vary_k",1000,0,4,"SVP MedianMood",0.00100000000000122,1
+"vary_k",1000,0,4,"SVP BIC multiscale",0.00199999999999889,105
+"vary_k",1000,0,5,"PELT",0.00100000000000122,82
+"vary_k",1000,0,5,"SVP Wilcoxon",0.00100000000000122,64
+"vary_k",1000,0,5,"SVP MedianMood",0.294,2
+"vary_k",1000,0,5,"SVP BIC multiscale",0.00300000000000011,100
+"vary_k",1000,1,1,"PELT",0.00100000000000122,69
+"vary_k",1000,1,1,"SVP Wilcoxon",0.000999999999997669,65
+"vary_k",1000,1,1,"SVP MedianMood",0.0950000000000024,3
+"vary_k",1000,1,1,"SVP BIC multiscale",0.00200000000000244,88
+"vary_k",1000,1,2,"PELT",0.000999999999997669,87
+"vary_k",1000,1,2,"SVP Wilcoxon",0.00100000000000122,66
+"vary_k",1000,1,2,"SVP MedianMood",0.0960000000000001,3
+"vary_k",1000,1,2,"SVP BIC multiscale",0.00199999999999889,113
+"vary_k",1000,1,3,"PELT",0.000999999999997669,96
+"vary_k",1000,1,3,"SVP Wilcoxon",0.000999999999997669,63
+"vary_k",1000,1,3,"SVP MedianMood",0.041999999999998,2
+"vary_k",1000,1,3,"SVP BIC multiscale",0.00199999999999889,112
+"vary_k",1000,1,4,"PELT",0.00100000000000122,85
+"vary_k",1000,1,4,"SVP Wilcoxon",0.00100000000000122,64
+"vary_k",1000,1,4,"SVP MedianMood",0.0729999999999968,2
+"vary_k",1000,1,4,"SVP BIC multiscale",0.00199999999999889,99
+"vary_k",1000,1,5,"PELT",0.00100000000000122,73
+"vary_k",1000,1,5,"SVP Wilcoxon",0,67
+"vary_k",1000,1,5,"SVP MedianMood",0.0380000000000003,3
+"vary_k",1000,1,5,"SVP BIC multiscale",0.00300000000000011,98
+"vary_k",1000,2,1,"PELT",0.000999999999997669,87
+"vary_k",1000,2,1,"SVP Wilcoxon",0.000999999999997669,67
+"vary_k",1000,2,1,"SVP MedianMood",0.0499999999999972,3
+"vary_k",1000,2,1,"SVP BIC multiscale",0.00200000000000244,95
+"vary_k",1000,2,2,"PELT",0.00100000000000122,64
+"vary_k",1000,2,2,"SVP Wilcoxon",0.00100000000000122,64
+"vary_k",1000,2,2,"SVP MedianMood",0.0529999999999973,3
+"vary_k",1000,2,2,"SVP BIC multiscale",0.00199999999999889,84
+"vary_k",1000,2,3,"PELT",0,91
+"vary_k",1000,2,3,"SVP Wilcoxon",0.000999999999997669,65
+"vary_k",1000,2,3,"SVP MedianMood",0.0510000000000019,3
+"vary_k",1000,2,3,"SVP BIC multiscale",0.00200000000000244,107
+"vary_k",1000,2,4,"PELT",0.000999999999997669,80
+"vary_k",1000,2,4,"SVP Wilcoxon",0,64
+"vary_k",1000,2,4,"SVP MedianMood",0.0500000000000007,3
+"vary_k",1000,2,4,"SVP BIC multiscale",0.00200000000000244,95
+"vary_k",1000,2,5,"PELT",0.00100000000000122,87
+"vary_k",1000,2,5,"SVP Wilcoxon",0,66
+"vary_k",1000,2,5,"SVP MedianMood",0.0530000000000008,3
+"vary_k",1000,2,5,"SVP BIC multiscale",0.00300000000000011,92
+"vary_k",1000,3,1,"PELT",0.000999999999997669,76
+"vary_k",1000,3,1,"SVP Wilcoxon",0,62
+"vary_k",1000,3,1,"SVP MedianMood",0.0390000000000015,4
+"vary_k",1000,3,1,"SVP BIC multiscale",0.00199999999999889,94
+"vary_k",1000,3,2,"PELT",0.00100000000000122,75
+"vary_k",1000,3,2,"SVP Wilcoxon",0,64
+"vary_k",1000,3,2,"SVP MedianMood",0.0380000000000003,4
+"vary_k",1000,3,2,"SVP BIC multiscale",0.00300000000000011,95
+"vary_k",1000,3,3,"PELT",0.000999999999997669,69
+"vary_k",1000,3,3,"SVP Wilcoxon",0.00100000000000122,65
+"vary_k",1000,3,3,"SVP MedianMood",0.0380000000000003,4
+"vary_k",1000,3,3,"SVP BIC multiscale",0.00200000000000244,88
+"vary_k",1000,3,4,"PELT",0,75
+"vary_k",1000,3,4,"SVP Wilcoxon",0.00100000000000122,64
+"vary_k",1000,3,4,"SVP MedianMood",0.0380000000000003,4
+"vary_k",1000,3,4,"SVP BIC multiscale",0.00199999999999889,92
+"vary_k",1000,3,5,"PELT",0.00100000000000122,84
+"vary_k",1000,3,5,"SVP Wilcoxon",0,65
+"vary_k",1000,3,5,"SVP MedianMood",0.0390000000000015,4
+"vary_k",1000,3,5,"SVP BIC multiscale",0.00199999999999889,97
+"vary_k",1000,4,1,"PELT",0.000999999999997669,103
+"vary_k",1000,4,1,"SVP Wilcoxon",0,65
+"vary_k",1000,4,1,"SVP MedianMood",0.0289999999999999,5
+"vary_k",1000,4,1,"SVP BIC multiscale",0.00200000000000244,121
+"vary_k",1000,4,2,"PELT",0.000999999999997669,86
+"vary_k",1000,4,2,"SVP Wilcoxon",0.00100000000000122,67
+"vary_k",1000,4,2,"SVP MedianMood",0.0340000000000025,6
+"vary_k",1000,4,2,"SVP BIC multiscale",0.00199999999999889,110
+"vary_k",1000,4,3,"PELT",0.00100000000000122,92
+"vary_k",1000,4,3,"SVP Wilcoxon",0,64
+"vary_k",1000,4,3,"SVP MedianMood",0.0299999999999976,5
+"vary_k",1000,4,3,"SVP BIC multiscale",0.00300000000000011,106
+"vary_k",1000,4,4,"PELT",0.000999999999997669,88
+"vary_k",1000,4,4,"SVP Wilcoxon",0.000999999999997669,65
+"vary_k",1000,4,4,"SVP MedianMood",0.0299999999999976,6
+"vary_k",1000,4,4,"SVP BIC multiscale",0.00199999999999889,98
+"vary_k",1000,4,5,"PELT",0.000999999999997669,80
+"vary_k",1000,4,5,"SVP Wilcoxon",0.000999999999997669,66
+"vary_k",1000,4,5,"SVP MedianMood",0.0309999999999988,6
+"vary_k",1000,4,5,"SVP BIC multiscale",0.00300000000000011,92
+"vary_k",1000,5,1,"PELT",0.000999999999997669,109
+"vary_k",1000,5,1,"SVP Wilcoxon",0.00100000000000122,65
+"vary_k",1000,5,1,"SVP MedianMood",0.0249999999999986,6
+"vary_k",1000,5,1,"SVP BIC multiscale",0.00199999999999889,120
+"vary_k",1000,5,2,"PELT",0.00100000000000122,102
+"vary_k",1000,5,2,"SVP Wilcoxon",0.000999999999997669,64
+"vary_k",1000,5,2,"SVP MedianMood",0.0249999999999986,6
+"vary_k",1000,5,2,"SVP BIC multiscale",0.00199999999999889,114
+"vary_k",1000,5,3,"PELT",0.00100000000000122,63
+"vary_k",1000,5,3,"SVP Wilcoxon",0,64
+"vary_k",1000,5,3,"SVP MedianMood",0.0240000000000009,6
+"vary_k",1000,5,3,"SVP BIC multiscale",0.00200000000000244,92
+"vary_k",1000,5,4,"PELT",0.00100000000000122,77
+"vary_k",1000,5,4,"SVP Wilcoxon",0,64
+"vary_k",1000,5,4,"SVP MedianMood",0.0249999999999986,6
+"vary_k",1000,5,4,"SVP BIC multiscale",0.00200000000000244,88
+"vary_k",1000,5,5,"PELT",0.00100000000000122,83
+"vary_k",1000,5,5,"SVP Wilcoxon",0,65
+"vary_k",1000,5,5,"SVP MedianMood",0.0239999999999974,6
+"vary_k",1000,5,5,"SVP BIC multiscale",0.00199999999999889,96
+"vary_k",1000,6,1,"PELT",0.00100000000000122,76
+"vary_k",1000,6,1,"SVP Wilcoxon",0,64
+"vary_k",1000,6,1,"SVP MedianMood",0.0219999999999985,7
+"vary_k",1000,6,1,"SVP BIC multiscale",0.00300000000000011,95
+"vary_k",1000,6,2,"PELT",0,82
+"vary_k",1000,6,2,"SVP Wilcoxon",0,65
+"vary_k",1000,6,2,"SVP MedianMood",0.0199999999999996,7
+"vary_k",1000,6,2,"SVP BIC multiscale",0.00199999999999889,106
+"vary_k",1000,6,3,"PELT",0.00100000000000122,94
+"vary_k",1000,6,3,"SVP Wilcoxon",0,66
+"vary_k",1000,6,3,"SVP MedianMood",0.0199999999999996,7
+"vary_k",1000,6,3,"SVP BIC multiscale",0.00199999999999889,110
+"vary_k",1000,6,4,"PELT",0.000999999999997669,77
+"vary_k",1000,6,4,"SVP Wilcoxon",0,67
+"vary_k",1000,6,4,"SVP MedianMood",0.0210000000000008,7
+"vary_k",1000,6,4,"SVP BIC multiscale",0.00199999999999889,88
+"vary_k",1000,6,5,"PELT",0.00100000000000122,69
+"vary_k",1000,6,5,"SVP Wilcoxon",0.00100000000000122,64
+"vary_k",1000,6,5,"SVP MedianMood",0.0210000000000008,7
+"vary_k",1000,6,5,"SVP BIC multiscale",0.00300000000000011,88
+"vary_k",1000,7,1,"PELT",0.00100000000000122,95
+"vary_k",1000,7,1,"SVP Wilcoxon",0,65
+"vary_k",1000,7,1,"SVP MedianMood",0.0169999999999995,8
+"vary_k",1000,7,1,"SVP BIC multiscale",0.00199999999999889,112
+"vary_k",1000,7,2,"PELT",0.00100000000000122,90
+"vary_k",1000,7,2,"SVP Wilcoxon",0.00100000000000122,67
+"vary_k",1000,7,2,"SVP MedianMood",0.0180000000000007,8
+"vary_k",1000,7,2,"SVP BIC multiscale",0.00199999999999889,94
+"vary_k",1000,7,3,"PELT",0.00100000000000122,75
+"vary_k",1000,7,3,"SVP Wilcoxon",0,66
+"vary_k",1000,7,3,"SVP MedianMood",0.0169999999999995,8
+"vary_k",1000,7,3,"SVP BIC multiscale",0.00199999999999889,93
+"vary_k",1000,7,4,"PELT",0.00100000000000122,86
+"vary_k",1000,7,4,"SVP Wilcoxon",0,65
+"vary_k",1000,7,4,"SVP MedianMood",0.0180000000000007,8
+"vary_k",1000,7,4,"SVP BIC multiscale",0.00200000000000244,102
+"vary_k",1000,7,5,"PELT",0.00100000000000122,85
+"vary_k",1000,7,5,"SVP Wilcoxon",0.00100000000000122,67
+"vary_k",1000,7,5,"SVP MedianMood",0.0169999999999995,8
+"vary_k",1000,7,5,"SVP BIC multiscale",0.00300000000000011,93
+"vary_k",1000,8,1,"PELT",0.00100000000000122,70
+"vary_k",1000,8,1,"SVP Wilcoxon",0,67
+"vary_k",1000,8,1,"SVP MedianMood",0.017000000000003,9
+"vary_k",1000,8,1,"SVP BIC multiscale",0.00199999999999889,85
+"vary_k",1000,8,2,"PELT",0.000999999999997669,81
+"vary_k",1000,8,2,"SVP Wilcoxon",0,65
+"vary_k",1000,8,2,"SVP MedianMood",0.0169999999999995,9
+"vary_k",1000,8,2,"SVP BIC multiscale",0.00300000000000011,96
+"vary_k",1000,8,3,"PELT",0.00100000000000122,78
+"vary_k",1000,8,3,"SVP Wilcoxon",0,65
+"vary_k",1000,8,3,"SVP MedianMood",0.0159999999999982,9
+"vary_k",1000,8,3,"SVP BIC multiscale",0.00200000000000244,100
+"vary_k",1000,8,4,"PELT",0,92
+"vary_k",1000,8,4,"SVP Wilcoxon",0.00100000000000122,65
+"vary_k",1000,8,4,"SVP MedianMood",0.0180000000000007,9
+"vary_k",1000,8,4,"SVP BIC multiscale",0.00199999999999889,111
+"vary_k",1000,8,5,"PELT",0.00100000000000122,82
+"vary_k",1000,8,5,"SVP Wilcoxon",0.000999999999997669,66
+"vary_k",1000,8,5,"SVP MedianMood",0.0180000000000007,9
+"vary_k",1000,8,5,"SVP BIC multiscale",0.00199999999999889,90
+"vary_k",1000,9,1,"PELT",0.00200000000000244,83
+"vary_k",1000,9,1,"SVP Wilcoxon",0,63
+"vary_k",1000,9,1,"SVP MedianMood",0.0139999999999993,10
+"vary_k",1000,9,1,"SVP BIC multiscale",0.00200000000000244,88
+"vary_k",1000,9,2,"PELT",0.000999999999997669,92
+"vary_k",1000,9,2,"SVP Wilcoxon",0.00100000000000122,67
+"vary_k",1000,9,2,"SVP MedianMood",0.0139999999999993,10
+"vary_k",1000,9,2,"SVP BIC multiscale",0.00200000000000244,108
+"vary_k",1000,9,3,"PELT",0,84
+"vary_k",1000,9,3,"SVP Wilcoxon",0,65
+"vary_k",1000,9,3,"SVP MedianMood",0.0150000000000006,10
+"vary_k",1000,9,3,"SVP BIC multiscale",0.00200000000000244,102
+"vary_k",1000,9,4,"PELT",0.000999999999997669,79
+"vary_k",1000,9,4,"SVP Wilcoxon",0,68
+"vary_k",1000,9,4,"SVP MedianMood",0.0139999999999958,10
+"vary_k",1000,9,4,"SVP BIC multiscale",0.00200000000000244,95
+"vary_k",1000,9,5,"PELT",0.00100000000000477,77
+"vary_k",1000,9,5,"SVP Wilcoxon",0.000999999999997669,66
+"vary_k",1000,9,5,"SVP MedianMood",0.0150000000000006,10
+"vary_k",1000,9,5,"SVP BIC multiscale",0.00200000000000244,96
+"vary_k",1000,10,1,"PELT",0.000999999999997669,92
+"vary_k",1000,10,1,"SVP Wilcoxon",0,65
+"vary_k",1000,10,1,"SVP MedianMood",0.0140000000000029,11
+"vary_k",1000,10,1,"SVP BIC multiscale",0.00300000000000011,110
+"vary_k",1000,10,2,"PELT",0.00100000000000477,84
+"vary_k",1000,10,2,"SVP Wilcoxon",0.000999999999997669,66
+"vary_k",1000,10,2,"SVP MedianMood",0.0129999999999981,11
+"vary_k",1000,10,2,"SVP BIC multiscale",0.00199999999999534,98
+"vary_k",1000,10,3,"PELT",0.000999999999997669,70
+"vary_k",1000,10,3,"SVP Wilcoxon",0.000999999999997669,66
+"vary_k",1000,10,3,"SVP MedianMood",0.0129999999999981,11
+"vary_k",1000,10,3,"SVP BIC multiscale",0.00500000000000256,80
+"vary_k",1000,10,4,"PELT",0.000999999999997669,72
+"vary_k",1000,10,4,"SVP Wilcoxon",0,67
+"vary_k",1000,10,4,"SVP MedianMood",0.0130000000000052,11
+"vary_k",1000,10,4,"SVP BIC multiscale",0.00200000000000244,83
+"vary_k",1000,10,5,"PELT",0.00100000000000477,99
+"vary_k",1000,10,5,"SVP Wilcoxon",0.000999999999997669,65
+"vary_k",1000,10,5,"SVP MedianMood",0.0129999999999981,11
+"vary_k",1000,10,5,"SVP BIC multiscale",0.00300000000000011,110
+"vary_k",1000,11,1,"PELT",0.00200000000000244,84
+"vary_k",1000,11,1,"SVP Wilcoxon",0,65
+"vary_k",1000,11,1,"SVP MedianMood",0.0130000000000052,12
+"vary_k",1000,11,1,"SVP BIC multiscale",0.00199999999999534,107
+"vary_k",1000,11,2,"PELT",0.00100000000000477,85
+"vary_k",1000,11,2,"SVP Wilcoxon",0,65
+"vary_k",1000,11,2,"SVP MedianMood",0.0120000000000005,12
+"vary_k",1000,11,2,"SVP BIC multiscale",0.00200000000000244,94
+"vary_k",1000,11,3,"PELT",0.00100000000000477,63
+"vary_k",1000,11,3,"SVP Wilcoxon",0.000999999999997669,65
+"vary_k",1000,11,3,"SVP MedianMood",0.0120000000000005,12
+"vary_k",1000,11,3,"SVP BIC multiscale",0.00199999999999534,81
+"vary_k",1000,11,4,"PELT",0.00100000000000477,83
+"vary_k",1000,11,4,"SVP Wilcoxon",0,67
+"vary_k",1000,11,4,"SVP MedianMood",0.0120000000000005,13
+"vary_k",1000,11,4,"SVP BIC multiscale",0.00200000000000244,93
+"vary_k",1000,11,5,"PELT",0,88
+"vary_k",1000,11,5,"SVP Wilcoxon",0.000999999999997669,66
+"vary_k",1000,11,5,"SVP MedianMood",0.0129999999999981,12
+"vary_k",1000,11,5,"SVP BIC multiscale",0.00199999999999534,104
+"vary_k",1000,12,1,"PELT",0.000999999999997669,91
+"vary_k",1000,12,1,"SVP Wilcoxon",0,70
+"vary_k",1000,12,1,"SVP MedianMood",0.0110000000000028,13
+"vary_k",1000,12,1,"SVP BIC multiscale",0.00199999999999534,106
+"vary_k",1000,12,2,"PELT",0,81
+"vary_k",1000,12,2,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,12,2,"SVP MedianMood",0.0120000000000005,13
+"vary_k",1000,12,2,"SVP BIC multiscale",0.00200000000000244,84
+"vary_k",1000,12,3,"PELT",0.000999999999997669,80
+"vary_k",1000,12,3,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,12,3,"SVP MedianMood",0.0110000000000028,13
+"vary_k",1000,12,3,"SVP BIC multiscale",0.00200000000000244,102
+"vary_k",1000,12,4,"PELT",0.000999999999997669,104
+"vary_k",1000,12,4,"SVP Wilcoxon",0,65
+"vary_k",1000,12,4,"SVP MedianMood",0.0110000000000028,13
+"vary_k",1000,12,4,"SVP BIC multiscale",0.00200000000000244,113
+"vary_k",1000,12,5,"PELT",0.00100000000000477,88
+"vary_k",1000,12,5,"SVP Wilcoxon",0,68
+"vary_k",1000,12,5,"SVP MedianMood",0.0110000000000028,13
+"vary_k",1000,12,5,"SVP BIC multiscale",0.00200000000000244,102
+"vary_k",1000,13,1,"PELT",0.00100000000000477,94
+"vary_k",1000,13,1,"SVP Wilcoxon",0.00100000000000477,65
+"vary_k",1000,13,1,"SVP MedianMood",0.0109999999999957,14
+"vary_k",1000,13,1,"SVP BIC multiscale",0.00199999999999534,112
+"vary_k",1000,13,2,"PELT",0.00100000000000477,93
+"vary_k",1000,13,2,"SVP Wilcoxon",0.000999999999997669,65
+"vary_k",1000,13,2,"SVP MedianMood",0.0109999999999957,14
+"vary_k",1000,13,2,"SVP BIC multiscale",0.00200000000000244,104
+"vary_k",1000,13,3,"PELT",0.00200000000000244,99
+"vary_k",1000,13,3,"SVP Wilcoxon",0.000999999999997669,64
+"vary_k",1000,13,3,"SVP MedianMood",0.0110000000000028,14
+"vary_k",1000,13,3,"SVP BIC multiscale",0.00200000000000244,102
+"vary_k",1000,13,4,"PELT",0.000999999999997669,86
+"vary_k",1000,13,4,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,13,4,"SVP MedianMood",0.00999999999999801,14
+"vary_k",1000,13,4,"SVP BIC multiscale",0.00200000000000244,94
+"vary_k",1000,13,5,"PELT",0.00100000000000477,85
+"vary_k",1000,13,5,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,13,5,"SVP MedianMood",0.00999999999999801,14
+"vary_k",1000,13,5,"SVP BIC multiscale",0.00199999999999534,96
+"vary_k",1000,14,1,"PELT",0.00100000000000477,83
+"vary_k",1000,14,1,"SVP Wilcoxon",0,67
+"vary_k",1000,14,1,"SVP MedianMood",0.00900000000000034,15
+"vary_k",1000,14,1,"SVP BIC multiscale",0.00200000000000244,93
+"vary_k",1000,14,2,"PELT",0.000999999999997669,96
+"vary_k",1000,14,2,"SVP Wilcoxon",0.00100000000000477,67
+"vary_k",1000,14,2,"SVP MedianMood",0.0100000000000051,15
+"vary_k",1000,14,2,"SVP BIC multiscale",0.00199999999999534,103
+"vary_k",1000,14,3,"PELT",0.00100000000000477,74
+"vary_k",1000,14,3,"SVP Wilcoxon",0.000999999999997669,66
+"vary_k",1000,14,3,"SVP MedianMood",0.00999999999999801,15
+"vary_k",1000,14,3,"SVP BIC multiscale",0.00199999999999534,89
+"vary_k",1000,14,4,"PELT",0.00300000000000011,92
+"vary_k",1000,14,4,"SVP Wilcoxon",0,65
+"vary_k",1000,14,4,"SVP MedianMood",0.00999999999999801,15
+"vary_k",1000,14,4,"SVP BIC multiscale",0.00199999999999534,100
+"vary_k",1000,14,5,"PELT",0.00100000000000477,76
+"vary_k",1000,14,5,"SVP Wilcoxon",0,68
+"vary_k",1000,14,5,"SVP MedianMood",0.00999999999999801,15
+"vary_k",1000,14,5,"SVP BIC multiscale",0.00200000000000244,80
+"vary_k",1000,15,1,"PELT",0.00100000000000477,100
+"vary_k",1000,15,1,"SVP Wilcoxon",0,68
+"vary_k",1000,15,1,"SVP MedianMood",0.00900000000000034,16
+"vary_k",1000,15,1,"SVP BIC multiscale",0.00200000000000244,117
+"vary_k",1000,15,2,"PELT",0.000999999999997669,94
+"vary_k",1000,15,2,"SVP Wilcoxon",0.000999999999997669,66
+"vary_k",1000,15,2,"SVP MedianMood",0.00900000000000034,16
+"vary_k",1000,15,2,"SVP BIC multiscale",0.00200000000000244,108
+"vary_k",1000,15,3,"PELT",0.000999999999997669,95
+"vary_k",1000,15,3,"SVP Wilcoxon",0,65
+"vary_k",1000,15,3,"SVP MedianMood",0.00900000000000034,16
+"vary_k",1000,15,3,"SVP BIC multiscale",0.00200000000000244,110
+"vary_k",1000,15,4,"PELT",0.00100000000000477,81
+"vary_k",1000,15,4,"SVP Wilcoxon",0.000999999999997669,66
+"vary_k",1000,15,4,"SVP MedianMood",0.00999999999999801,16
+"vary_k",1000,15,4,"SVP BIC multiscale",0.00199999999999534,101
+"vary_k",1000,15,5,"PELT",0.000999999999997669,87
+"vary_k",1000,15,5,"SVP Wilcoxon",0,67
+"vary_k",1000,15,5,"SVP MedianMood",0.00900000000000034,16
+"vary_k",1000,15,5,"SVP BIC multiscale",0.00200000000000244,102
+"vary_k",1000,16,1,"PELT",0.00100000000000477,94
+"vary_k",1000,16,1,"SVP Wilcoxon",0.000999999999997669,69
+"vary_k",1000,16,1,"SVP MedianMood",0.00900000000000034,17
+"vary_k",1000,16,1,"SVP BIC multiscale",0.00200000000000244,104
+"vary_k",1000,16,2,"PELT",0.00100000000000477,95
+"vary_k",1000,16,2,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,16,2,"SVP MedianMood",0.00900000000000034,17
+"vary_k",1000,16,2,"SVP BIC multiscale",0.00199999999999534,106
+"vary_k",1000,16,3,"PELT",0.000999999999997669,106
+"vary_k",1000,16,3,"SVP Wilcoxon",0.000999999999997669,67
+"vary_k",1000,16,3,"SVP MedianMood",0.00900000000000034,17
+"vary_k",1000,16,3,"SVP BIC multiscale",0.00200000000000244,122
+"vary_k",1000,16,4,"PELT",0,97
+"vary_k",1000,16,4,"SVP Wilcoxon",0.00100000000000477,66
+"vary_k",1000,16,4,"SVP MedianMood",0.00900000000000034,17
+"vary_k",1000,16,4,"SVP BIC multiscale",0.00199999999999534,106
+"vary_k",1000,16,5,"PELT",0.000999999999997669,107
+"vary_k",1000,16,5,"SVP Wilcoxon",0,68
+"vary_k",1000,16,5,"SVP MedianMood",0.0129999999999981,17
+"vary_k",1000,16,5,"SVP BIC multiscale",0.00200000000000244,116
+"vary_k",1000,17,1,"PELT",0.00100000000000477,76
+"vary_k",1000,17,1,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,17,1,"SVP MedianMood",0.00800000000000267,18
+"vary_k",1000,17,1,"SVP BIC multiscale",0.00300000000000011,87
+"vary_k",1000,17,2,"PELT",0.00100000000000477,77
+"vary_k",1000,17,2,"SVP Wilcoxon",0,66
+"vary_k",1000,17,2,"SVP MedianMood",0.00900000000000034,18
+"vary_k",1000,17,2,"SVP BIC multiscale",0.00199999999999534,91
+"vary_k",1000,17,3,"PELT",0.00199999999999534,93
+"vary_k",1000,17,3,"SVP Wilcoxon",0,65
+"vary_k",1000,17,3,"SVP MedianMood",0.00900000000000034,18
+"vary_k",1000,17,3,"SVP BIC multiscale",0.00199999999999534,112
+"vary_k",1000,17,4,"PELT",0.00100000000000477,90
+"vary_k",1000,17,4,"SVP Wilcoxon",0,68
+"vary_k",1000,17,4,"SVP MedianMood",0.00799999999999557,18
+"vary_k",1000,17,4,"SVP BIC multiscale",0.00199999999999534,111
+"vary_k",1000,17,5,"PELT",0.00100000000000477,79
+"vary_k",1000,17,5,"SVP Wilcoxon",0.00100000000000477,66
+"vary_k",1000,17,5,"SVP MedianMood",0.00900000000000034,18
+"vary_k",1000,17,5,"SVP BIC multiscale",0.00200000000000244,90
+"vary_k",1000,18,1,"PELT",0.00100000000000477,103
+"vary_k",1000,18,1,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,18,1,"SVP MedianMood",0.00800000000000267,19
+"vary_k",1000,18,1,"SVP BIC multiscale",0.00200000000000244,113
+"vary_k",1000,18,2,"PELT",0.00100000000000477,103
+"vary_k",1000,18,2,"SVP Wilcoxon",0,66
+"vary_k",1000,18,2,"SVP MedianMood",0.00800000000000267,19
+"vary_k",1000,18,2,"SVP BIC multiscale",0.00200000000000244,126
+"vary_k",1000,18,3,"PELT",0.000999999999997669,88
+"vary_k",1000,18,3,"SVP Wilcoxon",0.000999999999997669,67
+"vary_k",1000,18,3,"SVP MedianMood",0.00800000000000267,19
+"vary_k",1000,18,3,"SVP BIC multiscale",0.00200000000000244,100
+"vary_k",1000,18,4,"PELT",0.000999999999997669,104
+"vary_k",1000,18,4,"SVP Wilcoxon",0,65
+"vary_k",1000,18,4,"SVP MedianMood",0.00900000000000034,19
+"vary_k",1000,18,4,"SVP BIC multiscale",0.00199999999999534,117
+"vary_k",1000,18,5,"PELT",0,78
+"vary_k",1000,18,5,"SVP Wilcoxon",0,66
+"vary_k",1000,18,5,"SVP MedianMood",0.00799999999999557,19
+"vary_k",1000,18,5,"SVP BIC multiscale",0.00200000000000244,96
+"vary_k",1000,19,1,"PELT",0.000999999999997669,104
+"vary_k",1000,19,1,"SVP Wilcoxon",0,64
+"vary_k",1000,19,1,"SVP MedianMood",0.00799999999999557,20
+"vary_k",1000,19,1,"SVP BIC multiscale",0.00200000000000244,112
+"vary_k",1000,19,2,"PELT",0.00100000000000477,79
+"vary_k",1000,19,2,"SVP Wilcoxon",0,68
+"vary_k",1000,19,2,"SVP MedianMood",0.007000000000005,20
+"vary_k",1000,19,2,"SVP BIC multiscale",0.00200000000000244,82
+"vary_k",1000,19,3,"PELT",0.000999999999997669,89
+"vary_k",1000,19,3,"SVP Wilcoxon",0,64
+"vary_k",1000,19,3,"SVP MedianMood",0.00800000000000267,20
+"vary_k",1000,19,3,"SVP BIC multiscale",0.00200000000000244,101
+"vary_k",1000,19,4,"PELT",0.00100000000000477,85
+"vary_k",1000,19,4,"SVP Wilcoxon",0.000999999999997669,67
+"vary_k",1000,19,4,"SVP MedianMood",0.00800000000000267,20
+"vary_k",1000,19,4,"SVP BIC multiscale",0.00300000000000011,102
+"vary_k",1000,19,5,"PELT",0.000999999999997669,99
+"vary_k",1000,19,5,"SVP Wilcoxon",0,65
+"vary_k",1000,19,5,"SVP MedianMood",0.00799999999999557,20
+"vary_k",1000,19,5,"SVP BIC multiscale",0.00200000000000244,109
+"vary_k",1000,20,1,"PELT",0.000999999999997669,67
+"vary_k",1000,20,1,"SVP Wilcoxon",0.000999999999997669,67
+"vary_k",1000,20,1,"SVP MedianMood",0.00800000000000267,21
+"vary_k",1000,20,1,"SVP BIC multiscale",0.00200000000000244,79
+"vary_k",1000,20,2,"PELT",0.00100000000000477,94
+"vary_k",1000,20,2,"SVP Wilcoxon",0.000999999999997669,66
+"vary_k",1000,20,2,"SVP MedianMood",0.0069999999999979,21
+"vary_k",1000,20,2,"SVP BIC multiscale",0.00200000000000244,104
+"vary_k",1000,20,3,"PELT",0.00100000000000477,99
+"vary_k",1000,20,3,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,20,3,"SVP MedianMood",0.00799999999999557,21
+"vary_k",1000,20,3,"SVP BIC multiscale",0.00200000000000244,109
+"vary_k",1000,20,4,"PELT",0.000999999999997669,92
+"vary_k",1000,20,4,"SVP Wilcoxon",0,65
+"vary_k",1000,20,4,"SVP MedianMood",0.00799999999999557,21
+"vary_k",1000,20,4,"SVP BIC multiscale",0.00300000000000011,98
+"vary_k",1000,20,5,"PELT",0.000999999999997669,94
+"vary_k",1000,20,5,"SVP Wilcoxon",0.00100000000000477,70
+"vary_k",1000,20,5,"SVP MedianMood",0.00800000000000267,21
+"vary_k",1000,20,5,"SVP BIC multiscale",0.00200000000000244,107
+"vary_k",1000,21,1,"PELT",0.000999999999997669,92
+"vary_k",1000,21,1,"SVP Wilcoxon",0,68
+"vary_k",1000,21,1,"SVP MedianMood",0.0069999999999979,22
+"vary_k",1000,21,1,"SVP BIC multiscale",0.00199999999999534,95
+"vary_k",1000,21,2,"PELT",0.000999999999997669,94
+"vary_k",1000,21,2,"SVP Wilcoxon",0.00100000000000477,68
+"vary_k",1000,21,2,"SVP MedianMood",0.0069999999999979,22
+"vary_k",1000,21,2,"SVP BIC multiscale",0.00200000000000244,103
+"vary_k",1000,21,3,"PELT",0.000999999999997669,106
+"vary_k",1000,21,3,"SVP Wilcoxon",0,67
+"vary_k",1000,21,3,"SVP MedianMood",0.0069999999999979,22
+"vary_k",1000,21,3,"SVP BIC multiscale",0.00200000000000244,114
+"vary_k",1000,21,4,"PELT",0.000999999999997669,92
+"vary_k",1000,21,4,"SVP Wilcoxon",0,69
+"vary_k",1000,21,4,"SVP MedianMood",0.0069999999999979,22
+"vary_k",1000,21,4,"SVP BIC multiscale",0.00199999999999534,103
+"vary_k",1000,21,5,"PELT",0.000999999999997669,88
+"vary_k",1000,21,5,"SVP Wilcoxon",0,69
+"vary_k",1000,21,5,"SVP MedianMood",0.00800000000000267,22
+"vary_k",1000,21,5,"SVP BIC multiscale",0.00199999999999534,102
+"vary_k",1000,22,1,"PELT",0.000999999999997669,98
+"vary_k",1000,22,1,"SVP Wilcoxon",0,71
+"vary_k",1000,22,1,"SVP MedianMood",0.00600000000000023,23
+"vary_k",1000,22,1,"SVP BIC multiscale",0.00200000000000244,108
+"vary_k",1000,22,2,"PELT",0.000999999999997669,109
+"vary_k",1000,22,2,"SVP Wilcoxon",0,67
+"vary_k",1000,22,2,"SVP MedianMood",0.007000000000005,23
+"vary_k",1000,22,2,"SVP BIC multiscale",0.00200000000000244,120
+"vary_k",1000,22,3,"PELT",0.00100000000000477,103
+"vary_k",1000,22,3,"SVP Wilcoxon",0.000999999999997669,64
+"vary_k",1000,22,3,"SVP MedianMood",0.0069999999999979,23
+"vary_k",1000,22,3,"SVP BIC multiscale",0.00199999999999534,121
+"vary_k",1000,22,4,"PELT",0.000999999999997669,99
+"vary_k",1000,22,4,"SVP Wilcoxon",0.000999999999997669,70
+"vary_k",1000,22,4,"SVP MedianMood",0.0069999999999979,23
+"vary_k",1000,22,4,"SVP BIC multiscale",0.00199999999999534,101
+"vary_k",1000,22,5,"PELT",0.000999999999997669,95
+"vary_k",1000,22,5,"SVP Wilcoxon",0,67
+"vary_k",1000,22,5,"SVP MedianMood",0.007000000000005,23
+"vary_k",1000,22,5,"SVP BIC multiscale",0.00199999999999534,106
+"vary_k",1000,23,1,"PELT",0.00200000000000244,80
+"vary_k",1000,23,1,"SVP Wilcoxon",0.00100000000000477,68
+"vary_k",1000,23,1,"SVP MedianMood",0.0069999999999979,24
+"vary_k",1000,23,1,"SVP BIC multiscale",0.00200000000000244,96
+"vary_k",1000,23,2,"PELT",0,77
+"vary_k",1000,23,2,"SVP Wilcoxon",0,68
+"vary_k",1000,23,2,"SVP MedianMood",0.0069999999999979,24
+"vary_k",1000,23,2,"SVP BIC multiscale",0.00300000000000011,90
+"vary_k",1000,23,3,"PELT",0.00100000000000477,92
+"vary_k",1000,23,3,"SVP Wilcoxon",0.000999999999997669,69
+"vary_k",1000,23,3,"SVP MedianMood",0.007000000000005,24
+"vary_k",1000,23,3,"SVP BIC multiscale",0.00200000000000244,104
+"vary_k",1000,23,4,"PELT",0,70
+"vary_k",1000,23,4,"SVP Wilcoxon",0,68
+"vary_k",1000,23,4,"SVP MedianMood",0.00600000000000023,24
+"vary_k",1000,23,4,"SVP BIC multiscale",0.00199999999999534,86
+"vary_k",1000,23,5,"PELT",0.00100000000000477,108
+"vary_k",1000,23,5,"SVP Wilcoxon",0.000999999999997669,71
+"vary_k",1000,23,5,"SVP MedianMood",0.007000000000005,24
+"vary_k",1000,23,5,"SVP BIC multiscale",0.00199999999999534,120
+"vary_k",1000,24,1,"PELT",0.000999999999997669,100
+"vary_k",1000,24,1,"SVP Wilcoxon",0,69
+"vary_k",1000,24,1,"SVP MedianMood",0.00600000000000023,25
+"vary_k",1000,24,1,"SVP BIC multiscale",0.00200000000000244,113
+"vary_k",1000,24,2,"PELT",0.00100000000000477,121
+"vary_k",1000,24,2,"SVP Wilcoxon",0,71
+"vary_k",1000,24,2,"SVP MedianMood",0.00600000000000023,25
+"vary_k",1000,24,2,"SVP BIC multiscale",0.00199999999999534,137
+"vary_k",1000,24,3,"PELT",0.000999999999997669,94
+"vary_k",1000,24,3,"SVP Wilcoxon",0.000999999999997669,69
+"vary_k",1000,24,3,"SVP MedianMood",0.00600000000000023,25
+"vary_k",1000,24,3,"SVP BIC multiscale",0.000999999999997669,110
+"vary_k",1000,24,4,"PELT",0.00100000000000477,106
+"vary_k",1000,24,4,"SVP Wilcoxon",0.00100000000000477,67
+"vary_k",1000,24,4,"SVP MedianMood",0.00600000000000023,25
+"vary_k",1000,24,4,"SVP BIC multiscale",0.00200000000000244,110
+"vary_k",1000,24,5,"PELT",0.000999999999997669,105
+"vary_k",1000,24,5,"SVP Wilcoxon",0,68
+"vary_k",1000,24,5,"SVP MedianMood",0.007000000000005,25
+"vary_k",1000,24,5,"SVP BIC multiscale",0.00200000000000244,122
+"vary_k",1000,25,1,"PELT",0.000999999999997669,90
+"vary_k",1000,25,1,"SVP Wilcoxon",0,68
+"vary_k",1000,25,1,"SVP MedianMood",0.00600000000000023,26
+"vary_k",1000,25,1,"SVP BIC multiscale",0.00199999999999534,113
+"vary_k",1000,25,2,"PELT",0.000999999999997669,88
+"vary_k",1000,25,2,"SVP Wilcoxon",0,72
+"vary_k",1000,25,2,"SVP MedianMood",0.0069999999999979,26
+"vary_k",1000,25,2,"SVP BIC multiscale",0.00100000000000477,107
+"vary_k",1000,25,3,"PELT",0,99
+"vary_k",1000,25,3,"SVP Wilcoxon",0,71
+"vary_k",1000,25,3,"SVP MedianMood",0.00599999999999312,26
+"vary_k",1000,25,3,"SVP BIC multiscale",0.00300000000000011,104
+"vary_k",1000,25,4,"PELT",0.000999999999997669,121
+"vary_k",1000,25,4,"SVP Wilcoxon",0,70
+"vary_k",1000,25,4,"SVP MedianMood",0.0069999999999979,26
+"vary_k",1000,25,4,"SVP BIC multiscale",0.00200000000000244,136
+"vary_k",1000,25,5,"PELT",0.000999999999997669,83
+"vary_k",1000,25,5,"SVP Wilcoxon",0.000999999999997669,70
+"vary_k",1000,25,5,"SVP MedianMood",0.00600000000000023,26
+"vary_k",1000,25,5,"SVP BIC multiscale",0.00300000000000011,99
+"vary_k",1000,26,1,"PELT",0.000999999999997669,97
+"vary_k",1000,26,1,"SVP Wilcoxon",0.00100000000000477,70
+"vary_k",1000,26,1,"SVP MedianMood",0.00500000000000256,27
+"vary_k",1000,26,1,"SVP BIC multiscale",0.00199999999999534,112
+"vary_k",1000,26,2,"PELT",0.000999999999997669,82
+"vary_k",1000,26,2,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,26,2,"SVP MedianMood",0.00600000000000023,27
+"vary_k",1000,26,2,"SVP BIC multiscale",0.00200000000000244,92
+"vary_k",1000,26,3,"PELT",0,98
+"vary_k",1000,26,3,"SVP Wilcoxon",0,70
+"vary_k",1000,26,3,"SVP MedianMood",0.00600000000000023,27
+"vary_k",1000,26,3,"SVP BIC multiscale",0.00199999999999534,107
+"vary_k",1000,26,4,"PELT",0.000999999999997669,97
+"vary_k",1000,26,4,"SVP Wilcoxon",0,69
+"vary_k",1000,26,4,"SVP MedianMood",0.00600000000000023,27
+"vary_k",1000,26,4,"SVP BIC multiscale",0.00199999999999534,109
+"vary_k",1000,26,5,"PELT",0.000999999999997669,92
+"vary_k",1000,26,5,"SVP Wilcoxon",0.000999999999997669,67
+"vary_k",1000,26,5,"SVP MedianMood",0.00600000000000023,27
+"vary_k",1000,26,5,"SVP BIC multiscale",0.00300000000000011,112
+"vary_k",1000,27,1,"PELT",0.00100000000000477,106
+"vary_k",1000,27,1,"SVP Wilcoxon",0,68
+"vary_k",1000,27,1,"SVP MedianMood",0.00600000000000023,28
+"vary_k",1000,27,1,"SVP BIC multiscale",0.00200000000000244,115
+"vary_k",1000,27,2,"PELT",0.00100000000000477,93
+"vary_k",1000,27,2,"SVP Wilcoxon",0,65
+"vary_k",1000,27,2,"SVP MedianMood",0.00600000000000023,28
+"vary_k",1000,27,2,"SVP BIC multiscale",0.00200000000000244,111
+"vary_k",1000,27,3,"PELT",0.000999999999997669,99
+"vary_k",1000,27,3,"SVP Wilcoxon",0,69
+"vary_k",1000,27,3,"SVP MedianMood",0.00600000000000023,28
+"vary_k",1000,27,3,"SVP BIC multiscale",0.00199999999999534,104
+"vary_k",1000,27,4,"PELT",0.000999999999997669,120
+"vary_k",1000,27,4,"SVP Wilcoxon",0.000999999999997669,69
+"vary_k",1000,27,4,"SVP MedianMood",0.0069999999999979,28
+"vary_k",1000,27,4,"SVP BIC multiscale",0.00199999999999534,125
+"vary_k",1000,27,5,"PELT",0.00100000000000477,111
+"vary_k",1000,27,5,"SVP Wilcoxon",0,69
+"vary_k",1000,27,5,"SVP MedianMood",0.00600000000000023,28
+"vary_k",1000,27,5,"SVP BIC multiscale",0.00200000000000244,121
+"vary_k",1000,28,1,"PELT",0,103
+"vary_k",1000,28,1,"SVP Wilcoxon",0,68
+"vary_k",1000,28,1,"SVP MedianMood",0.00600000000000023,29
+"vary_k",1000,28,1,"SVP BIC multiscale",0.00200000000000244,118
+"vary_k",1000,28,2,"PELT",0,107
+"vary_k",1000,28,2,"SVP Wilcoxon",0,69
+"vary_k",1000,28,2,"SVP MedianMood",0.00600000000000023,29
+"vary_k",1000,28,2,"SVP BIC multiscale",0.00100000000000477,122
+"vary_k",1000,28,3,"PELT",0.00100000000000477,90
+"vary_k",1000,28,3,"SVP Wilcoxon",0,70
+"vary_k",1000,28,3,"SVP MedianMood",0.00600000000000023,29
+"vary_k",1000,28,3,"SVP BIC multiscale",0.00200000000000244,97
+"vary_k",1000,28,4,"PELT",0.000999999999997669,100
+"vary_k",1000,28,4,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,28,4,"SVP MedianMood",0.00600000000000023,29
+"vary_k",1000,28,4,"SVP BIC multiscale",0.00199999999999534,123
+"vary_k",1000,28,5,"PELT",0,103
+"vary_k",1000,28,5,"SVP Wilcoxon",0,71
+"vary_k",1000,28,5,"SVP MedianMood",0.00600000000000023,29
+"vary_k",1000,28,5,"SVP BIC multiscale",0.00300000000000011,118
+"vary_k",1000,29,1,"PELT",0.000999999999997669,120
+"vary_k",1000,29,1,"SVP Wilcoxon",0,68
+"vary_k",1000,29,1,"SVP MedianMood",0.00500000000000256,29
+"vary_k",1000,29,1,"SVP BIC multiscale",0.00199999999999534,132
+"vary_k",1000,29,2,"PELT",0.000999999999997669,90
+"vary_k",1000,29,2,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,29,2,"SVP MedianMood",0.00500000000000256,30
+"vary_k",1000,29,2,"SVP BIC multiscale",0.00200000000000244,105
+"vary_k",1000,29,3,"PELT",0.000999999999997669,96
+"vary_k",1000,29,3,"SVP Wilcoxon",0.000999999999997669,70
+"vary_k",1000,29,3,"SVP MedianMood",0.00600000000000023,30
+"vary_k",1000,29,3,"SVP BIC multiscale",0.00200000000000244,115
+"vary_k",1000,29,4,"PELT",0.000999999999997669,125
+"vary_k",1000,29,4,"SVP Wilcoxon",0,71
+"vary_k",1000,29,4,"SVP MedianMood",0.00600000000000023,30
+"vary_k",1000,29,4,"SVP BIC multiscale",0.000999999999997669,133
+"vary_k",1000,29,5,"PELT",0,97
+"vary_k",1000,29,5,"SVP Wilcoxon",0,70
+"vary_k",1000,29,5,"SVP MedianMood",0.00499999999999545,30
+"vary_k",1000,29,5,"SVP BIC multiscale",0.00199999999999534,107
+"vary_k",1000,30,1,"PELT",0.000999999999997669,100
+"vary_k",1000,30,1,"SVP Wilcoxon",0.000999999999997669,67
+"vary_k",1000,30,1,"SVP MedianMood",0.00600000000000023,31
+"vary_k",1000,30,1,"SVP BIC multiscale",0.00199999999999534,112
+"vary_k",1000,30,2,"PELT",0.000999999999997669,109
+"vary_k",1000,30,2,"SVP Wilcoxon",0.00100000000000477,70
+"vary_k",1000,30,2,"SVP MedianMood",0.00600000000000023,31
+"vary_k",1000,30,2,"SVP BIC multiscale",0.00199999999999534,114
+"vary_k",1000,30,3,"PELT",0.000999999999997669,97
+"vary_k",1000,30,3,"SVP Wilcoxon",0,68
+"vary_k",1000,30,3,"SVP MedianMood",0.00499999999999545,31
+"vary_k",1000,30,3,"SVP BIC multiscale",0.00200000000000244,124
+"vary_k",1000,30,4,"PELT",0,122
+"vary_k",1000,30,4,"SVP Wilcoxon",0.00100000000000477,68
+"vary_k",1000,30,4,"SVP MedianMood",0.00600000000000023,31
+"vary_k",1000,30,4,"SVP BIC multiscale",0.00199999999999534,128
+"vary_k",1000,30,5,"PELT",0.00100000000000477,92
+"vary_k",1000,30,5,"SVP Wilcoxon",0.000999999999997669,71
+"vary_k",1000,30,5,"SVP MedianMood",0.00600000000000023,31
+"vary_k",1000,30,5,"SVP BIC multiscale",0.00200000000000244,105
+"vary_k",1000,31,1,"PELT",0.00100000000000477,87
+"vary_k",1000,31,1,"SVP Wilcoxon",0,68
+"vary_k",1000,31,1,"SVP MedianMood",0.00499999999999545,31
+"vary_k",1000,31,1,"SVP BIC multiscale",0.00199999999999534,104
+"vary_k",1000,31,2,"PELT",0.000999999999997669,100
+"vary_k",1000,31,2,"SVP Wilcoxon",0,70
+"vary_k",1000,31,2,"SVP MedianMood",0.00500000000000256,31
+"vary_k",1000,31,2,"SVP BIC multiscale",0.000999999999997669,116
+"vary_k",1000,31,3,"PELT",0.000999999999997669,94
+"vary_k",1000,31,3,"SVP Wilcoxon",0.00100000000000477,70
+"vary_k",1000,31,3,"SVP MedianMood",0.00499999999999545,32
+"vary_k",1000,31,3,"SVP BIC multiscale",0.00200000000000244,103
+"vary_k",1000,31,4,"PELT",0.000999999999997669,93
+"vary_k",1000,31,4,"SVP Wilcoxon",0,66
+"vary_k",1000,31,4,"SVP MedianMood",0.00500000000000256,32
+"vary_k",1000,31,4,"SVP BIC multiscale",0.00200000000000244,101
+"vary_k",1000,31,5,"PELT",0.00199999999999534,109
+"vary_k",1000,31,5,"SVP Wilcoxon",0.000999999999997669,70
+"vary_k",1000,31,5,"SVP MedianMood",0.00499999999999545,32
+"vary_k",1000,31,5,"SVP BIC multiscale",0.00200000000000244,114
+"vary_k",1000,32,1,"PELT",0.000999999999997669,85
+"vary_k",1000,32,1,"SVP Wilcoxon",0.000999999999997669,69
+"vary_k",1000,32,1,"SVP MedianMood",0.00499999999999545,33
+"vary_k",1000,32,1,"SVP BIC multiscale",0.00200000000000244,91
+"vary_k",1000,32,2,"PELT",0.00100000000000477,116
+"vary_k",1000,32,2,"SVP Wilcoxon",0,71
+"vary_k",1000,32,2,"SVP MedianMood",0.00500000000000256,33
+"vary_k",1000,32,2,"SVP BIC multiscale",0.00199999999999534,122
+"vary_k",1000,32,3,"PELT",0.00199999999999534,132
+"vary_k",1000,32,3,"SVP Wilcoxon",0,68
+"vary_k",1000,32,3,"SVP MedianMood",0.00600000000000023,33
+"vary_k",1000,32,3,"SVP BIC multiscale",0.00200000000000244,142
+"vary_k",1000,32,4,"PELT",0.000999999999997669,108
+"vary_k",1000,32,4,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,32,4,"SVP MedianMood",0.00500000000000256,33
+"vary_k",1000,32,4,"SVP BIC multiscale",0.00300000000000011,123
+"vary_k",1000,32,5,"PELT",0,100
+"vary_k",1000,32,5,"SVP Wilcoxon",0.000999999999997669,72
+"vary_k",1000,32,5,"SVP MedianMood",0.00600000000000023,33
+"vary_k",1000,32,5,"SVP BIC multiscale",0.00200000000000244,114
+"vary_k",1000,33,1,"PELT",0.000999999999997669,120
+"vary_k",1000,33,1,"SVP Wilcoxon",0.000999999999997669,70
+"vary_k",1000,33,1,"SVP MedianMood",0.00600000000000023,33
+"vary_k",1000,33,1,"SVP BIC multiscale",0.00200000000000244,126
+"vary_k",1000,33,2,"PELT",0.000999999999997669,114
+"vary_k",1000,33,2,"SVP Wilcoxon",0.000999999999997669,70
+"vary_k",1000,33,2,"SVP MedianMood",0.00499999999999545,33
+"vary_k",1000,33,2,"SVP BIC multiscale",0.00199999999999534,126
+"vary_k",1000,33,3,"PELT",0.00100000000000477,132
+"vary_k",1000,33,3,"SVP Wilcoxon",0,70
+"vary_k",1000,33,3,"SVP MedianMood",0.00600000000000023,34
+"vary_k",1000,33,3,"SVP BIC multiscale",0.00200000000000244,146
+"vary_k",1000,33,4,"PELT",0,105
+"vary_k",1000,33,4,"SVP Wilcoxon",0.000999999999997669,70
+"vary_k",1000,33,4,"SVP MedianMood",0.00600000000000023,32
+"vary_k",1000,33,4,"SVP BIC multiscale",0.00200000000000244,114
+"vary_k",1000,33,5,"PELT",0.000999999999997669,97
+"vary_k",1000,33,5,"SVP Wilcoxon",0.00100000000000477,70
+"vary_k",1000,33,5,"SVP MedianMood",0.00500000000000256,34
+"vary_k",1000,33,5,"SVP BIC multiscale",0.00199999999999534,107
+"vary_k",1000,34,1,"PELT",0.000999999999997669,99
+"vary_k",1000,34,1,"SVP Wilcoxon",0,72
+"vary_k",1000,34,1,"SVP MedianMood",0.00500000000000256,35
+"vary_k",1000,34,1,"SVP BIC multiscale",0.00200000000000244,110
+"vary_k",1000,34,2,"PELT",0.000999999999997669,107
+"vary_k",1000,34,2,"SVP Wilcoxon",0,70
+"vary_k",1000,34,2,"SVP MedianMood",0.00600000000000023,34
+"vary_k",1000,34,2,"SVP BIC multiscale",0.00200000000000244,112
+"vary_k",1000,34,3,"PELT",0.000999999999997669,120
+"vary_k",1000,34,3,"SVP Wilcoxon",0.000999999999997669,72
+"vary_k",1000,34,3,"SVP MedianMood",0.00600000000000023,35
+"vary_k",1000,34,3,"SVP BIC multiscale",0.00200000000000244,129
+"vary_k",1000,34,4,"PELT",0.000999999999997669,125
+"vary_k",1000,34,4,"SVP Wilcoxon",0.000999999999997669,68
+"vary_k",1000,34,4,"SVP MedianMood",0.00499999999999545,34
+"vary_k",1000,34,4,"SVP BIC multiscale",0.00200000000000244,132
+"vary_k",1000,34,5,"PELT",0.00100000000000477,106
+"vary_k",1000,34,5,"SVP Wilcoxon",0,71
+"vary_k",1000,34,5,"SVP MedianMood",0.00500000000000256,35
+"vary_k",1000,34,5,"SVP BIC multiscale",0.00200000000000244,116
+"vary_k",1000,35,1,"PELT",0.000999999999997669,106
+"vary_k",1000,35,1,"SVP Wilcoxon",0,71
+"vary_k",1000,35,1,"SVP MedianMood",0.00500000000000256,35
+"vary_k",1000,35,1,"SVP BIC multiscale",0.00199999999999534,114
+"vary_k",1000,35,2,"PELT",0.000999999999997669,109
+"vary_k",1000,35,2,"SVP Wilcoxon",0,70
+"vary_k",1000,35,2,"SVP MedianMood",0.00500000000000256,35
+"vary_k",1000,35,2,"SVP BIC multiscale",0.00200000000000244,114
+"vary_k",1000,35,3,"PELT",0.00100000000000477,112
+"vary_k",1000,35,3,"SVP Wilcoxon",0,70
+"vary_k",1000,35,3,"SVP MedianMood",0.00600000000000023,34
+"vary_k",1000,35,3,"SVP BIC multiscale",0.000999999999997669,119
+"vary_k",1000,35,4,"PELT",0,108
+"vary_k",1000,35,4,"SVP Wilcoxon",0.000999999999997669,71
+"vary_k",1000,35,4,"SVP MedianMood",0.00600000000000023,35
+"vary_k",1000,35,4,"SVP BIC multiscale",0.00200000000000244,115
+"vary_k",1000,35,5,"PELT",0.00100000000000477,107
+"vary_k",1000,35,5,"SVP Wilcoxon",0.00100000000000477,70
+"vary_k",1000,35,5,"SVP MedianMood",0.00500000000000256,34
+"vary_k",1000,35,5,"SVP BIC multiscale",0.00199999999999534,125
+"vary_k",1000,36,1,"PELT",0.000999999999997669,95
+"vary_k",1000,36,1,"SVP Wilcoxon",0,69
+"vary_k",1000,36,1,"SVP MedianMood",0.00500000000000256,34
+"vary_k",1000,36,1,"SVP BIC multiscale",0.00200000000000244,102
+"vary_k",1000,36,2,"PELT",0.00100000000000477,89
+"vary_k",1000,36,2,"SVP Wilcoxon",0,73
+"vary_k",1000,36,2,"SVP MedianMood",0.00499999999999545,36
+"vary_k",1000,36,2,"SVP BIC multiscale",0.000999999999997669,99
+"vary_k",1000,36,3,"PELT",0.000999999999997669,95
+"vary_k",1000,36,3,"SVP Wilcoxon",0.00100000000000477,70
+"vary_k",1000,36,3,"SVP MedianMood",0.00499999999999545,37
+"vary_k",1000,36,3,"SVP BIC multiscale",0.00199999999999534,106
+"vary_k",1000,36,4,"PELT",0.000999999999997669,98
+"vary_k",1000,36,4,"SVP Wilcoxon",0.000999999999997669,71
+"vary_k",1000,36,4,"SVP MedianMood",0.00500000000000256,35
+"vary_k",1000,36,4,"SVP BIC multiscale",0.00200000000000244,105
+"vary_k",1000,36,5,"PELT",0.000999999999997669,100
+"vary_k",1000,36,5,"SVP Wilcoxon",0.00100000000000477,72
+"vary_k",1000,36,5,"SVP MedianMood",0.00499999999999545,36
+"vary_k",1000,36,5,"SVP BIC multiscale",0.00200000000000244,113
+"vary_k",1000,37,1,"PELT",0.00100000000000477,107
+"vary_k",1000,37,1,"SVP Wilcoxon",0,73
+"vary_k",1000,37,1,"SVP MedianMood",0.00400000000000489,38
+"vary_k",1000,37,1,"SVP BIC multiscale",0.00200000000000244,113
+"vary_k",1000,37,2,"PELT",0.00100000000000477,99
+"vary_k",1000,37,2,"SVP Wilcoxon",0.000999999999997669,75
+"vary_k",1000,37,2,"SVP MedianMood",0.00600000000000023,34
+"vary_k",1000,37,2,"SVP BIC multiscale",0.00199999999999534,114
+"vary_k",1000,37,3,"PELT",0.000999999999997669,121
+"vary_k",1000,37,3,"SVP Wilcoxon",0.00100000000000477,71
+"vary_k",1000,37,3,"SVP MedianMood",0.00500000000000256,34
+"vary_k",1000,37,3,"SVP BIC multiscale",0.00199999999999534,124
+"vary_k",1000,37,4,"PELT",0.000999999999997669,105
+"vary_k",1000,37,4,"SVP Wilcoxon",0.00100000000000477,72
+"vary_k",1000,37,4,"SVP MedianMood",0.00500000000000256,34
+"vary_k",1000,37,4,"SVP BIC multiscale",0.00200000000000244,110
+"vary_k",1000,37,5,"PELT",0.00100000000000477,118
+"vary_k",1000,37,5,"SVP Wilcoxon",0.000999999999997669,70
+"vary_k",1000,37,5,"SVP MedianMood",0.00400000000000489,36
+"vary_k",1000,37,5,"SVP BIC multiscale",0.00100000000000477,122
+"vary_k",1000,38,1,"PELT",0,101
+"vary_k",1000,38,1,"SVP Wilcoxon",0,72
+"vary_k",1000,38,1,"SVP MedianMood",0.00499999999999545,34
+"vary_k",1000,38,1,"SVP BIC multiscale",0.00200000000000244,115
+"vary_k",1000,38,2,"PELT",0,116
+"vary_k",1000,38,2,"SVP Wilcoxon",0.00100000000000477,71
+"vary_k",1000,38,2,"SVP MedianMood",0.00499999999999545,35
+"vary_k",1000,38,2,"SVP BIC multiscale",0.00199999999999534,125
+"vary_k",1000,38,3,"PELT",0,106
+"vary_k",1000,38,3,"SVP Wilcoxon",0,73
+"vary_k",1000,38,3,"SVP MedianMood",0.00500000000000256,37
+"vary_k",1000,38,3,"SVP BIC multiscale",0.00200000000000244,114
+"vary_k",1000,38,4,"PELT",0.000999999999997669,107
+"vary_k",1000,38,4,"SVP Wilcoxon",0.000999999999997669,72
+"vary_k",1000,38,4,"SVP MedianMood",0.00500000000000256,33
+"vary_k",1000,38,4,"SVP BIC multiscale",0.00200000000000244,114
+"vary_k",1000,38,5,"PELT",0.00100000000000477,109
+"vary_k",1000,38,5,"SVP Wilcoxon",0,73
+"vary_k",1000,38,5,"SVP MedianMood",0.00600000000000023,35
+"vary_k",1000,38,5,"SVP BIC multiscale",0.00200000000000244,121
+"vary_k",1000,39,1,"PELT",0.000999999999997669,108
+"vary_k",1000,39,1,"SVP Wilcoxon",0,73
+"vary_k",1000,39,1,"SVP MedianMood",0.00499999999999545,38
+"vary_k",1000,39,1,"SVP BIC multiscale",0.000999999999997669,118
+"vary_k",1000,39,2,"PELT",0.00100000000000477,111
+"vary_k",1000,39,2,"SVP Wilcoxon",0,76
+"vary_k",1000,39,2,"SVP MedianMood",0.00500000000000256,38
+"vary_k",1000,39,2,"SVP BIC multiscale",0.00200000000000244,118
+"vary_k",1000,39,3,"PELT",0.000999999999997669,107
+"vary_k",1000,39,3,"SVP Wilcoxon",0.00100000000000477,71
+"vary_k",1000,39,3,"SVP MedianMood",0.00499999999999545,36
+"vary_k",1000,39,3,"SVP BIC multiscale",0.00199999999999534,109
+"vary_k",1000,39,4,"PELT",0.000999999999997669,126
+"vary_k",1000,39,4,"SVP Wilcoxon",0,73
+"vary_k",1000,39,4,"SVP MedianMood",0.00500000000000256,37
+"vary_k",1000,39,4,"SVP BIC multiscale",0.00200000000000244,132
+"vary_k",1000,39,5,"PELT",0.000999999999997669,108
+"vary_k",1000,39,5,"SVP Wilcoxon",0.00100000000000477,73
+"vary_k",1000,39,5,"SVP MedianMood",0.00500000000000256,37
+"vary_k",1000,39,5,"SVP BIC multiscale",0.00200000000000244,109
+"vary_k",1000,40,1,"PELT",0.00100000000000477,101
+"vary_k",1000,40,1,"SVP Wilcoxon",0,71
+"vary_k",1000,40,1,"SVP MedianMood",0.00500000000000256,31
+"vary_k",1000,40,1,"SVP BIC multiscale",0.00199999999999534,109
+"vary_k",1000,40,2,"PELT",0,75
+"vary_k",1000,40,2,"SVP Wilcoxon",0.00100000000000477,73
+"vary_k",1000,40,2,"SVP MedianMood",0.00500000000000256,36
+"vary_k",1000,40,2,"SVP BIC multiscale",0.00200000000000244,84
+"vary_k",1000,40,3,"PELT",0.000999999999997669,107
+"vary_k",1000,40,3,"SVP Wilcoxon",0,72
+"vary_k",1000,40,3,"SVP MedianMood",0.00399999999999778,40
+"vary_k",1000,40,3,"SVP BIC multiscale",0.00200000000000244,123
+"vary_k",1000,40,4,"PELT",0.000999999999997669,116
+"vary_k",1000,40,4,"SVP Wilcoxon",0,74
+"vary_k",1000,40,4,"SVP MedianMood",0.00499999999999545,33
+"vary_k",1000,40,4,"SVP BIC multiscale",0.00200000000000244,122
+"vary_k",1000,40,5,"PELT",0.000999999999997669,101
+"vary_k",1000,40,5,"SVP Wilcoxon",0.000999999999997669,74
+"vary_k",1000,40,5,"SVP MedianMood",0.00500000000000256,35
+"vary_k",1000,40,5,"SVP BIC multiscale",0.00200000000000244,107

@@ -114,30 +114,18 @@ SN <- function(data, Kmax) {
 #' option to `FALSE` only when comparing pruning rules; doing so can retain more
 #' candidates and increase run time.
 #'
-#' With `use_multiscale_gamma = FALSE`, every segment uses the scalar `gamma`.
-#' With it set to `TRUE`, a candidate of length `l` in a series of length `n`
-#' instead uses
-#' `sigma2 * (q_alpha_n + 2 * log(exp(1) * n / l))`.
-#' The user must supply a calibration `q_alpha_n` appropriate to the desired
-#' global error level and sample size; it is not estimated by this function.
-#'
 #' @param data Numeric vector containing the univariate series. Missing or
 #'   non-finite values are not supported.
-#' @param gamma Positive scalar validity threshold used when
-#'   `use_multiscale_gamma = FALSE`. A larger value accepts longer or less
-#'   homogeneous segments and therefore generally produces fewer changes.
+#' @param gamma Positive scalar validity threshold. A larger value accepts
+#'   longer or less homogeneous segments and therefore generally produces
+#'   fewer changes.
 #' @param test Character scalar selecting one of the validity tests listed in
 #'   Details. Defaults to `"gaussian_mean"`.
 #' @param prune_after_if_unvalid Logical; discard a candidate boundary after
 #'   its current segment fails the test.
 #' @param prune_before_if_invalid Logical; when a candidate segment fails,
 #'   also discard candidate boundaries older than its start.
-#' @param use_multiscale_gamma Logical; use a segment-length-dependent threshold
-#'   instead of `gamma`.
-#' @param sigma2 Positive finite variance. It scales the multiscale threshold
-#'   and is the innovation variance for `test = "AR1"`.
-#' @param q_alpha_n Numeric global calibration constant for the multiscale
-#'   threshold. It must be calibrated externally under the relevant null model.
+#' @param sigma2 Positive finite innovation variance for the AR1 tests.
 #' @param rho AR(1) coefficient for the three AR1 tests. It must be finite and
 #'   strictly between -1 and 1. Use [AR1_rho()] to obtain a robust estimate if
 #'   `rho` is unknown, it is estimated robustly from the full series.
@@ -157,17 +145,16 @@ SN <- function(data, Kmax) {
 #' x <- rep(c(0, 2, -1), each = 40) + rnorm(120)
 #' SVP(x, gamma = 1.5 * log(length(x)))$changepoints
 #'
-#' # Aggressive pruning and a multiscale threshold:
-#' SVP(x, gamma = 0, test = "gaussian_mean",
+#' # Aggressive TRUE/TRUE pruning:
+#' SVP(x, gamma = 1.5 * log(length(x)), test = "gaussian_mean",
 #'     prune_after_if_unvalid = TRUE,
-#'     prune_before_if_invalid = TRUE,
-#'     use_multiscale_gamma = TRUE, sigma2 = 1, q_alpha_n = 3)
+#'     prune_before_if_invalid = TRUE)
 #'
 #' @seealso [svp0()] for arbitrary R validity functions, [AR1_rho()], and
 #'   [AR1_single_change()].
 #' @export
-SVP <- function(data, gamma, test = "gaussian_mean", prune_after_if_unvalid = TRUE, prune_before_if_invalid = FALSE, use_multiscale_gamma = FALSE, sigma2 = 1.0, q_alpha_n = 0.0, rho = NA_real_, profile_sigma = FALSE, quantile = 0.01) {
-    .Call(`_svpChange2_SVP`, data, gamma, test, prune_after_if_unvalid, prune_before_if_invalid, use_multiscale_gamma, sigma2, q_alpha_n, rho, profile_sigma, quantile)
+SVP <- function(data, gamma, test = "gaussian_mean", prune_after_if_unvalid = TRUE, prune_before_if_invalid = FALSE, sigma2 = 1.0, rho = NA_real_, profile_sigma = FALSE, quantile = 0.01) {
+    .Call(`_svpChange2_SVP`, data, gamma, test, prune_after_if_unvalid, prune_before_if_invalid, sigma2, rho, profile_sigma, quantile)
 }
 
 #' Smallest Valid Partitioning with Validation and Pruning using Rcpp

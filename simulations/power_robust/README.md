@@ -12,20 +12,23 @@ On macOS/Linux the default uses all detected physical cores except one through
 sequential run or pass another explicit worker count.
 
 The separately calibrated TRUE/TRUE Wilcoxon constant is 1.75; see
-`true_true_calibration.csv`. Its detected boundaries are refined locally with a
-rank-CUSUM, which preserves the number of segments and the null decision. In
-the final study this method has rand1 F1 0.693 (RFPOP paper: 0.688) and
+`true_true_calibration.csv`. The reported boundaries are the direct output of
+`SVP()`, without post-processing. In the final study this method has rand1 F1
+0.595 (RFPOP paper: 0.688) and
 no-change F1 0.998.
 
 The design reproduces the Student-t(2) study in `SVP_Paper.pdf`: `n=1000`,
 four scenarios, jumps from 0.1 to 4, 100 replications, and the paper's PELT,
 RFPOP, Median-Mood SVP, and Wilcoxon SVP configurations.
 
-`SVP Wilcoxon TRUE/TRUE c=1.8` is added. The original `RFPOP (paper)` curve is
-retained exactly. A second RFPOP curve uses the smallest penalty multiplier
+`SVP Wilcoxon multiscale` is the Wilcoxon method with TRUE/TRUE pruning. The original
+`RFPOP paper` result is
+retained in the result files but excluded from the primary legend. `RFPOP`
+uses the smallest penalty multiplier
 attaining at least 98% no-change recovery in an independent 200-replicate null
 calibration; its calibration table is saved as `rfpop_null_calibration.csv`.
 This makes the false-positive trade-off explicit rather than altering the paper
 curve without disclosure.
 
-The six PDFs and result files have the same meanings as in the Gaussian folder.
+The seven PDFs and result files have the same meanings as in the Gaussian
+folder.

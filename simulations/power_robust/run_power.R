@@ -56,28 +56,26 @@ fit_robust_methods <- function(y, true_segments, rfpop_constant) {
   wilcoxon_gamma <- sqrt((n / true_segments)^3 / 12)
   paper_rfpop <- fit_rfpop(y, 2)
   calibrated_rfpop <- fit_rfpop(y, rfpop_constant)
-  calibrated_label <- sprintf("RFPOP (null-matched c=%g)", rfpop_constant)
   boundaries <- list(
     "PELT" = normalise_boundaries(changepoint::cpts(pelt), n),
-    "RFPOP (paper)" = paper_rfpop$boundaries,
-    "SVP (MedianMood)" = normalise_boundaries(
+    "RFPOP paper" = paper_rfpop$boundaries,
+    "SVP MedianMood" = normalise_boundaries(
       SVP(y, mood_threshold(n, true_segments), "MedianMoodCost")$changepoints, n
     ),
-    "SVP (Wilcoxon)" = normalise_boundaries(
+    "SVP Wilcoxon" = normalise_boundaries(
       SVP(y, 1.5 * wilcoxon_gamma, "WilcoxonCost")$changepoints, n
     ),
-    "SVP Wilcoxon TRUE/TRUE c=1.75 refined" = refine_svp_boundaries(
-      y,
+    "SVP Wilcoxon multiscale" = normalise_boundaries(
       SVP(y, ROBUST_TRUE_TRUE_CONSTANT * wilcoxon_gamma, "WilcoxonCost",
           prune_after_if_unvalid = TRUE,
           prune_before_if_invalid = TRUE)$changepoints,
-      robust = TRUE
+      n
     )
   )
-  boundaries[[calibrated_label]] <- calibrated_rfpop$boundaries
+  boundaries[["RFPOP"]] <- calibrated_rfpop$boundaries
   fitted <- lapply(boundaries, function(x) fitted_piecewise_mean(y, x))
-  fitted[["RFPOP (paper)"]] <- paper_rfpop$fitted
-  fitted[[calibrated_label]] <- calibrated_rfpop$fitted
+  fitted[["RFPOP paper"]] <- paper_rfpop$fitted
+  fitted[["RFPOP"]] <- calibrated_rfpop$fitted
   list(boundaries = boundaries, fitted = fitted)
 }
 
@@ -92,65 +90,32 @@ run_robust_power <- function(
                      file.path(ROBUST_ROOT, "rfpop_null_calibration.csv"),
                      row.names = FALSE)
   }
-  design <- expand.grid(pattern = POWER_PATTERNS, jump = jump_sizes,
-                        rep = seq_len(reps), stringsAsFactors = FALSE)
-  rows <- power_lapply(seq_len(nrow(design)), function(i) {
-    d <- design[i, ]
-    set_power_seed(seed + i)
-    mu <- generate_power_signal(n, d$pattern, d$jump)
-    y <- mu + stats::rt(n, df = 2)
-    truth <- normalise_boundaries(which(diff(mu) != 0), n)
-    fits <- fit_robust_methods(y, length(truth), rfpop_constant)
-    output <- dplyr::bind_rows(lapply(names(fits$boundaries), function(method) {
-      result_row(d$pattern, d$jump, d$rep, method,
-                 fits$boundaries[[method]], truth, mu, fits$fitted[[method]],
-                 tolerance = round(n * 0.0025))
-    }))
-    output$changepoints <- unname(fits$boundaries)
-    output
-  }, workers = workers)
-  dplyr::bind_rows(rows)
-}
-
-robust_scenario_plot <- function(n = 1000L, jump = 0.6, seed = 999L) {
-  set.seed(seed)
-  data <- dplyr::bind_rows(lapply(POWER_PATTERNS, function(pattern) {
-    mu <- generate_power_signal(n, pattern, jump)
-    data.frame(time = seq_len(n), value = mu + stats::rt(n, df = 2),
-               mean = mu, pattern = pattern)
-  }))
-  data$pattern <- factor(data$pattern, POWER_PATTERNS)
-  ggplot2::ggplot(data, ggplot2::aes(time, value)) +
-    ggplot2::geom_point(alpha = 0.2, size = 0.35) +
-    ggplot2::geom_line(ggplot2::aes(y = mean), colour = "red", linewidth = 0.8) +
-    ggplot2::facet_wrap(~pattern, nrow = 2L) +
-    ggplot2::labs(x = "Time (Index)", y = "Value") +
-    ggplot2::coord_cartesian(ylim = c(-10, 10)) +
-    paper_theme() + ggplot2::theme(legend.position = "none")
-}
-
-robust_plot_results <- function(results) {
-  set_algorithm_display(
-    results,
-    labels = c(
-      "PELT" = "PELT",
-      "RFPOP (null-matched c=2.75)" = "RFPOP",
-      "SVP (MedianMood)" = "SVP (MedianMood)",
-      "SVP (Wilcoxon)" = "SVP (Wilcoxon)",
-      "SVP Wilcoxon TRUE/TRUE c=1.75 refined" =
-        "SVP (Wilcoxon multiscale)"
-    ),
-    order = c("PELT", "RFPOP", "SVP (MedianMood)", "SVP (Wilcoxon)",
-              "SVP (Wilcoxon multiscale)"),
-    drop = "RFPOP (paper)"
+  run_power_grid(
+    n, jump_sizes, reps,
+    simulate_noise = function(size) stats::rt(size, df = 2),
+    fit_methods = function(y, true_segments) {
+      fit_robust_methods(y, true_segments, rfpop_constant)
+    },
+    tolerance = round(n * 0.0025),
+    workers = workers,
+    seed = seed
   )
 }
 
 run_and_save_robust <- function(workers = power_default_workers()) {
   results <- run_robust_power(workers = workers)
   save_power_outputs(
-    results, ROBUST_ROOT, robust_scenario_plot(),
-    plot_results = robust_plot_results(results)
+    results, ROBUST_ROOT,
+    power_scenario_plot(
+      1000L, 0.6, function(size) stats::rt(size, df = 2),
+      y_limits = c(-10, 10)
+    ),
+    plot_results = set_algorithm_order(
+      results,
+      c("PELT", "RFPOP", "SVP MedianMood", "SVP Wilcoxon",
+        "SVP Wilcoxon multiscale"),
+      drop = "RFPOP paper"
+    )
   )
   invisible(results)
 }
