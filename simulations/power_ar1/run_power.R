@@ -9,16 +9,10 @@ source(file.path("simulations", "power_common.R"))
 
 AR1_ROOT <- file.path("simulations", "power_ar1")
 AR1_TRUE_TRUE_CONSTANT <- 1.75
-AR1_DECAFS_CONSTANT <- 4.75
+AR1_DECAFS_CONSTANT <- 1.75
 
 simulate_ar1_noise <- function(n, rho = 0.8, marginal_sd = 1) {
-  innovation_sd <- marginal_sd * sqrt(1 - rho^2)
-  noise <- numeric(n)
-  noise[1L] <- stats::rnorm(1L, sd = marginal_sd)
-  for (i in 2:n) {
-    noise[i] <- rho * noise[i - 1L] + stats::rnorm(1L, sd = innovation_sd)
-  }
-  noise
+  dataRWAR(n = n, phi = rho, type = "none")$y
 }
 
 ar1_cost_matrix <- function(y, rho, innovation_variance) {
@@ -74,7 +68,8 @@ decafs_boundaries <- function(y, rho, innovation_variance,
     beta = penalty,
     modelParam = list(
       sdEta = 0,
-      sdNu = sqrt(innovation_variance),
+      #sdNu = sqrt(innovation_variance),
+      sdNu = 1,
       phi = rho
     )
   )
