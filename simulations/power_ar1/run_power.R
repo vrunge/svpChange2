@@ -3,13 +3,14 @@
 library(svpChange2)
 library(changepoint)
 library(dplyr)
+library(DeCAFS)
 library(ggplot2)
 
 source(file.path("simulations", "power_common.R"))
 
 AR1_ROOT <- file.path("simulations", "power_ar1")
-AR1_TRUE_TRUE_CONSTANT <- 1.75
-AR1_DECAFS_CONSTANT <- 1.75
+AR1_TRUE_TRUE_CONSTANT <- 4.5
+AR1_DECAFS_CONSTANT <- 2
 
 simulate_ar1_noise <- function(n, rho = 0.8, marginal_sd = 1) {
   dataRWAR(n = n, phi = rho, type = "none")$y
@@ -91,7 +92,7 @@ fit_ar1_methods <- function(y, rho = 0.8, svp_constant = 3.75,
     "PELT inflated" =
       normalise_boundaries(changepoint::cpts(inflated), n),
     "PELT AR1 approximate" =
-      ar1_approximate_partition(y, rho, innovation_variance, 3 * log(n)),
+      ar1_approximate_partition(y, rho, 1, 2.2 * log(n)),
     "DeCAFS AR1" =
       decafs_boundaries(y, rho, innovation_variance),
     "SVP AR1Focus" = normalise_boundaries(
