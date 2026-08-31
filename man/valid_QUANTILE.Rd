@@ -4,19 +4,27 @@
 \alias{valid_QUANTILE}
 \title{Validity Test Based on Interquantile Range}
 \usage{
-valid_QUANTILE(y, gamma)
+valid_QUANTILE(y, gamma, probs = c(0.05, 0.95))
 }
 \arguments{
 \item{y}{A numeric vector representing a segment of the signal.}
 
 \item{gamma}{A numeric threshold for the interquantile range.}
+
+\item{probs}{A numeric vector of length two giving the lower and upper
+quantile probabilities. Defaults to `c(0.05, 0.95)` and must be in
+increasing order.}
 }
 \value{
 TRUE if the interquantile range is less than or equal to gamma.
 }
 \description{
-Checks whether the interquantile range (95% - 5%) is below a threshold.
+Checks whether the quantile range between `probs[1]` and
+`probs[2]` is below a threshold.
 }
 \details{
 Validity Test Based on Interquantile Range
+
+The test computes the difference between the quantiles at
+`probs[2]` and `probs[1]`.
 }

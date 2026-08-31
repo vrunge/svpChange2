@@ -89,8 +89,9 @@ my_test <- function(segment, gamma) max(segment) - min(segment) <= gamma
 fit <- svp0(y, gamma = 5, test = my_test)
 ```
 
-The package also provides `valid_FOCUS()`, `valid_VAR()`, `valid_RANGE()`,
-`valid_RANGE_SLACK()`, `valid_QUANTILE()`, and `valid_OP()` for `svp0()`.
+The package also provides `valid_FOCUS()`, `valid_AR1()`, `valid_SSE()`,
+`valid_RANGE()`, `valid_RANGE_SLACK()`, `valid_QUANTILE()`, `valid_SCALE()`,
+and `valid_OP()` for `svp0()`.
 
 ## Other algorithms and utilities
 

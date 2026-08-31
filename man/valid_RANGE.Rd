@@ -15,7 +15,8 @@ valid_RANGE(y, gamma)
 TRUE if the range is less than or equal to gamma.
 }
 \description{
-Checks whether the range (max - min) of the segment is below a threshold.
+Checks whether the range (max - min) of the segment is below a
+threshold.
 }
 \details{
 Validity Test Based on Range

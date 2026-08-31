@@ -2,21 +2,34 @@
 % Please edit documentation in R/validity_test.R
 \name{valid_FOCUS}
 \alias{valid_FOCUS}
-\title{Validity Test Based on FOCuS}
+\title{FOCuS Validity Test for Every Prefix}
 \usage{
 valid_FOCUS(y, gamma)
 }
 \arguments{
 \item{y}{A numeric vector representing a segment of the signal.}
 
-\item{gamma}{A numeric value used as a threshold in the validation function and as a penalty for each segment.}
+\item{gamma}{A numeric threshold for the FOCuS statistic.}
 }
 \value{
-A logical value indicating whether the segment is considered valid (TRUE if no changepoint detected).
+`TRUE` if the statistic is strictly below `gamma` for every prefix
+of `y`; otherwise, `FALSE`.
 }
 \description{
-Checks whether a given segment is valid (i.e., has no changepoint).
+Tests whether the FOCuS statistic remains below `gamma` for
+every prefix of the segment. This is the validity rule used by the SVP
+procedure.
 }
 \details{
-Validity Test Based on FOCuS
+FOCuS Validity Test for Every Prefix
+
+`valid_FOCUS()` updates the FOCuS statistic after each observation
+and returns `FALSE` as soon as a prefix statistic reaches or exceeds
+`gamma`. It is the stricter online test and corresponds to the
+segment-wise pruning rule used by SVP. Therefore, `valid_FOCUS()` is the
+appropriate function to use for the package's validity test. In contrast,
+`valid_FOCUS_last()` checks only the final statistic.
+}
+\seealso{
+[valid_FOCUS_last()]
 }

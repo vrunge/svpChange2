@@ -2,21 +2,31 @@
 % Please edit documentation in R/validity_test.R
 \name{valid_FOCUS_last}
 \alias{valid_FOCUS_last}
-\title{Validity Test Based on FOCuS last statistic}
+\title{FOCuS Validity Test for the Final Segment}
 \usage{
 valid_FOCUS_last(y, gamma)
 }
 \arguments{
 \item{y}{A numeric vector representing a segment of the signal.}
 
-\item{gamma}{A numeric value used as a threshold in the validation function and as a penalty for each segment.}
+\item{gamma}{A numeric threshold for the FOCuS statistic.}
 }
 \value{
-A logical value indicating whether the segment is considered valid (TRUE if no changepoint detected).
+`TRUE` if the final statistic is strictly below `gamma`; otherwise,
+`FALSE`.
 }
 \description{
-Checks whether a given segment is valid (i.e., has no changepoint).
+Tests whether the FOCuS statistic for the complete segment is
+below `gamma`, without checking intermediate prefixes.
 }
 \details{
-Validity Test Based on FOCuS last statistic
+FOCuS Validity Test for the Final Segment
+
+`valid_FOCUS_last()` processes the complete segment and checks only
+the final statistic. An earlier prefix may have reached or exceeded `gamma`
+without making the final segment invalid. Use [valid_FOCUS()] to require
+every prefix to remain valid.
+}
+\seealso{
+[valid_FOCUS()]
 }
