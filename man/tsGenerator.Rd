@@ -8,38 +8,110 @@ tsGenerator(
   chpts = 100,
   parameters = 0.5,
   sdNoise = 1,
+  rho = 0,
   nbTrials = 10,
   nbSuccess = 10,
-  type = "gauss"
+  type = "gauss",
+  df = 2,
+  scale = 1
 )
 }
 \arguments{
-\item{chpts}{a vector of increasing change-point indices (the last value is data length)}
+\item{chpts}{a vector of increasing change-point indices (the last value is
+data length)}
 
-\item{parameters}{vector of successive segment parameters (as many parameters as values in \code{chpts} vector)}
+\item{parameters}{vector of successive segment parameters (as many parameters
+as values in \code{chpts} vector); for \code{"exp"} these are rates and for
+\code{"variance"} these are standard deviations}
 
-\item{sdNoise}{(type \code{"gauss"}) standard deviation for the noise parameter}
+\item{sdNoise}{(types \code{"gauss"} and \code{"gaussAR1"}) standard
+deviation of each Gaussian innovation}
+
+\item{rho}{(type \code{"gaussAR1"}) AR(1) coefficient for the Gaussian noise}
 
 \item{nbTrials}{(type \code{"binom"}) number of trials}
 
 \item{nbSuccess}{(type \code{"negbin"}) number of successes}
 
-\item{type}{the model: \code{"gauss"}, \code{"exp"}, \code{"poisson"}, \code{"geom"}, \code{"bern"}, \code{"binom"}, \code{"negbin"}, \code{"variance"}}
+\item{type}{the model: \code{"gauss"}, \code{"gaussAR1"},
+\code{"student"}, \code{"exp"}, \code{"poisson"}, \code{"geom"},
+\code{"bern"}, \code{"binom"}, \code{"negbin"}, \code{"variance"}}
+
+\item{df}{(type \code{"student"}) positive degrees of freedom for the
+Student-t noise}
+
+\item{scale}{(type \code{"student"}) non-negative scale of the Student-t
+noise}
 }
 \value{
-a univariate time series following the chosen model type and parameters
+a univariate time series following the chosen model type and
+parameters
 }
 \description{
-Generating univariate time series for multiple change-point detection based on uni-parametric models of the exponential family
+Generating univariate time series for multiple change-point
+detection based on uni-parametric models of the exponential family. The
+\code{"gaussAR1"} model generates pure AR(1) noise around the
+piecewise-constant signal, matching the DeCAFS model with \code{sdEta = 0}.
+}
+\details{
+For \code{type = "gaussAR1"}, the generated series is
+\code{y[t] = parameters[t] + e[t]}, where
+\code{e[t] = rho * e[t - 1] + eta[t]} and
+\code{eta[t] ~ N(0, sdNoise^2)}. The first residual is drawn from the
+stationary distribution. Consequently, the marginal noise standard
+deviation is \code{sdNoise / sqrt(1 - rho^2)}, not \code{sdNoise}. To
+obtain marginal standard deviation \code{target_sd}, use
+\code{sdNoise = target_sd * sqrt(1 - rho^2)}. The \code{"student"} model
+uses \code{parameters + scale * T}, where \code{T} has a Student-t
+distribution with \code{df} degrees of freedom; for \code{df <= 2}, its
+variance is not finite.
 }
 \examples{
-tsGenerator(chpts = c(50,100), parameters = c(0,1), sdNoise = 0.2, type = "gauss")
-tsGenerator(chpts = c(50,100), parameters = c(2,7), type = "exp")
-tsGenerator(chpts = c(50,100), parameters = c(3,5), type = "poisson")
-tsGenerator(chpts = c(50,100), parameters = c(0.6,0.3), type = "geom")
-tsGenerator(chpts = c(50,100), parameters = c(0.7,0.2), type = "bern")
-tsGenerator(chpts = c(50,100), parameters = c(0.7, 0.3), nbTrials = 5, type = "binom")
-tsGenerator(chpts = c(50,100), parameters = c(0.4,0.7), nbSuccess = 10, type = "negbin")
-tsGenerator(chpts = c(50,70,120,200), parameter = c(0,3,-1,1), type = "gauss")
-tsGenerator(chpts = c(50,100,180), parameter = c(3,1,6), type = "variance")
+set.seed(1)
+# Independent Gaussian noise with a few mean changes.
+tsGenerator(
+  chpts = c(50, 100, 150, 200),
+  parameters = c(0, 2, -1, 1),
+  sdNoise = 1,
+  type = "gauss"
+)
+
+# Pure AR(1) Gaussian noise around the same type of signal.
+tsGenerator(
+  chpts = c(50, 100, 150, 200),
+  parameters = c(0, 2, -1, 1),
+  sdNoise = 1,
+  rho = 0.8,
+  type = "gaussAR1"
+)
+
+# Heavy-tailed Student-t noise.
+tsGenerator(
+  chpts = c(50, 100),
+  parameters = c(0, 2),
+  df = 2,
+  scale = 1,
+  type = "student"
+)
+
+# Other supported distributions.
+tsGenerator(chpts = c(50, 100), parameters = c(2, 7), type = "exp")
+tsGenerator(chpts = c(50, 100), parameters = c(3, 5), type = "poisson")
+tsGenerator(chpts = c(50, 100), parameters = c(0.6, 0.3), type = "geom")
+tsGenerator(chpts = c(50, 100), parameters = c(0.7, 0.2), type = "bern")
+tsGenerator(
+  chpts = c(50, 100), parameters = c(0.7, 0.3), nbTrials = 5,
+  type = "binom"
+)
+tsGenerator(
+  chpts = c(50, 100), parameters = c(0.4, 0.7), nbSuccess = 10,
+  type = "negbin"
+)
+tsGenerator(
+  chpts = c(50, 70, 120, 200), parameters = c(0, 3, -1, 1),
+  type = "gauss"
+)
+tsGenerator(
+  chpts = c(50, 100, 180), parameters = c(3, 1, 6), type = "variance"
+)
 }
