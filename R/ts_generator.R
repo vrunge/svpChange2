@@ -1,8 +1,8 @@
 ###############################################
-#############    tsGenerator   ################
+#############    ts_generator   ################
 ###############################################
 
-#' tsGenerator
+#' ts_generator
 #'
 #' @description Generating univariate time series for multiple change-point
 #' detection based on uni-parametric models of the exponential family. The
@@ -13,15 +13,15 @@
 #' @param parameters vector of successive segment parameters (as many parameters
 #' as values in \code{chpts} vector); for \code{"exp"} these are rates and for
 #' \code{"variance"} these are standard deviations
-#' @param sdNoise (types \code{"gauss"} and \code{"gaussAR1"}) standard
+#' @param sd_noise (types \code{"gauss"} and \code{"gaussAR1"}) standard
 #' deviation of each Gaussian innovation
 #' @param df (type \code{"student"}) positive degrees of freedom for the
 #' Student-t noise
 #' @param scale (type \code{"student"}) non-negative scale of the Student-t
 #' noise
 #' @param rho (type \code{"gaussAR1"}) AR(1) coefficient for the Gaussian noise
-#' @param nbTrials (type \code{"binom"}) number of trials
-#' @param nbSuccess (type \code{"negbin"}) number of successes
+#' @param nb_trials (type \code{"binom"}) number of trials
+#' @param nb_success (type \code{"negbin"}) number of successes
 #' @param type the model: \code{"gauss"}, \code{"gaussAR1"},
 #' \code{"student"}, \code{"exp"}, \code{"poisson"}, \code{"geom"},
 #' \code{"bern"}, \code{"binom"}, \code{"negbin"}, \code{"variance"}
@@ -30,35 +30,35 @@
 #' @details For \code{type = "gaussAR1"}, the generated series is
 #' \code{y[t] = parameters[t] + e[t]}, where
 #' \code{e[t] = rho * e[t - 1] + eta[t]} and
-#' \code{eta[t] ~ N(0, sdNoise^2)}. The first residual is drawn from the
+#' \code{eta[t] ~ N(0, sd_noise^2)}. The first residual is drawn from the
 #' stationary distribution. Consequently, the marginal noise standard
-#' deviation is \code{sdNoise / sqrt(1 - rho^2)}, not \code{sdNoise}. To
+#' deviation is \code{sd_noise / sqrt(1 - rho^2)}, not \code{sd_noise}. To
 #' obtain marginal standard deviation \code{target_sd}, use
-#' \code{sdNoise = target_sd * sqrt(1 - rho^2)}. The \code{"student"} model
+#' \code{sd_noise = target_sd * sqrt(1 - rho^2)}. The \code{"student"} model
 #' uses \code{parameters + scale * T}, where \code{T} has a Student-t
 #' distribution with \code{df} degrees of freedom; for \code{df <= 2}, its
 #' variance is not finite.
 #' @examples
 #' set.seed(1)
 #' # Independent Gaussian noise with a few mean changes.
-#' tsGenerator(
+#' ts_generator(
 #'   chpts = c(50, 100, 150, 200),
 #'   parameters = c(0, 2, -1, 1),
-#'   sdNoise = 1,
+#'   sd_noise = 1,
 #'   type = "gauss"
 #' )
 #'
 #' # Pure AR(1) Gaussian noise around the same type of signal.
-#' tsGenerator(
+#' ts_generator(
 #'   chpts = c(50, 100, 150, 200),
 #'   parameters = c(0, 2, -1, 1),
-#'   sdNoise = 1,
+#'   sd_noise = 1,
 #'   rho = 0.8,
 #'   type = "gaussAR1"
 #' )
 #'
 #' # Heavy-tailed Student-t noise.
-#' tsGenerator(
+#' ts_generator(
 #'   chpts = c(50, 100),
 #'   parameters = c(0, 2),
 #'   df = 2,
@@ -67,31 +67,31 @@
 #' )
 #'
 #' # Other supported distributions.
-#' tsGenerator(chpts = c(50, 100), parameters = c(2, 7), type = "exp")
-#' tsGenerator(chpts = c(50, 100), parameters = c(3, 5), type = "poisson")
-#' tsGenerator(chpts = c(50, 100), parameters = c(0.6, 0.3), type = "geom")
-#' tsGenerator(chpts = c(50, 100), parameters = c(0.7, 0.2), type = "bern")
-#' tsGenerator(
-#'   chpts = c(50, 100), parameters = c(0.7, 0.3), nbTrials = 5,
+#' ts_generator(chpts = c(50, 100), parameters = c(2, 7), type = "exp")
+#' ts_generator(chpts = c(50, 100), parameters = c(3, 5), type = "poisson")
+#' ts_generator(chpts = c(50, 100), parameters = c(0.6, 0.3), type = "geom")
+#' ts_generator(chpts = c(50, 100), parameters = c(0.7, 0.2), type = "bern")
+#' ts_generator(
+#'   chpts = c(50, 100), parameters = c(0.7, 0.3), nb_trials = 5,
 #'   type = "binom"
 #' )
-#' tsGenerator(
-#'   chpts = c(50, 100), parameters = c(0.4, 0.7), nbSuccess = 10,
+#' ts_generator(
+#'   chpts = c(50, 100), parameters = c(0.4, 0.7), nb_success = 10,
 #'   type = "negbin"
 #' )
-#' tsGenerator(
+#' ts_generator(
 #'   chpts = c(50, 70, 120, 200), parameters = c(0, 3, -1, 1),
 #'   type = "gauss"
 #' )
-#' tsGenerator(
+#' ts_generator(
 #'   chpts = c(50, 100, 180), parameters = c(3, 1, 6), type = "variance"
 #' )
-tsGenerator <- function(chpts = 100,
+ts_generator <- function(chpts = 100,
                         parameters = 0.5,
-                        sdNoise = 1,
+                        sd_noise = 1,
                         rho = 0,
-                        nbTrials = 10,
-                        nbSuccess = 10,
+                        nb_trials = 10,
+                        nb_success = 10,
                         type = "gauss",
                         df = 2,
                         scale = 1) {
@@ -126,15 +126,15 @@ tsGenerator <- function(chpts = 100,
     stop("chpts and parameters vectors are of different size")
   }
 
-  allowed.types <- c(
+  allowed_types <- c(
     "gauss", "gaussAR1", "student", "exp", "poisson", "geom", "bern",
     "binom", "negbin", "variance"
   )
   if (
     !is.character(type) || length(type) != 1 || is.na(type) ||
-      !type %in% allowed.types
+      !type %in% allowed_types
   ) {
-    stop("type must be one of: ", paste(allowed.types, collapse = ", "))
+    stop("type must be one of: ", paste(allowed_types, collapse = ", "))
   }
 
   ###################################
@@ -142,11 +142,12 @@ tsGenerator <- function(chpts = 100,
   ###################################
 
   if (type %in% c("gauss", "gaussAR1")) {
-    if (length(sdNoise) != 1 || !is.numeric(sdNoise) || !is.finite(sdNoise)) {
-      stop("sdNoise must be one finite numeric value")
+    if (length(sd_noise) != 1 || !is.numeric(sd_noise) ||
+      !is.finite(sd_noise)) {
+      stop("sd_noise must be one finite numeric value")
     }
-    if (sdNoise < 0) {
-      stop("sdNoise cannot be negative")
+    if (sd_noise < 0) {
+      stop("sd_noise cannot be negative")
     }
     if (
       type == "gaussAR1" &&
@@ -180,23 +181,24 @@ tsGenerator <- function(chpts = 100,
 
   if (type == "binom") {
     if (
-      length(nbTrials) != 1 || !is.numeric(nbTrials) || !is.finite(nbTrials)
+      length(nb_trials) != 1 || !is.numeric(nb_trials) || !is.finite(nb_trials)
     ) {
-      stop("nbTrials must be one finite numeric value")
+      stop("nb_trials must be one finite numeric value")
     }
-    if ((nbTrials %% 1 != 0) || (nbTrials <= 0)) {
-      stop("nbTrials cannot be non-positive or non-integer")
+    if ((nb_trials %% 1 != 0) || (nb_trials <= 0)) {
+      stop("nb_trials cannot be non-positive or non-integer")
     }
   }
 
   if (type == "negbin") {
     if (
-      length(nbSuccess) != 1 || !is.numeric(nbSuccess) || !is.finite(nbSuccess)
+      length(nb_success) != 1 || !is.numeric(nb_success) ||
+        !is.finite(nb_success)
     ) {
-      stop("nbSuccess must be one finite numeric value")
+      stop("nb_success must be one finite numeric value")
     }
-    if ((nbSuccess %% 1 != 0) || (nbSuccess <= 0)) {
-      stop("nbSuccess cannot be non-positive or non-integer")
+    if ((nb_success %% 1 != 0) || (nb_success <= 0)) {
+      stop("nb_success cannot be non-positive or non-integer")
     }
   }
 
@@ -242,10 +244,10 @@ tsGenerator <- function(chpts = 100,
   mu <- rep(parameters, repetition)
 
   y <- switch(type,
-    gauss = rnorm(n, mean = mu, sd = sdNoise),
+    gauss = rnorm(n, mean = mu, sd = sd_noise),
     student = mu + scale * stats::rt(n, df = df),
     gaussAR1 = {
-      innovations <- rnorm(n, sd = sdNoise)
+      innovations <- rnorm(n, sd = sd_noise)
       y <- numeric(n)
       y[1] <- mu[1] + innovations[1] / sqrt(1 - rho^2)
       if (n > 1) {
@@ -261,8 +263,8 @@ tsGenerator <- function(chpts = 100,
     poisson = rpois(n = n, lambda = mu),
     geom = rgeom(n = n, prob = mu) + 1,
     bern = rbinom(n = n, size = 1, prob = mu),
-    binom = rbinom(n = n, size = nbTrials, prob = mu),
-    negbin = rnbinom(n = n, size = nbSuccess, prob = mu)
+    binom = rbinom(n = n, size = nb_trials, prob = mu),
+    negbin = rnbinom(n = n, size = nb_success, prob = mu)
   )
   y
 }

@@ -43,7 +43,7 @@ Fast Online Changepoint Detection via Functional Pruning CUSUM Statistics.
 \emph{Journal of Machine Learning Research}, 24(81), 1--36.
 \url{https://www.jmlr.org/papers/v24/21-1230.html}
 
-Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change Point
+Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
 Inference. \emph{Journal of the Royal Statistical Society: Series B},
 76(3), 495--580. \url{https://doi.org/10.1111/rssb.12047}
 

@@ -16,13 +16,25 @@ valid_SMUCE(y, gamma, sigma2 = 1, n = length(y), theta = NULL)
 \item{n}{Total series length used in the multiscale penalty.}
 
 \item{theta}{Optional candidate constant mean. If omitted, the function
-searches for any admissible mean by intersecting all subinterval constraints.}
+tests whether the intersection of all subinterval constraints is nonempty.}
 }
 \value{
 Logical validity indicator.
 }
+\details{
+This is the fixed-variance Gaussian SMUCE constraint applied to one
+candidate segment. With \code{theta = NULL}, validity means that there exists
+at least one constant mean satisfying the constraint on every subinterval. If
+\code{theta} is supplied, that value must satisfy all those constraints.
+}
 \description{
 Tests a segment against the SMUCE multiscale constraint. The
-candidate mean defaults to the segment mean; supply `theta` to test another
-constant mean. `gamma` is interpreted as the SMUCE q threshold.
+function checks whether at least one constant mean is admissible when
+\code{theta} is omitted. Supply \code{theta} to test that particular constant
+mean. \code{gamma} is interpreted as the SMUCE q threshold.
+}
+\references{
+Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
+Inference. \emph{Journal of the Royal Statistical Society: Series B}, 76(3),
+495--580. doi:10.1111/rssb.12047.
 }

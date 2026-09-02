@@ -213,8 +213,8 @@ valid_RANGE_SLACK <- function(y, gamma, trim = 3) {
     trim == as.integer(trim)
   )
   trim <- as.integer(trim)
-  sortedY <- sort(y)
-  sortedY[length(y) - trim] - sortedY[trim + 1L] <= gamma
+  sorted_y <- sort(y)
+  sorted_y[length(y) - trim] - sorted_y[trim + 1L] <= gamma
 }
 
 ################################################
@@ -294,43 +294,43 @@ valid_OP <- function(y, gamma) {
   right_sse <- (prefix_sq_sum[len + 1L] - prefix_sq_sum[split + 1L]) -
     right_sum^2 / (len - split)
   val <- min(left_sse + right_sse)
-  return(test = (total < (val + 2 * gamma)))
+  total < (val + 2 * gamma)
 }
 
 ################################################
 #' SMUCE multiscale validity test for a constant Gaussian segment
 #'
 #' @description Tests a segment against the SMUCE multiscale constraint. The
-#' candidate mean defaults to the segment mean; supply `theta` to test another
-#' constant mean. `gamma` is interpreted as the SMUCE q threshold.
+#' function checks whether at least one constant mean is admissible when
+#' `theta` is omitted. Supply `theta` to test that particular constant mean.
+#' `gamma` is interpreted as the SMUCE q threshold.
 #' @param y Numeric observations in the candidate segment.
 #' @param gamma SMUCE threshold q (not q squared).
 #' @param sigma2 Known Gaussian variance.
 #' @param n Total series length used in the multiscale penalty.
 #' @param theta Optional candidate constant mean. If omitted, the function
-#' searches for any admissible mean by intersecting all subinterval constraints.
+#' tests whether the intersection of all subinterval constraints is nonempty.
 #' @return Logical validity indicator.
+#' @details
+#' This is the fixed-variance Gaussian SMUCE constraint applied to one
+#' candidate segment. With `theta = NULL`, validity means that there exists at
+#' least one constant mean satisfying the constraint on every subinterval. If
+#' `theta` is supplied, that value must satisfy all those constraints.
+#' @references
+#' Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
+#' Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
+#' 495--580. doi:10.1111/rssb.12047.
 #' @export
 valid_SMUCE <- function(y, gamma, sigma2 = 1, n = length(y), theta = NULL) {
-  stopifnot(length(y) > 0, sigma2 > 0, gamma >= 0, n >= length(y))
-  cs <- c(0, cumsum(y))
-  lower <- -Inf
-  upper <- Inf
-  for (u in seq_along(y)) {
-    for (v in u:length(y)) {
-      m <- v - u + 1
-      centre <- (cs[v + 1] - cs[u]) / m
-      radius <- sqrt(sigma2 / m) *
-        (gamma + sqrt(2 * log(exp(1) * n / m)))
-      lower <- max(lower, centre - radius)
-      upper <- min(upper, centre + radius)
-      if (lower > upper) {
-        return(FALSE)
-      }
-    }
+  interval <- smuce_theta_interval(y, gamma, sigma2, n)
+  if (anyNA(interval)) {
+    return(FALSE)
   }
   if (is.null(theta)) {
     return(TRUE)
   }
-  isTRUE(theta >= lower && theta <= upper)
+  if (length(theta) != 1L || !is.numeric(theta) || !is.finite(theta)) {
+    return(FALSE)
+  }
+  isTRUE(theta >= interval[1] && theta <= interval[2])
 }

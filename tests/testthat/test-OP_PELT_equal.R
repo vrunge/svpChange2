@@ -12,9 +12,9 @@ test_that("test PELT result = OP result",
             n <- 1000
             gap <- 1
             chpts = c(0.1,0.3,0.4,0.45,0.55,0.7,0.75,0.95,1)*n
-            data <- tsGenerator(chpts = chpts,
+            data <- ts_generator(chpts = chpts,
                                 parameters = c(0,gap,0,gap,0,gap,0,gap,0),
-                                sdNoise = 1)
+                                sd_noise = 1)
             penalty <- 2 * log(n)
             ### OP
             OPres <-  svpChange2::OP(data, penalty)
@@ -23,5 +23,3 @@ test_that("test PELT result = OP result",
 
             expect_equal(OPres$changepoints, PELTres$changepoints)
           })
-
-

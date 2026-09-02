@@ -21,7 +21,7 @@
 #'
 #' @export
 OP <- function(data, penalty) {
-    .Call(`_svpChange2_OP`, data, penalty)
+  .Call(`_svpChange2_OP`, data, penalty)
 }
 
 #' Optimal Partitioning algorithm using PELT
@@ -49,7 +49,7 @@ OP <- function(data, penalty) {
 #'
 #' @export
 PELT <- function(data, penalty) {
-    .Call(`_svpChange2_PELT`, data, penalty)
+  .Call(`_svpChange2_PELT`, data, penalty)
 }
 
 #' Segment Neighborhood
@@ -72,11 +72,11 @@ PELT <- function(data, penalty) {
 #'
 #' @export
 SN <- function(data, Kmax) {
-    .Call(`_svpChange2_SN`, data, Kmax)
+  .Call(`_svpChange2_SN`, data, Kmax)
 }
 
 .focus_valid_cpp <- function(data, gamma, check_all_prefixes = TRUE) {
-    .Call(`_svpChange2_focus_valid_cpp`, data, gamma, check_all_prefixes)
+  .Call(`_svpChange2_focus_valid_cpp`, data, gamma, check_all_prefixes)
 }
 
 #' Smallest Valid Partitioning with Incremental Validity Tests
@@ -154,7 +154,7 @@ SN <- function(data, Kmax) {
 #'   [AR1_single_change()].
 #' @export
 SVP <- function(data, gamma, test = "gaussian_mean", prune_after_if_unvalid = TRUE, prune_before_if_invalid = FALSE, sigma2 = 1.0, rho = NA_real_, profile_sigma = FALSE, quantile = 0.01) {
-    .Call(`_svpChange2_SVP`, data, gamma, test, prune_after_if_unvalid, prune_before_if_invalid, sigma2, rho, profile_sigma, quantile)
+  .Call(`_svpChange2_SVP`, data, gamma, test, prune_after_if_unvalid, prune_before_if_invalid, sigma2, rho, profile_sigma, quantile)
 }
 
 #' Smallest Valid Partitioning with Validation and Pruning using Rcpp
@@ -189,15 +189,15 @@ SVP <- function(data, gamma, test = "gaussian_mean", prune_after_if_unvalid = TR
 #'
 #' @export
 svp0 <- function(data, gamma, test, prune_after_if_unvalid = TRUE, prune_if_PELT = FALSE) {
-    .Call(`_svpChange2_svp0`, data, gamma, test, prune_after_if_unvalid, prune_if_PELT)
+  .Call(`_svpChange2_svp0`, data, gamma, test, prune_after_if_unvalid, prune_if_PELT)
 }
 
 AR1_rho <- function(data) {
-    .Call(`_svpChange2_AR1_rho`, data)
+  .Call(`_svpChange2_AR1_rho`, data)
 }
 
 AR1_single_change <- function(data, gamma, rho = NA_real_, sigma2 = 1.0, profile_sigma = FALSE) {
-    .Call(`_svpChange2_AR1_single_change`, data, gamma, rho, sigma2, profile_sigma)
+  .Call(`_svpChange2_AR1_single_change`, data, gamma, rho, sigma2, profile_sigma)
 }
 
 #' C++ SVP with SMUCE validity and constrained Gaussian cost
@@ -205,7 +205,14 @@ AR1_single_change <- function(data, gamma, rho = NA_real_, sigma2 = 1.0, profile
 #' @param q SMUCE threshold.
 #' @param sigma2 Known Gaussian variance.
 #' @return Integer segment-end indices.
+#' @details
+#' For independent Gaussian observations with known variance, this function
+#' returns the segment endpoints of one SMUCE-optimal partition. Internal
+#' endpoints are estimated changepoints.
+#' @references
+#' Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
+#' Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
+#' 495--580. doi:10.1111/rssb.12047.
 svp_smuce_cpp <- function(y, q, sigma2 = 1.0) {
-    .Call(`_svpChange2_svp_smuce_cpp`, y, q, sigma2)
+  .Call(`_svpChange2_svp_smuce_cpp`, y, q, sigma2)
 }
-

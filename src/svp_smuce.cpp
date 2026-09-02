@@ -6,6 +6,14 @@ using namespace Rcpp;
 //' @param q SMUCE threshold.
 //' @param sigma2 Known Gaussian variance.
 //' @return Integer segment-end indices.
+//' @details
+//' For independent Gaussian observations with known variance, this function
+//' returns the segment endpoints of one SMUCE-optimal partition. Internal
+//' endpoints are estimated changepoints.
+//' @references
+//' Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
+//' Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
+//' 495--580. doi:10.1111/rssb.12047.
 // [[Rcpp::export]]
 IntegerVector svp_smuce_cpp(NumericVector y, double q, double sigma2 = 1.0) {
   int n = y.size();
@@ -13,6 +21,7 @@ IntegerVector svp_smuce_cpp(NumericVector y, double q, double sigma2 = 1.0) {
     stop("invalid arguments");
   std::vector<double> cs(n + 1, 0.0), cs2(n + 1, 0.0);
   for (int i = 0; i < n; ++i) {
+    if (!R_finite(y[i])) stop("y must contain only finite values");
     cs[i+1] = cs[i] + y[i];
     cs2[i+1] = cs2[i] + y[i]*y[i];
   }
@@ -32,7 +41,8 @@ IntegerVector svp_smuce_cpp(NumericVector y, double q, double sigma2 = 1.0) {
         int len = t-u+1;
         double mean = (cs[t+1]-cs[u])/len;
         double rad = std::sqrt(sigma2/len) *
-          (q + std::sqrt(2.0*std::log(std::exp(1.0)*n/len)));
+          (q + std::sqrt(2.0 *
+                         (1.0 + std::log(static_cast<double>(n)/len))));
         lo = std::max(lo, mean-rad);
         hi = std::min(hi, mean+rad);
       }
@@ -42,7 +52,9 @@ IntegerVector svp_smuce_cpp(NumericVector y, double q, double sigma2 = 1.0) {
       if (lo > hi) break;
       double mean_seg = (cs[t+1]-cs[s])/m;
       double theta = std::min(std::max(mean_seg, lo), hi);
-      double rss = (cs2[t+1]-cs2[s]) - 2.0*theta*(cs[t+1]-cs[s]) + m*theta*theta;
+      double rss = (cs2[t+1]-cs2[s]) -
+        2.0*theta*(cs[t+1]-cs[s]) + m*theta*theta;
+      rss = std::max(0.0, rss);
       double cost = C[s] + rss/sigma2;
       int nk = K[s] + 1;
       if (nk < K[t+1] || (nk == K[t+1] && cost < C[t+1])) {
@@ -51,7 +63,11 @@ IntegerVector svp_smuce_cpp(NumericVector y, double q, double sigma2 = 1.0) {
     }
   }
   std::vector<int> ends; int t = n;
-  while (t > 0) { if (prev[t] < 0) stop("no valid partition"); ends.push_back(t); t = prev[t]; }
+  while (t > 0) {
+    if (prev[t] < 0) stop("no valid partition");
+    ends.push_back(t);
+    t = prev[t];
+  }
   std::reverse(ends.begin(), ends.end());
   return IntegerVector(ends.begin(), ends.end());
 }

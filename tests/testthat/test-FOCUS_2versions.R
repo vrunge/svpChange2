@@ -9,10 +9,10 @@ test_that("test svp0 result = SVP result with prune_after_if_unvalid == TRUE", {
   n <- 500
   gap <- 1
   chpts <- c(0.1, 0.3, 0.4, 0.45, 0.55, 0.7, 0.75, 0.95, 1) * n
-  data <- tsGenerator(
+  data <- ts_generator(
     chpts = chpts,
     parameters = c(0, gap, 0, gap, 0, gap, 0, gap, 0),
-    sdNoise = 1
+    sd_noise = 1
   )
   gamma <- 5
   bool <- TRUE
@@ -38,10 +38,10 @@ test_that("svp0 and SVP return the same Gaussian FOCUS result", {
   n <- 100
   gap <- 5
   chpts <- c(0.1, 0.3, 0.4, 0.45, 0.55, 0.7, 0.75, 0.95, 1) * n
-  data <- tsGenerator(
+  data <- ts_generator(
     chpts = chpts,
     parameters = c(0, gap, 0, gap, 0, gap, 0, gap, 0),
-    sdNoise = 1
+    sd_noise = 1
   )
   bool <- TRUE
 

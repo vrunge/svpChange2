@@ -97,7 +97,7 @@ and `valid_OP()` for `svp0()`.
 
 `OP()`, `PELT()`, and `SN()` are available for algorithm comparisons.
 `AR1_rho()` and `AR1_single_change()` provide AR(1) diagnostics, and
-`tsGenerator()` generates simulation signals.
+`ts_generator()` generates simulation signals.
 
 ## Simulations
 

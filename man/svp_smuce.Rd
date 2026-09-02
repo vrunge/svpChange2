@@ -14,8 +14,24 @@ svp_smuce(y, gamma, sigma2 = 1)
 \item{sigma2}{Known Gaussian variance.}
 }
 \value{
-Integer segment-end indices.
+Integer segment-end indices. Internal segment endpoints are the estimated
+changepoints; the final endpoint is \code{length(y)}.
+}
+\details{
+For independent Gaussian observations with known variance, this function
+computes the SMUCE dynamic program: it first minimizes the number of constant
+segments satisfying the multiscale constraint, then minimizes the constrained
+Gaussian residual cost among those partitions. The function returns one
+optimal partition as its segment endpoints, not fitted levels or confidence
+intervals. Exact changepoint locations are not unique when multiple optimal
+partitions have the same objective; ties are resolved deterministically by
+the dynamic program.
 }
 \description{
 SVP with SMUCE validity and constrained Gaussian cost
+}
+\references{
+Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
+Inference. \emph{Journal of the Royal Statistical Society: Series B}, 76(3),
+495--580. doi:10.1111/rssb.12047.
 }
