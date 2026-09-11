@@ -69,11 +69,13 @@ test_that("rank cost tests retain exact tie handling", {
   for (gamma in c(3, 7, 15)) {
     expect_equal(
       SVP(data, gamma, "WilcoxonCost")$changepoints,
-      svp0(data, gamma, wilcoxon_valid)$changepoints
+      svp0(data, gamma, wilcoxon_valid,
+           subtests = "right", PELT_pruning = FALSE)$changepoints
     )
     expect_equal(
       SVP(data, gamma, "MedianMoodCost")$changepoints,
-      svp0(data, gamma, mood_valid)$changepoints
+      svp0(data, gamma, mood_valid,
+           subtests = "right", PELT_pruning = FALSE)$changepoints
     )
   }
 })

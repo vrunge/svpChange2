@@ -18,7 +18,7 @@ using namespace Rcpp;
 //'
 //' @examples
 //' n <- 1000
-//' data <- rep(c(0, 1, -0.5, 0), each = n) + rnorm(4 * n)
+//' data <- rep(c(0, 1, -0.5, 0), each = n) + stats::rnorm(4 * n)
 //' penalty <- 2 * log(length(data))
 //' OPres <- OP(data, penalty)
 //' OPres$changepoints
@@ -74,23 +74,22 @@ List OP(std::vector<double> data, double penalty)
   // BACKTRACKING
   //
   // Change points reconstruction
-  std::vector<size_t> changepoints;
+  std::vector<int> changepoints;
   size_t i = n;
   while (lastChange[i] > 0)
   {
-    changepoints.push_back(lastChange[i]);
+    changepoints.push_back(static_cast<int>(lastChange[i]));
     i = lastChange[i];
   }
   std::reverse(changepoints.begin(), changepoints.end());
-  changepoints.push_back(n);
+  changepoints.push_back(static_cast<int>(n));
 
   //
   // Return
   //
   return List::create(
     Named("changepoints") = changepoints,
-    Named("lastIndexSet") = NULL,
-    Named("nb")           = NULL,
+    Named("lastIndexSet") = R_NilValue,
+    Named("nb")           = R_NilValue,
     Named("costQ")        = std::vector<double>(Q.begin() + 1, Q.end()));
 }
-

@@ -23,7 +23,7 @@ Optimal Partitioning Algorithm
 }
 \examples{
 n <- 1000
-data <- rep(c(0, 1, -0.5, 0), each = n) + rnorm(4 * n)
+data <- rep(c(0, 1, -0.5, 0), each = n) + stats::rnorm(4 * n)
 penalty <- 2 * log(length(data))
 OPres <- OP(data, penalty)
 OPres$changepoints

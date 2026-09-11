@@ -22,4 +22,7 @@ test_that("test PELT result = OP result",
             PELTres <- svpChange2::PELT(data, penalty)
 
             expect_equal(OPres$changepoints, PELTres$changepoints)
+            expect_true(is.integer(OPres$changepoints))
+            expect_null(OPres$lastIndexSet)
+            expect_null(OPres$nb)
           })

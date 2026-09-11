@@ -134,8 +134,8 @@ test_that("AR1Focus reproduces exact AR1 SVP partitions", {
     )
     reference <- svp0(
       data, gamma = 8, test = exact_validity(rho),
-      prune_after_if_unvalid = TRUE,
-      prune_if_PELT = FALSE
+      subtests = "right",
+      PELT_pruning = FALSE
     )
 
     expect_equal(focus$changepoints, exact$changepoints)

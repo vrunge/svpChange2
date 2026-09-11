@@ -80,17 +80,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // svp0
-List svp0(std::vector<double> data, double gamma, Function test, bool prune_after_if_unvalid, bool prune_if_PELT);
-RcppExport SEXP _svpChange2_svp0(SEXP dataSEXP, SEXP gammaSEXP, SEXP testSEXP, SEXP prune_after_if_unvalidSEXP, SEXP prune_if_PELTSEXP) {
+List svp0(std::vector<double> data, double gamma, Function test, std::string subtests, bool PELT_pruning);
+RcppExport SEXP _svpChange2_svp0(SEXP dataSEXP, SEXP gammaSEXP, SEXP testSEXP, SEXP subtestsSEXP, SEXP PELT_pruningSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::vector<double> >::type data(dataSEXP);
     Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< Function >::type test(testSEXP);
-    Rcpp::traits::input_parameter< bool >::type prune_after_if_unvalid(prune_after_if_unvalidSEXP);
-    Rcpp::traits::input_parameter< bool >::type prune_if_PELT(prune_if_PELTSEXP);
-    rcpp_result_gen = Rcpp::wrap(svp0(data, gamma, test, prune_after_if_unvalid, prune_if_PELT));
+    Rcpp::traits::input_parameter< std::string >::type subtests(subtestsSEXP);
+    Rcpp::traits::input_parameter< bool >::type PELT_pruning(PELT_pruningSEXP);
+    rcpp_result_gen = Rcpp::wrap(svp0(data, gamma, test, subtests, PELT_pruning));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -2,44 +2,77 @@
 % Please edit documentation in R/RcppExports.R
 \name{svp0}
 \alias{svp0}
-\title{Smallest Valid Partitioning with Validation and Pruning}
+\title{Smallest Valid Partitioning with a User-Defined Validity Test}
 \usage{
-svp0(data, gamma, test, prune_after_if_unvalid = TRUE, prune_if_PELT = FALSE)
+svp0(data, gamma, test, subtests = "both", PELT_pruning = FALSE)
 }
 \arguments{
-\item{data}{A numeric vector representing the univariate signal to be segmented.}
+\item{data}{Numeric vector containing the univariate signal to segment.}
 
-\item{gamma}{A numeric value used as a threshold in the validation function and as a penalty for each segment.}
+\item{gamma}{Numeric threshold passed to `test`.}
 
-\item{test}{A function of the form `function(data, gamma)` returning TRUE if the segment is valid. Default is `valid_OP`.}
+\item{test}{Function of the form `function(segment, gamma)` returning one
+non-missing logical value: `TRUE` if the segment is valid. The function
+is not called for singleton segments; they are always valid.}
 
-\item{prune_after_if_unvalid}{Logical. If TRUE (default), the algorithm applies *segment-wise validation*:
-at each time step, it tests whether the candidate segment \code{data[(s+1):t]} is valid using the
-user-defined function \code{test}. If the segment fails the test, the candidate \code{s} is removed
-(pruned) from the set of possible changepoints. This accelerates computation by avoiding invalid
-segment extensions. If FALSE, the algorithm skips this validation and considers all candidate
-segments without checking their validity (which can be faster but may return invalid segments).}
+\item{subtests}{Character scalar controlling validity-based pruning. The
+choices are `"both"` (default), `"right"`, `"left"`, and `"none"`.
+`"right"` removes a candidate start when its current segment is invalid;
+`"left"` removes starts smaller than the largest invalid start at the
+current endpoint; `"both"` applies both rules; and `"none"` applies
+neither rule. Invalid candidates are never used for the current optimum.}
 
-\item{prune_if_PELT}{Logical.}
+\item{PELT_pruning}{Logical; whether to apply the additional cost-based
+candidate pruning rule.}
 }
 \value{
-A list with the following components :
+A list with the following components:
 \describe{
-  \item{changepoints}{Integer vector indicating the ending index of each segment (i.e., positions of changepoints).}
-  \item{nb}{Integer vector of length \code{length(data)}. At each position \code{t}, it records the number of candidates tested.}
-  \item{costQ}{Numeric vector of length \code{length(data)}. Quadratic cost value at each time step. Set to NULL as it is recorded into matrix R}
-  \item{R}{A matrix of dimension \code{(length(data)+1) x 3} containing, for each time step :
+  \item{changepoints}{Numeric vector of increasing segment-ending
+    positions, including `length(data)`. Internal values are estimated
+    change-point positions.}
+  \item{lastIndexSet}{Numeric vector of candidate boundaries remaining at
+    termination. These are zero-based boundaries and are returned in
+    decreasing order.}
+  \item{nb}{Numeric vector in time order. Element `t` is the number of
+    candidate entries examined at endpoint `t`, before pruning.}
+  \item{costQ}{Always `NULL`; cumulative costs are stored in the first
+    column of `R`.}
+  \item{R}{Numeric matrix with `length(data)` rows and three columns. Row
+    `t` describes the optimum ending at observation `t`:
     \describe{
       \item{Q}{cumulative cost}
       \item{K}{number of segments in Q}
-      \item{s}{previous changepoint}
+      \item{s}{zero-based previous boundary; the final segment is
+        `data[(s + 1):t]`}
     }
   }
 }
 }
 \description{
-This function implements a dynamic programming approach to segment a univariate signal into the smallest number of valid segments, according to a user-defined validation function. Each segment must pass a validity test (e.g., based on variance, range, etc.). The algorithm minimizes a quadratic cost subject to this constraint.
+This function uses dynamic programming to find a partition of
+a univariate signal whose segments all pass a user-defined validity test.
+It first minimizes the number of segments and, among partitions with the
+same number of segments, minimizes the within-segment sum of squares.
 }
 \details{
-Smallest Valid Partitioning with Validation and Pruning using Rcpp
+Smallest Valid Partitioning with a User-Defined Validity Test
+
+
+A candidate boundary `s` at endpoint `t` represents the R segment
+`data[(s + 1):t]`; `s` is zero-based and `t` is one-based. The quadratic
+cost is the residual sum of squares around the segment mean. Singleton
+segments are always valid, regardless of the result of `test`. The validity-
+based pruning rules and `PELT_pruning` require assumptions on the validity
+test.
+}
+\examples{
+range_test <- function(segment, gamma) {
+  diff(range(segment)) <= gamma
+}
+y <- c(rnorm(5), rnorm(5, mean = 5))
+fit <- svp0(y, gamma = 3, test = range_test,
+           subtests = "both")
+y; fit
+
 }

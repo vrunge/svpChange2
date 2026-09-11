@@ -259,8 +259,9 @@ valid_QUANTILE <- function(y, gamma, probs = c(0.05, 0.95)) {
 #' as centre and the constant `1.4826`. This constant makes the MAD estimate
 #' the standard deviation for Gaussian data. Because the test is based on the
 #' complete segment, its result is not necessarily preserved when observations
-#' are appended; use `prune_after_if_unvalid = FALSE` in [svp0()] unless this
-#' property has been established for the intended application.
+#' are appended; use `subtests = "none"` and `PELT_pruning = FALSE` in [svp0()]
+#' unless the required pruning properties have been established for the
+#' intended application.
 #' @export
 valid_SCALE <- function(y, gamma) {
   stats::mad(y, constant = 1.4826) <= gamma

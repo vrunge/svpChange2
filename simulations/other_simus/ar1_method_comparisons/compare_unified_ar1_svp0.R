@@ -32,8 +32,8 @@ compare_one <- function(y, rho = .7, sigma2 = 1, gamma = 8) {
                                  prune_before_if_invalid=FALSE))
   exact_test <- exact_ar1_validity(rho, sigma2)
   te <- system.time(exact_svp0 <- svp0(
-    y, gamma, exact_test, prune_after_if_unvalid=TRUE,
-    prune_if_PELT=FALSE
+    y, gamma, exact_test, subtests = "right",
+    PELT_pruning = FALSE
   ))
   list(partitions = list(AR1=exact$changepoints,
                          AR1Focus=focus$changepoints,

@@ -14,18 +14,18 @@ svp_smuce_cpp(y, q, sigma2 = 1)
 \item{sigma2}{Known Gaussian variance.}
 }
 \value{
-Integer segment-end indices. Internal segment endpoints are the estimated
-changepoints.
-}
-\details{
-For independent Gaussian observations with known variance, this function
-returns the segment endpoints of one SMUCE-optimal partition.
+Integer segment-end indices.
 }
 \description{
 C++ SVP with SMUCE validity and constrained Gaussian cost
 }
+\details{
+For independent Gaussian observations with known variance, this function
+returns the segment endpoints of one SMUCE-optimal partition. Internal
+endpoints are estimated changepoints.
+}
 \references{
 Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
-Inference. \emph{Journal of the Royal Statistical Society: Series B}, 76(3),
+Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
 495--580. doi:10.1111/rssb.12047.
 }

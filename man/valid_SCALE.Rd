@@ -21,7 +21,7 @@ The scale is computed with \code{\link[stats:mad]{stats::mad()}} using the
 segment median as centre and the constant \code{1.4826}. This constant makes
 the MAD estimate the standard deviation for Gaussian data. Because the test is
 based on the complete segment, its result is not necessarily preserved when
-observations are appended; use \code{prune_after_if_unvalid = FALSE} in
-\code{\link{svp0}} unless this property has been established for the intended
-application.
+observations are appended; use \code{subtests = "none"} and
+\code{PELT_pruning = FALSE} in \code{\link{svp0}} unless the required
+pruning properties have been established for the intended application.
 }

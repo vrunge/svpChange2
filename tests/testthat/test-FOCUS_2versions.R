@@ -1,11 +1,11 @@
 library(testthat)
 library(svpChange2)
 
-########## test svp0 result = SVP result with prune_after_if_unvalid == TRUE ##########
-########## test svp0 result = SVP result with prune_after_if_unvalid == TRUE ##########
-########## test svp0 result = SVP result with prune_after_if_unvalid == TRUE ##########
+########## test svp0 result = SVP result with right pruning ##########
+########## test svp0 result = SVP result with right pruning ##########
+########## test svp0 result = SVP result with right pruning ##########
 
-test_that("test svp0 result = SVP result with prune_after_if_unvalid == TRUE", {
+test_that("svp0 and SVP agree with right pruning", {
   n <- 500
   gap <- 1
   chpts <- c(0.1, 0.3, 0.4, 0.45, 0.55, 0.7, 0.75, 0.95, 1) * n
@@ -20,7 +20,8 @@ test_that("test svp0 result = SVP result with prune_after_if_unvalid == TRUE", {
   res_svp0 <- svp0(data,
     gamma,
     test = valid_FOCUS, # valid_FOCUS_last
-    prune_after_if_unvalid = bool
+    subtests = "right",
+    PELT_pruning = FALSE
   )
 
   res_svp <- SVP(
@@ -50,7 +51,8 @@ test_that("svp0 and SVP return the same Gaussian FOCUS result", {
   res_svp0 <- svp0(data,
     gamma,
     test = valid_FOCUS, # valid_FOCUS_last
-    prune_after_if_unvalid = bool
+    subtests = "right",
+    PELT_pruning = FALSE
   )
   res_svp <- SVP(
     data = data,
