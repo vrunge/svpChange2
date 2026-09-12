@@ -14,14 +14,14 @@ PELT(data, penalty)
 \value{
 A list with the following elements:
 \itemize{
-  \item \code{changepoints}: the last index of each segment,
-  \item \code{nb}: a vector saving the number of non-pruned elements at each iteration,
-  \item \code{lastIndexSet}: a vector containing the non-pruned indices at the end of the algorithm,
-  \item \code{costQ}: a vector saving the optimal cost at each time step.
+\item \code{changepoints}: the last index of each segment,
+\item \code{nb}: a vector saving the number of non-pruned elements at each iteration,
+\item \code{lastIndexSet}: a vector containing the non-pruned indices at the end of the algorithm,
+\item \code{costQ}: a vector saving the optimal cost at each time step.
 }
 }
 \description{
-This function implements the OP algorithm using PELT of a given vector `data` with a given penalty term.
+This function implements the OP algorithm using PELT of a given vector \code{data} with a given penalty term.
 It finds the optimal change points that minimize the cost function using dynamic programming.
 }
 \details{

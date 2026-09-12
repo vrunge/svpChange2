@@ -8,23 +8,22 @@
 change-point detection}
 \description{
 Tools for multiple change-point detection and segmentation of
-**univariate** sequences using the *smallest valid partitioning* (SVP)
+\strong{univariate} sequences using the \emph{smallest valid partitioning} (SVP)
 algorithm.
 
-SVP builds a segmentation by enforcing a **local notion of segment
-validity**: a candidate segment is retained only if it passes a
+SVP builds a segmentation by enforcing a \strong{local notion of segment
+validity}: a candidate segment is retained only if it passes a
 user-specified validity test (for instance, a single change-point test).
-If a change is detected, the segment is deemed **invalid** and must be
+If a change is detected, the segment is deemed \strong{invalid} and must be
 split, preventing invalid segments from appearing in the final partition.
 
-The computational core is implemented in C++ and exposed to R via **Rcpp**
+The computational core is implemented in C++ and exposed to R via \strong{Rcpp}
 for performance.
 }
 \details{
-SVP is designed for situations where you want **explicit, test-based
-control** of within-segment homogeneity rather than relying solely on a
+SVP is designed for situations where you want \strong{explicit, test-based
+control} of within-segment homogeneity rather than relying solely on a
 global penalized objective.
-
 
 Validity-test helpers include the Gaussian FOCuS likelihood-ratio test, the
 exact AR(1) mean-change test, robust scale and range tests, and the SMUCE
@@ -33,8 +32,10 @@ below.
 }
 \section{Functions}{
 
-- \code{\link{svp0}}:
-- More functions here.
+\itemize{
+\item \code{\link{svp0}}:
+\item More functions here.
+}
 }
 
 \references{
@@ -50,6 +51,14 @@ Inference. \emph{Journal of the Royal Statistical Society: Series B},
 Chakar, S., Lebarbier, E., Levy-Leduc, C. and Robin, S. (2017).
 A robust approach for estimating change-points in the mean of an AR(1)
 process. \emph{Bernoulli}, 23(2), 1408--1447.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/vrunge/svpChange2}
+  \item Report bugs at \url{https://github.com/vrunge/svpChange2/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Vincent Runge \email{vincent.runge@univ-evry.fr} [copyright holder]

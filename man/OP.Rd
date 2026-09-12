@@ -12,10 +12,10 @@ OP(data, penalty)
 \item{penalty}{A double value representing the penalty term for adding a new segment.}
 }
 \value{
-A list with (1) the `\code{changepoints}` elements, (2) a vector `\code{nb}` saving the number of non-pruned elements at each iteration, (3) a vector `\code{lastIndexSet}` containing the non-pruned indices at the end of the algo and (4) a vector `\code{costQ}` saving the optimal cost at each time step. The elements `\code{nb}` and `\code{lastIndexSet}` are set to NULL. They are included for consistency with other algorithms that prune the number of indices to be tracked over time.
+A list with (1) the \verb{\code{changepoints}} elements, (2) a vector \verb{\code{nb}} saving the number of non-pruned elements at each iteration, (3) a vector \verb{\code{lastIndexSet}} containing the non-pruned indices at the end of the algo and (4) a vector \verb{\code{costQ}} saving the optimal cost at each time step. The elements \verb{\code{nb}} and \verb{\code{lastIndexSet}} are set to NULL. They are included for consistency with other algorithms that prune the number of indices to be tracked over time.
 }
 \description{
-This function implements the OP algorithm of a given vector `data` with a given penalty term.
+This function implements the OP algorithm of a given vector \code{data} with a given penalty term.
 It finds the optimal change points that minimize a penalized cost using dynamic programming.
 }
 \details{

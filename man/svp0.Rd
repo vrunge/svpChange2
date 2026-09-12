@@ -9,17 +9,17 @@ svp0(data, gamma, test, subtests = "both", PELT_pruning = FALSE)
 \arguments{
 \item{data}{Numeric vector containing the univariate signal to segment.}
 
-\item{gamma}{Numeric threshold passed to `test`.}
+\item{gamma}{Numeric threshold passed to \code{test}.}
 
-\item{test}{Function of the form `function(segment, gamma)` returning one
-non-missing logical value: `TRUE` if the segment is valid. The function
+\item{test}{Function of the form \verb{function(segment, gamma)} returning one
+non-missing logical value: \code{TRUE} if the segment is valid. The function
 is not called for singleton segments; they are always valid.}
 
 \item{subtests}{Character scalar controlling validity-based pruning. The
-choices are `"both"` (default), `"right"`, `"left"`, and `"none"`.
-`"right"` removes a candidate start when its current segment is invalid;
-`"left"` removes starts smaller than the largest invalid start at the
-current endpoint; `"both"` applies both rules; and `"none"` applies
+choices are \code{"both"} (default), \code{"right"}, \code{"left"}, and \code{"none"}.
+\code{"right"} removes a candidate start when its current segment is invalid;
+\code{"left"} removes starts smaller than the largest invalid start at the
+current endpoint; \code{"both"} applies both rules; and \code{"none"} applies
 neither rule. Invalid candidates are never used for the current optimum.}
 
 \item{PELT_pruning}{Logical; whether to apply the additional cost-based
@@ -28,25 +28,25 @@ candidate pruning rule.}
 \value{
 A list with the following components:
 \describe{
-  \item{changepoints}{Numeric vector of increasing segment-ending
-    positions, including `length(data)`. Internal values are estimated
-    change-point positions.}
-  \item{lastIndexSet}{Numeric vector of candidate boundaries remaining at
-    termination. These are zero-based boundaries and are returned in
-    decreasing order.}
-  \item{nb}{Numeric vector in time order. Element `t` is the number of
-    candidate entries examined at endpoint `t`, before pruning.}
-  \item{costQ}{Always `NULL`; cumulative costs are stored in the first
-    column of `R`.}
-  \item{R}{Numeric matrix with `length(data)` rows and three columns. Row
-    `t` describes the optimum ending at observation `t`:
-    \describe{
-      \item{Q}{cumulative cost}
-      \item{K}{number of segments in Q}
-      \item{s}{zero-based previous boundary; the final segment is
-        `data[(s + 1):t]`}
-    }
-  }
+\item{changepoints}{Numeric vector of increasing segment-ending
+positions, including \code{length(data)}. Internal values are estimated
+change-point positions.}
+\item{lastIndexSet}{Numeric vector of candidate boundaries remaining at
+termination. These are zero-based boundaries and are returned in
+decreasing order.}
+\item{nb}{Numeric vector in time order. Element \code{t} is the number of
+candidate entries examined at endpoint \code{t}, before pruning.}
+\item{costQ}{Always \code{NULL}; cumulative costs are stored in the first
+column of \code{R}.}
+\item{R}{Numeric matrix with \code{length(data)} rows and three columns. Row
+\code{t} describes the optimum ending at observation \code{t}:
+\describe{
+\item{Q}{cumulative cost}
+\item{K}{number of segments in Q}
+\item{s}{zero-based previous boundary; the final segment is
+\code{data[(s + 1):t]}}
+}
+}
 }
 }
 \description{
@@ -58,12 +58,11 @@ same number of segments, minimizes the within-segment sum of squares.
 \details{
 Smallest Valid Partitioning with a User-Defined Validity Test
 
-
-A candidate boundary `s` at endpoint `t` represents the R segment
-`data[(s + 1):t]`; `s` is zero-based and `t` is one-based. The quadratic
+A candidate boundary \code{s} at endpoint \code{t} represents the R segment
+\code{data[(s + 1):t]}; \code{s} is zero-based and \code{t} is one-based. The quadratic
 cost is the residual sum of squares around the segment mean. Singleton
-segments are always valid, regardless of the result of `test`. The validity-
-based pruning rules and `PELT_pruning` require assumptions on the validity
+segments are always valid, regardless of the result of \code{test}. The validity-
+based pruning rules and \code{PELT_pruning} require assumptions on the validity
 test.
 }
 \examples{

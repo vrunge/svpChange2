@@ -12,24 +12,24 @@ valid_FOCUS(y, gamma)
 \item{gamma}{A numeric threshold for the FOCuS statistic.}
 }
 \value{
-`TRUE` if the statistic is strictly below `gamma` for every prefix
-of `y`; otherwise, `FALSE`.
+\code{TRUE} if the statistic is strictly below \code{gamma} for every prefix
+of \code{y}; otherwise, \code{FALSE}.
 }
 \description{
-Tests whether the FOCuS statistic remains below `gamma` for
+Tests whether the FOCuS statistic remains below \code{gamma} for
 every prefix of the segment. This is the validity rule used by the SVP
 procedure.
 }
 \details{
 FOCuS Validity Test for Every Prefix
 
-`valid_FOCUS()` updates the FOCuS statistic after each observation
-and returns `FALSE` as soon as a prefix statistic reaches or exceeds
-`gamma`. It is the stricter online test and corresponds to the
-segment-wise pruning rule used by SVP. Therefore, `valid_FOCUS()` is the
+\code{valid_FOCUS()} updates the FOCuS statistic after each observation
+and returns \code{FALSE} as soon as a prefix statistic reaches or exceeds
+\code{gamma}. It is the stricter online test and corresponds to the
+segment-wise pruning rule used by SVP. Therefore, \code{valid_FOCUS()} is the
 appropriate function to use for the package's validity test. In contrast,
-`valid_FOCUS_last()` checks only the final statistic.
+\code{valid_FOCUS_last()} checks only the final statistic.
 }
 \seealso{
-[valid_FOCUS_last()]
+\code{\link[=valid_FOCUS_last]{valid_FOCUS_last()}}
 }

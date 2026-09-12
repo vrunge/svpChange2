@@ -1,5 +1,12 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-README.Rmd
 ^LICENSE\.md$
-simulations
+.Rhistory
+.RData
+.Ruserdata
+^README\.Rmd$
+^simulations(/|$)
+^\.vscode$
+^tests/testthat/Rplots\.pdf$
+(^|/)\.DS_Store$
+^.*\.Rcheck$

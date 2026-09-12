@@ -15,7 +15,7 @@ svp_smuce(y, gamma, sigma2 = 1)
 }
 \value{
 Integer segment-end indices. Internal segment endpoints are the
-estimated changepoints; the final endpoint is `length(y)`.
+estimated changepoints; the final endpoint is \code{length(y)}.
 }
 \description{
 SVP with SMUCE validity and constrained Gaussian cost
@@ -32,6 +32,6 @@ deterministically by the dynamic program.
 }
 \references{
 Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
-Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
+Inference. \emph{Journal of the Royal Statistical Society: Series B}, 76(3),
 495--580. doi:10.1111/rssb.12047.
 }

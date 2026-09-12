@@ -22,14 +22,14 @@ Numeric constrained Gaussian residual cost.
 Constrained Gaussian cost for a SMUCE-valid segment
 }
 \details{
-The cost is the Gaussian residual sum of squares divided by `sigma2`,
+The cost is the Gaussian residual sum of squares divided by \code{sigma2},
 minimized over the SMUCE-admissible constant means. It is therefore the
 constrained Gaussian negative log-likelihood cost up to an additive and
-multiplicative constant. `Inf` is returned when the segment has no
+multiplicative constant. \code{Inf} is returned when the segment has no
 admissible constant mean.
 }
 \references{
 Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
-Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
+Inference. \emph{Journal of the Royal Statistical Society: Series B}, 76(3),
 495--580. doi:10.1111/rssb.12047.
 }

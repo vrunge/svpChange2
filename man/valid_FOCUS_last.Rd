@@ -12,21 +12,21 @@ valid_FOCUS_last(y, gamma)
 \item{gamma}{A numeric threshold for the FOCuS statistic.}
 }
 \value{
-`TRUE` if the final statistic is strictly below `gamma`; otherwise,
-`FALSE`.
+\code{TRUE} if the final statistic is strictly below \code{gamma}; otherwise,
+\code{FALSE}.
 }
 \description{
 Tests whether the FOCuS statistic for the complete segment is
-below `gamma`, without checking intermediate prefixes.
+below \code{gamma}, without checking intermediate prefixes.
 }
 \details{
 FOCuS Validity Test for the Final Segment
 
-`valid_FOCUS_last()` processes the complete segment and checks only
-the final statistic. An earlier prefix may have reached or exceeded `gamma`
-without making the final segment invalid. Use [valid_FOCUS()] to require
+\code{valid_FOCUS_last()} processes the complete segment and checks only
+the final statistic. An earlier prefix may have reached or exceeded \code{gamma}
+without making the final segment invalid. Use \code{\link[=valid_FOCUS]{valid_FOCUS()}} to require
 every prefix to remain valid.
 }
 \seealso{
-[valid_FOCUS()]
+\code{\link[=valid_FOCUS]{valid_FOCUS()}}
 }

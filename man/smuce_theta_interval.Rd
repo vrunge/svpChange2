@@ -24,12 +24,12 @@ Internal helper: admissible interval of constant means
 \details{
 For the independent Gaussian model with known variance, the returned
 interval is the set of all constant means satisfying the SMUCE constraint
-on every subinterval of `y`. An interval containing `NA` values means that
+on every subinterval of \code{y}. An interval containing \code{NA} values means that
 no constant mean is admissible.
 }
 \references{
 Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
-Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
+Inference. \emph{Journal of the Royal Statistical Society: Series B}, 76(3),
 495--580. doi:10.1111/rssb.12047.
 }
 \keyword{internal}

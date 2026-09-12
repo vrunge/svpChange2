@@ -14,14 +14,14 @@ SN(data, Kmax)
 \value{
 A list with the following elements:
 \itemize{
-  \item \code{changepoints}: the last index of each segment for each number of segment K between 1 and Kmax
-  \item \code{nb}: NULL
-  \item \code{lastIndexSet}: NULL
-  \item \code{costQ}: a matrix saving the optimal cost at each time step for each number of segments (in k-th column for k segments)
+\item \code{changepoints}: the last index of each segment for each number of segment K between 1 and Kmax
+\item \code{nb}: NULL
+\item \code{lastIndexSet}: NULL
+\item \code{costQ}: a matrix saving the optimal cost at each time step for each number of segments (in k-th column for k segments)
 }
 }
 \description{
-This function implements the SN algorithm of a given vector `data` with a given maximum number of changes
+This function implements the SN algorithm of a given vector \code{data} with a given maximum number of changes
 It finds the optimal segmentation for all K between 1 and Kmax that minimizes the global cost using dynamic programming.
 }
 \details{

@@ -4,5 +4,3 @@ useDynLib(svpChange2, .registration = TRUE)
 
 importFrom("stats", "rbinom", "rexp", "rgeom", "rnbinom", "rnorm", "rpois")
 importFrom("stats", "quantile")
-
-importFrom(methods, new)

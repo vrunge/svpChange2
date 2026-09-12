@@ -12,19 +12,19 @@ valid_QUANTILE(y, gamma, probs = c(0.05, 0.95))
 \item{gamma}{A numeric threshold for the interquantile range.}
 
 \item{probs}{A numeric vector of length two giving the lower and upper
-quantile probabilities. Defaults to `c(0.05, 0.95)` and must be in
+quantile probabilities. Defaults to \code{c(0.05, 0.95)} and must be in
 increasing order.}
 }
 \value{
 TRUE if the interquantile range is less than or equal to gamma.
 }
 \description{
-Checks whether the quantile range between `probs[1]` and
-`probs[2]` is below a threshold.
+Checks whether the quantile range between \code{probs[1]} and
+\code{probs[2]} is below a threshold.
 }
 \details{
 Validity Test Based on Interquantile Range
 
 The test computes the difference between the quantiles at
-`probs[2]` and `probs[1]`.
+\code{probs[2]} and \code{probs[1]}.
 }
