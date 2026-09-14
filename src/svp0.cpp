@@ -31,18 +31,20 @@ using namespace Rcpp;
 //' A candidate boundary `s` at endpoint `t` represents the R segment
 //' `data[(s + 1):t]`; `s` is zero-based and `t` is one-based. The quadratic
 //' cost is the residual sum of squares around the segment mean. Singleton
-//' segments are always valid, regardless of the result of `test`. The validity-
-//' based pruning rules and `PELT_pruning` require assumptions on the validity
-//' test.
+//' segments are always valid, regardless of the result of `test`.
 //'
 //' @examples
 //' range_test <- function(segment, gamma) {
 //'   diff(range(segment)) <= gamma
 //' }
-//' y <- c(rnorm(5), rnorm(5, mean = 5))
-//' fit <- svp0(y, gamma = 3, test = range_test,
+//' set.seed(1)
+//' data <- ts_generator(
+//'   chpts = c(30, 60), parameters = c(0, 4),
+//'   sd_noise = 0.25, type = "gauss"
+//' )
+//' fit <- svp0(data, gamma = 2, test = range_test,
 //'            subtests = "both")
-//' y; fit
+//' fit$changepoints
 //'
 //' @return A list with the following components:
 //' \describe{
@@ -222,6 +224,7 @@ List svp0(std::vector<double> data,
         {
           non_pruned_INDEX.push_back(s);
         }
+
       }
       non_pruned_INDEX.push_back(t);
       INDEX.swap(non_pruned_INDEX); // Keep candidates retained by PELT pruning.

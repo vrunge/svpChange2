@@ -18,3 +18,11 @@ Chakar, S., Lebarbier, E., Levy-Leduc, C. and Robin, S. (2017).
 A robust approach for estimating change-points in the mean of an AR(1)
 process. \emph{Bernoulli}, 23(2), 1408--1447.
 }
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = 60, parameters = 0, sd_noise = 1,
+  rho = 0.6, type = "gaussAR1"
+)
+AR1_rho(data)
+}

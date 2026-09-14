@@ -15,11 +15,10 @@ test_that("svp0 and SVP agree with right pruning", {
     sd_noise = 1
   )
   gamma <- 5
-  bool <- TRUE
 
   res_svp0 <- svp0(data,
     gamma,
-    test = valid_FOCUS, # valid_FOCUS_last
+    test = valid_FOCUS_last,
     subtests = "right",
     PELT_pruning = FALSE
   )
@@ -28,7 +27,7 @@ test_that("svp0 and SVP agree with right pruning", {
     data = data,
     gamma = gamma,
     test = "gaussian_mean",
-    prune_after_if_unvalid = bool
+    subtests = "right"
   )
 
   expect_equal(res_svp0$changepoints, res_svp$changepoints)
@@ -44,13 +43,11 @@ test_that("svp0 and SVP return the same Gaussian FOCUS result", {
     parameters = c(0, gap, 0, gap, 0, gap, 0, gap, 0),
     sd_noise = 1
   )
-  bool <- TRUE
-
   gamma <- 7
 
   res_svp0 <- svp0(data,
     gamma,
-    test = valid_FOCUS, # valid_FOCUS_last
+    test = valid_FOCUS_last,
     subtests = "right",
     PELT_pruning = FALSE
   )
@@ -58,7 +55,7 @@ test_that("svp0 and SVP return the same Gaussian FOCUS result", {
     data = data,
     gamma = gamma,
     test = "gaussian_mean",
-    prune_after_if_unvalid = bool
+    subtests = "right"
   )
   expect_equal(res_svp$changepoints, res_svp0$changepoints)
   expect_equal(res_svp$R, res_svp0$R)
@@ -69,37 +66,107 @@ test_that("SVP accepts all before/after pruning combinations", {
   data <- rep(c(0, 1, -0.5, 0.8), each = n / 4) + rnorm(n)
   gamma <- 2 * log(n)
 
-  opts <- expand.grid(
-    prune_after_if_unvalid = c(FALSE, TRUE),
-    prune_before_if_invalid = c(FALSE, TRUE)
-  )
+  opts <- data.frame(subtests = c("none", "right", "left", "both"))
 
   for (i in seq_len(nrow(opts))) {
     res <- SVP(
       data = data,
       gamma = gamma,
       test = "gaussian_mean",
-      prune_after_if_unvalid = opts$prune_after_if_unvalid[i],
-      prune_before_if_invalid = opts$prune_before_if_invalid[i]
+      subtests = opts$subtests[i]
     )
 
     expect_equal(tail(res$changepoints, 1), n)
   }
 })
 
-test_that("SVP defaults to the Gaussian mean validity test", {
+test_that("SVP evaluates Gaussian FOCUS at the current endpoint", {
+  data <- c(2.002482730292829, 0.066700870930183,
+            1.866851844706863)
+  gamma <- 0.4873983399942518
+
+  expect_false(valid_FOCUS(data, gamma))
+  expect_true(valid_FOCUS_last(data, gamma))
+
+  result <- SVP(
+    data,
+    gamma = gamma,
+    test = "gaussian_mean",
+    subtests = "none"
+  )
+  reference <- svp0(
+    data,
+    gamma = gamma,
+    test = valid_FOCUS_last,
+    subtests = "none",
+    PELT_pruning = FALSE
+  )
+
+  expect_equal(result$changepoints, reference$changepoints)
+  expect_equal(result$R, reference$R)
+  expect_equal(result$changepoints, length(data))
+})
+
+test_that("SVP matches svp0 for every pruning mode", {
+  set.seed(27)
+  data <- c(rnorm(20), rnorm(20, 2), rnorm(20, -1))
+  gamma <- 1.5
+
+  for (mode in c("none", "right", "left", "both")) {
+    result <- SVP(
+      data,
+      gamma = gamma,
+      test = "gaussian_mean",
+      subtests = mode
+    )
+    reference <- svp0(
+      data,
+      gamma = gamma,
+      test = valid_FOCUS_last,
+      subtests = mode,
+      PELT_pruning = FALSE
+    )
+
+    expect_equal(result$changepoints, reference$changepoints, info = mode)
+    expect_equal(result$R, reference$R, info = mode)
+    expect_equal(result$nb, reference$nb, info = mode)
+    expect_equal(result$lastIndexSet, reference$lastIndexSet, info = mode)
+  }
+})
+
+test_that("SVP computes stable squared-error costs for large offsets", {
+  data <- 1e12 + c(0, 1, -1, 0, 2, -2)
+  result <- SVP(
+    data,
+    gamma = 1e12,
+    test = "varCost",
+    subtests = "none"
+  )
+  expected <- sum((data - mean(data))^2)
+
+  expect_equal(result$changepoints, length(data))
+  expect_equal(result$R[length(data), 1], expected, tolerance = 1e-8)
+  expect_true(all(result$R[, 1] >= 0))
+})
+
+test_that("SVP defaults to Gaussian mean with both pruning rules", {
   set.seed(17)
   data <- rnorm(80)
   gamma <- 1.5 * log(length(data))
 
   default <- SVP(data, gamma)
   explicit <- SVP(data, gamma, test = "gaussian_mean")
+  explicit_both <- SVP(
+    data, gamma, test = "gaussian_mean", subtests = "both"
+  )
 
   expect_equal(default$changepoints, explicit$changepoints)
   expect_equal(default$R, explicit$R)
+  expect_equal(default$changepoints, explicit_both$changepoints)
+  expect_equal(default$R, explicit_both$R)
 })
 
-test_that("TRUE/TRUE Gaussian pruning is invariant to reversing the data", {
+test_that("both Gaussian pruning returns a valid final endpoint", {
   set.seed(2)
   n <- 100
   data <- rnorm(n)
@@ -110,26 +177,12 @@ test_that("TRUE/TRUE Gaussian pruning is invariant to reversing the data", {
     gamma,
     test = "gaussian_mean",
     sigma2 = 1,
-    prune_after_if_unvalid = TRUE,
-    prune_before_if_invalid = TRUE
+    subtests = "both"
   )
-  backward <- SVP(
-    rev(data),
-    gamma,
-    test = "gaussian_mean",
-    sigma2 = 1,
-    prune_after_if_unvalid = TRUE,
-    prune_before_if_invalid = TRUE
-  )
-  backward_changepoints <- c(
-    n - rev(head(backward$changepoints, -1L)),
-    n
-  )
-
-  expect_equal(forward$changepoints, backward_changepoints)
+  expect_equal(tail(forward$changepoints, 1), n)
 })
 
-test_that("TRUE/TRUE keeps the bidirectionally valid one-segment fast path", {
+test_that("both keeps the one-segment result for an unrestrictive threshold", {
   set.seed(3)
   data <- rnorm(1000)
 
@@ -138,18 +191,20 @@ test_that("TRUE/TRUE keeps the bidirectionally valid one-segment fast path", {
     gamma = 1e12,
     test = "gaussian_mean",
     sigma2 = 1,
-    prune_after_if_unvalid = TRUE,
-    prune_before_if_invalid = TRUE
+    subtests = "both"
   )
-  backward <- SVP(
-    rev(data),
-    gamma = 1e12,
-    test = "gaussian_mean",
-    sigma2 = 1,
-    prune_after_if_unvalid = TRUE,
-    prune_before_if_invalid = TRUE
-  )
-
   expect_equal(forward$changepoints, 1000)
-  expect_equal(backward$changepoints, 1000)
+})
+
+test_that("SVP validates its public arguments", {
+  expect_error(SVP(numeric(), 1), "at least one observation")
+  expect_error(SVP(c(1, NA_real_), 1), "finite")
+  expect_error(SVP(1:3, 0), "gamma")
+  expect_error(SVP(1:3, 1, subtests = "invalid"), "subtests")
+  expect_error(SVP(1:3, 1, test = "unknown"), "Unknown test")
+  expect_error(SVP(c(1, 0, 2), 1, test = "gamma_rate"),
+               "strictly positive")
+  expect_error(SVP(1:3, 1, test = "quantile", quantile = 0.9), "0.5")
+  expect_error(SVP(1:3, 1, test = "AR1", rho = 0, sigma2 = 0), "sigma2")
+  expect_silent(SVP(1:3, 1, test = "gaussian_mean", sigma2 = 0))
 })

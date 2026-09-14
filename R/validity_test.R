@@ -5,18 +5,24 @@
 #'
 #' @title FOCuS Validity Test for Every Prefix
 #' @description Tests whether the FOCuS statistic remains below `gamma` for
-#' every prefix of the segment. This is the validity rule used by the SVP
-#' procedure.
+#' every prefix of the segment. It is the prefix-wise validity rule available
+#' for use with [svp0()].
 #' @param y A numeric vector representing a segment of the signal.
 #' @param gamma A numeric threshold for the FOCuS statistic.
 #' @return `TRUE` if the statistic is strictly below `gamma` for every prefix
 #' of `y`; otherwise, `FALSE`.
 #' @details `valid_FOCUS()` updates the FOCuS statistic after each observation
 #' and returns `FALSE` as soon as a prefix statistic reaches or exceeds
-#' `gamma`. It is the stricter online test and corresponds to the
-#' segment-wise pruning rule used by SVP. Therefore, `valid_FOCUS()` is the
-#' appropriate function to use for the package's validity test. In contrast,
-#' `valid_FOCUS_last()` checks only the final statistic.
+#' `gamma`. Use it with [svp0()] when every prefix must be valid. In contrast,
+#' [SVP()] with `test = "gaussian_mean"` checks only the statistic at the
+#' current segment endpoint, and [valid_FOCUS_last()] checks only the final
+#' statistic of a supplied segment.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = 40, parameters = 0, sd_noise = 1, type = "gauss"
+#' )
+#' valid_FOCUS(data, gamma = 2 * log(length(data)))
 #' @seealso [valid_FOCUS_last()]
 #' @export
 valid_FOCUS <- function(y, gamma) {
@@ -37,6 +43,12 @@ valid_FOCUS <- function(y, gamma) {
 #' the final statistic. An earlier prefix may have reached or exceeded `gamma`
 #' without making the final segment invalid. Use [valid_FOCUS()] to require
 #' every prefix to remain valid.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = 40, parameters = 0, sd_noise = 1, type = "gauss"
+#' )
+#' valid_FOCUS_last(data, gamma = 2 * log(length(data)))
 #' @seealso [valid_FOCUS()]
 #' @export
 valid_FOCUS_last <- function(y, gamma) {
@@ -72,8 +84,13 @@ valid_FOCUS_last <- function(y, gamma) {
 #' @param rho An optional known AR(1) coefficient. If `NA`, it is estimated
 #' robustly from `y`.
 #' @param sigma2 A positive innovation variance used by the known-variance
-#' statistic.
-#' @param profile_sigma If `TRUE`, profile out the innovation variance.
+#' statistic. In the AR(1) model, this is the variance of the new random shock
+#' after accounting for the previous observation and the AR(1) mean structure;
+#' it is not the marginal variance of the observed series. It is ignored when
+#' `profile_sigma = TRUE`.
+#' @param profile_sigma If `TRUE`, estimate the innovation variance separately
+#' under the no-change and one-change models from their residual sums of
+#' squares. This is useful when the innovation scale is unknown.
 #' @return `TRUE` if the AR(1) statistic is strictly below `gamma`; otherwise,
 #' `FALSE`.
 #' @details The function transforms the observations into AR(1) innovations and
@@ -83,7 +100,17 @@ valid_FOCUS_last <- function(y, gamma) {
 #' estimator requires at least three observations. The function can be passed
 #' to [svp0()] directly when `rho` is fixed, or through a closure when other
 #' optional arguments are needed. The caller should enforce any minimum segment
-#' length required by the chosen SVP procedure.
+#' length required by the chosen SVP procedure. When `profile_sigma = FALSE`,
+#' the statistic uses the supplied `sigma2`; when `profile_sigma = TRUE`, the
+#' innovation variance is profiled out and estimated under each competing
+#' model.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = 60, parameters = 0, sd_noise = 1,
+#'   rho = 0.6, type = "gaussAR1"
+#' )
+#' valid_AR1(data, gamma = 10, rho = 0.6, sigma2 = 1)
 #' @seealso [AR1_single_change()], [svp0()]
 #' @export
 valid_AR1 <- function(y, gamma, rho = NA_real_, sigma2 = 1,
@@ -166,6 +193,12 @@ valid_AR1 <- function(y, gamma, rho = NA_real_, sigma2 = 1,
 #' @param gamma A numeric threshold for the maximum allowed sum of squared
 #' errors.
 #' @return TRUE if the sum of squared errors is less than or equal to gamma.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = 30, parameters = 0, sd_noise = 1, type = "gauss"
+#' )
+#' valid_SSE(data, gamma = 40)
 #' @export
 valid_SSE <- function(y, gamma) {
   sum((y - mean(y))^2) <= gamma
@@ -181,6 +214,12 @@ valid_SSE <- function(y, gamma) {
 #' @param y A numeric vector representing a segment of the signal.
 #' @param gamma A numeric threshold for the maximum allowed range.
 #' @return TRUE if the range is less than or equal to gamma.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = 30, parameters = 0, sd_noise = 1, type = "gauss"
+#' )
+#' valid_RANGE(data, gamma = 5)
 #' @export
 valid_RANGE <- function(y, gamma) {
   max(y) - min(y) <= gamma
@@ -203,6 +242,12 @@ valid_RANGE <- function(y, gamma) {
 #' before computing the range. At least `2 * trim + 1`
 #' observations are therefore required, leaving one observation after
 #' trimming. The minimum segment length is enforced by the caller.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = 30, parameters = 0, sd_noise = 1, type = "gauss"
+#' )
+#' valid_RANGE_SLACK(data, gamma = 4, trim = 3)
 #' @export
 valid_RANGE_SLACK <- function(y, gamma, trim = 3) {
   stopifnot(
@@ -232,6 +277,12 @@ valid_RANGE_SLACK <- function(y, gamma, trim = 3) {
 #' @return TRUE if the interquantile range is less than or equal to gamma.
 #' @details The test computes the difference between the quantiles at
 #' `probs[2]` and `probs[1]`.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = 30, parameters = 0, sd_noise = 1, type = "gauss"
+#' )
+#' valid_QUANTILE(data, gamma = 4)
 #' @export
 valid_QUANTILE <- function(y, gamma, probs = c(0.05, 0.95)) {
   stopifnot(
@@ -262,6 +313,12 @@ valid_QUANTILE <- function(y, gamma, probs = c(0.05, 0.95)) {
 #' are appended; use `subtests = "none"` and `PELT_pruning = FALSE` in [svp0()]
 #' unless the required pruning properties have been established for the
 #' intended application.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = 30, parameters = 0, sd_noise = 1, type = "gauss"
+#' )
+#' valid_SCALE(data, gamma = 2)
 #' @export
 valid_SCALE <- function(y, gamma) {
   stats::mad(y, constant = 1.4826) <= gamma
@@ -279,6 +336,13 @@ valid_SCALE <- function(y, gamma) {
 #' segment.
 #' @return TRUE if the segment cannot be split into two parts with lower
 #' (penalized) cost.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = c(20, 40), parameters = c(0, 2),
+#'   sd_noise = 1, type = "gauss"
+#' )
+#' valid_OP(data, gamma = 2 * log(length(data)))
 #' @export
 valid_OP <- function(y, gamma) {
   len <- length(y)
@@ -296,42 +360,4 @@ valid_OP <- function(y, gamma) {
     right_sum^2 / (len - split)
   val <- min(left_sse + right_sse)
   total < (val + 2 * gamma)
-}
-
-################################################
-#' SMUCE multiscale validity test for a constant Gaussian segment
-#'
-#' @description Tests a segment against the SMUCE multiscale constraint. The
-#' function checks whether at least one constant mean is admissible when
-#' `theta` is omitted. Supply `theta` to test that particular constant mean.
-#' `gamma` is interpreted as the SMUCE q threshold.
-#' @param y Numeric observations in the candidate segment.
-#' @param gamma SMUCE threshold q (not q squared).
-#' @param sigma2 Known Gaussian variance.
-#' @param n Total series length used in the multiscale penalty.
-#' @param theta Optional candidate constant mean. If omitted, the function
-#' tests whether the intersection of all subinterval constraints is nonempty.
-#' @return Logical validity indicator.
-#' @details
-#' This is the fixed-variance Gaussian SMUCE constraint applied to one
-#' candidate segment. With `theta = NULL`, validity means that there exists at
-#' least one constant mean satisfying the constraint on every subinterval. If
-#' `theta` is supplied, that value must satisfy all those constraints.
-#' @references
-#' Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
-#' Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
-#' 495--580. doi:10.1111/rssb.12047.
-#' @export
-valid_SMUCE <- function(y, gamma, sigma2 = 1, n = length(y), theta = NULL) {
-  interval <- smuce_theta_interval(y, gamma, sigma2, n)
-  if (anyNA(interval)) {
-    return(FALSE)
-  }
-  if (is.null(theta)) {
-    return(TRUE)
-  }
-  if (length(theta) != 1L || !is.numeric(theta) || !is.finite(theta)) {
-    return(FALSE)
-  }
-  isTRUE(theta >= interval[1] && theta <= interval[2])
 }

@@ -30,3 +30,10 @@ before computing the range. At least \code{2 * trim + 1}
 observations are therefore required, leaving one observation after
 trimming. The minimum segment length is enforced by the caller.
 }
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = 30, parameters = 0, sd_noise = 1, type = "gauss"
+)
+valid_RANGE_SLACK(data, gamma = 4, trim = 3)
+}

@@ -27,6 +27,13 @@ the final statistic. An earlier prefix may have reached or exceeded \code{gamma}
 without making the final segment invalid. Use \code{\link[=valid_FOCUS]{valid_FOCUS()}} to require
 every prefix to remain valid.
 }
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = 40, parameters = 0, sd_noise = 1, type = "gauss"
+)
+valid_FOCUS_last(data, gamma = 2 * log(length(data)))
+}
 \seealso{
 \code{\link[=valid_FOCUS]{valid_FOCUS()}}
 }

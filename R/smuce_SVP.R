@@ -35,14 +35,23 @@
 #' Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
 #' Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
 #' 495--580. doi:10.1111/rssb.12047.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = 20, parameters = 0, sd_noise = 1, type = "gauss"
+#' )
+#' smuce_theta_interval(data, gamma = 2, sigma2 = 1)
 #' @keywords internal
 smuce_theta_interval <- function(y, gamma, sigma2 = 1, n = length(y)) {
   .smuce_validate(y, gamma, sigma2, n)
+  # Center before prefix sums to avoid cancellation for translated data.
+  offset <- y[1L]
+  y_centered <- y - offset
   lo <- -Inf
   hi <- Inf
-  cs <- c(0, cumsum(y))
-  for (u in seq_along(y)) {
-    for (v in u:length(y)) {
+  cs <- c(0, cumsum(y_centered))
+  for (u in seq_along(y_centered)) {
+    for (v in u:length(y_centered)) {
       m <- v - u + 1
       centre <- (cs[v + 1] - cs[u]) / m
       r <- sqrt(sigma2 / m) *
@@ -54,7 +63,7 @@ smuce_theta_interval <- function(y, gamma, sigma2 = 1, n = length(y)) {
       }
     }
   }
-  c(lo, hi)
+  c(lo + offset, hi + offset)
 }
 
 #' Constrained Gaussian cost for a SMUCE-valid segment
@@ -73,14 +82,22 @@ smuce_theta_interval <- function(y, gamma, sigma2 = 1, n = length(y)) {
 #' Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
 #' Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
 #' 495--580. doi:10.1111/rssb.12047.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = 20, parameters = 0, sd_noise = 1, type = "gauss"
+#' )
+#' smuce_cost(data, gamma = 2, sigma2 = 1)
 #' @export
 smuce_cost <- function(y, gamma, sigma2 = 1, n = length(y)) {
   interval <- smuce_theta_interval(y, gamma, sigma2, n)
   if (anyNA(interval)) {
     return(Inf)
   }
+  offset <- y[1L]
+  y_centered <- y - offset
   theta <- min(max(mean(y), interval[1]), interval[2])
-  sum((y - theta)^2) / sigma2
+  sum((y_centered - (theta - offset))^2) / sigma2
 }
 
 #' SVP with SMUCE validity and constrained Gaussian cost
@@ -102,6 +119,13 @@ smuce_cost <- function(y, gamma, sigma2 = 1, n = length(y)) {
 #' Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
 #' Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
 #' 495--580. doi:10.1111/rssb.12047.
+#' @examples
+#' set.seed(1)
+#' data <- ts_generator(
+#'   chpts = c(20, 40), parameters = c(0, 2),
+#'   sd_noise = 1, type = "gauss"
+#' )
+#' svp_smuce(data, gamma = 1.5, sigma2 = 1)
 #' @export
 svp_smuce <- function(y, gamma, sigma2 = 1) {
   n <- length(y)
@@ -111,8 +135,11 @@ svp_smuce <- function(y, gamma, sigma2 = 1) {
   prev <- rep(-1L, n + 1L)
   K[1] <- 0
   C[1] <- 0
-  cs <- c(0, cumsum(y))
-  cs2 <- c(0, cumsum(y^2))
+  # Center before prefix sums to make the recurrence translation invariant.
+  offset <- y[1L]
+  y_centered <- y - offset
+  cs <- c(0, cumsum(y_centered))
+  cs2 <- c(0, cumsum(y_centered^2))
 
   # The admissible interval for a fixed start can only shrink as the segment
   # grows. Updating it incrementally reduces this implementation from O(n^4)

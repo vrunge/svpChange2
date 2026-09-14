@@ -30,6 +30,14 @@ or confidence intervals. Exact changepoint locations are not unique when
 multiple optimal partitions have the same objective; ties are resolved
 deterministically by the dynamic program.
 }
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = c(20, 40), parameters = c(0, 2),
+  sd_noise = 1, type = "gauss"
+)
+svp_smuce(data, gamma = 1.5, sigma2 = 1)
+}
 \references{
 Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
 Inference. \emph{Journal of the Royal Statistical Society: Series B}, 76(3),

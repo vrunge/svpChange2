@@ -108,10 +108,6 @@ ts_generator(
   type = "negbin"
 )
 ts_generator(
-  chpts = c(50, 70, 120, 200), parameters = c(0, 3, -1, 1),
-  type = "gauss"
-)
-ts_generator(
   chpts = c(50, 100, 180), parameters = c(3, 1, 6), type = "variance"
 )
 }

@@ -1,3 +1,6 @@
+library(testthat)
+library(svpChange2)
+
 simulate_ar1_change <- function(n, changepoint, means, rho, innovation_sd = 1) {
   innovations <- rnorm(n, sd = innovation_sd)
   mu <- rep(means, c(changepoint, n - changepoint))
@@ -97,8 +100,7 @@ test_that("AR1 validity test works inside main SVP with pruning options", {
     data,
     gamma = 10,
     test = "AR1",
-    prune_after_if_unvalid = TRUE,
-    prune_before_if_invalid = TRUE,
+    subtests = "both",
     rho = 0.7,
     sigma2 = 1
   )
@@ -123,14 +125,12 @@ test_that("AR1Focus reproduces exact AR1 SVP partitions", {
     set.seed(1)
     data <- simulate_ar1_change(300, 90, c(0, 1.5), rho)
     exact <- SVP(
-      data, gamma = 8, test = "AR1", rho = rho, sigma2 = 1,
-      prune_after_if_unvalid = TRUE,
-      prune_before_if_invalid = FALSE
+    data, gamma = 8, test = "AR1", rho = rho, sigma2 = 1,
+      subtests = "right"
     )
     focus <- SVP(
-      data, gamma = 8, test = "AR1Focus", rho = rho, sigma2 = 1,
-      prune_after_if_unvalid = TRUE,
-      prune_before_if_invalid = FALSE
+    data, gamma = 8, test = "AR1Focus", rho = rho, sigma2 = 1,
+      subtests = "right"
     )
     reference <- svp0(
       data, gamma = 8, test = exact_validity(rho),

@@ -1,350 +1,58 @@
-#include "tests.h"
+#include "svp_internal.h"
+#include "svp_ar1_helpers.h"
 #include <Rcpp.h>
 #include <vector>
-#include <limits>
 #include <algorithm>
 #include <cmath>
-#include <utility>
+#include <string>
 
 using namespace Rcpp;
 
+// -----------------------------------------------------------------------------
+// Test dispatch
+// -----------------------------------------------------------------------------
+
 namespace {
 
-inline double segment_cost(const std::vector<double>& S1,
-                           const std::vector<double>& S2,
-                           size_t s,
-                           size_t t)
+// Names accepted by the public SVP() dispatcher.
+enum class TestKind {
+  GaussianMean,
+  GammaRate,
+  GaussianVariance,
+  Quantile,
+  QuantileExact,
+  VarCost,
+  WilcoxonCost,
+  MedianMoodCost,
+  AR1,
+  AR1Profile,
+  AR1Focus
+};
+
+// Convert the user-facing test name to the corresponding internal enum value.
+TestKind parse_test_kind(const std::string& test)
 {
-  const double sum = S1[t] - S1[s];
-  return (S2[t] - S2[s]) - sum * sum / static_cast<double>(t - s);
-}
+  if (test == "gaussian_mean") return TestKind::GaussianMean;
+  if (test == "gamma_rate") return TestKind::GammaRate;
+  if (test == "gaussian_variance") return TestKind::GaussianVariance;
+  if (test == "quantile") return TestKind::Quantile;
+  if (test == "quantileExact") return TestKind::QuantileExact;
+  if (test == "varCost") return TestKind::VarCost;
+  if (test == "WilcoxonCost") return TestKind::WilcoxonCost;
+  if (test == "MedianMoodCost") return TestKind::MedianMoodCost;
+  if (test == "AR1") return TestKind::AR1;
+  if (test == "AR1Profile") return TestKind::AR1Profile;
+  if (test == "AR1Focus") return TestKind::AR1Focus;
 
-double median_in_place(std::vector<double>& values)
-{
-  const size_t middle = values.size() / 2;
-  std::nth_element(values.begin(), values.begin() + middle, values.end());
-  const double upper = values[middle];
-  if (values.size() % 2 == 1) return upper;
-  const double lower = *std::max_element(values.begin(), values.begin() + middle);
-  return 0.5 * (lower + upper);
-}
-
-double robust_ar1_rho(const std::vector<double>& data)
-{
-  if (data.size() < 3) stop("AR(1) estimation requires at least 3 observations");
-  std::vector<double> lag1(data.size() - 1), lag2(data.size() - 2);
-  for (size_t i = 0; i < lag1.size(); ++i) lag1[i] = std::fabs(data[i + 1] - data[i]);
-  for (size_t i = 0; i < lag2.size(); ++i) lag2[i] = std::fabs(data[i + 2] - data[i]);
-  const double med1 = median_in_place(lag1);
-  const double med2 = median_in_place(lag2);
-  if (!std::isfinite(med1) || !std::isfinite(med2) || med1 <= 0.0)
-    stop("Cannot estimate AR(1) correlation from constant or non-finite data");
-  const double estimate = (med2 * med2) / (med1 * med1) - 1.0;
-  return std::max(-0.999, std::min(0.999, estimate));
-}
-
-NumericMatrix build_R_matrix(const std::vector<double>& Q,
-                             const std::vector<size_t>& K,
-                             const std::vector<size_t>& previous)
-{
-  const size_t n = Q.size() - 1;
-  NumericMatrix R(n, 3);
-  for (size_t t = 1; t <= n; ++t) {
-    const size_t row = t - 1;
-    R(row, 0) = Q[t];
-    R(row, 1) = static_cast<double>(K[t]);
-    R(row, 2) = static_cast<double>(previous[t]);
-  }
-  return R;
-}
-
-template <typename Test, typename... Args>
-List svp_impl(const std::vector<double>& data,
-              double gamma,
-              bool prune_after_if_unvalid,
-              bool prune_before_if_invalid,
-              Args&&... args)
-{
-  const size_t n = data.size();
-
-  std::vector<double> Q(n + 1, std::numeric_limits<double>::infinity());
-  std::vector<size_t> K(n + 1, std::numeric_limits<size_t>::max());
-  std::vector<size_t> previous(n + 1, 0);
-  Q[0] = 0.0;
-  K[0] = 0;
-
-  std::vector<size_t> nb(n);
-
-  std::vector<double> S1(n + 1, 0.0);
-  std::vector<double> S2(n + 1, 0.0);
-  for (size_t i = 0; i < n; ++i) {
-    S1[i + 1] = S1[i] + data[i];
-    S2[i + 1] = S2[i] + data[i] * data[i];
-  }
-
-  // A bidirectional whole-series check preserves the linear one-segment case
-  // for TRUE/TRUE without using the directional prefix shortcut. If both
-  // orientations accept every prefix, one segment is feasible and therefore
-  // lexicographically optimal.
-  if (prune_after_if_unvalid && prune_before_if_invalid) {
-    Test forward_test(args...);
-    Test backward_test(args...);
-    bool whole_series_valid = true;
-    for (size_t length = 1; length <= n; ++length) {
-      forward_test.update(data[length - 1]);
-      backward_test.update(data[n - length]);
-      if (forward_test.statistic() >= gamma ||
-          backward_test.statistic() >= gamma) {
-        whole_series_valid = false;
-        break;
-      }
-    }
-    if (whole_series_valid) {
-      std::vector<size_t> all_candidates(n + 1);
-      for (size_t t = 1; t <= n; ++t) {
-        Q[t] = segment_cost(S1, S2, 0, t);
-        K[t] = 1;
-        previous[t] = 0;
-        nb[t - 1] = t;
-      }
-      for (size_t i = 0; i <= n; ++i) all_candidates[i] = n - i;
-      return List::create(
-        _["changepoints"] = std::vector<size_t>{n},
-        _["lastIndexSet"] = all_candidates,
-        _["nb"] = nb,
-        _["costQ"] = NULL,
-        _["R"] = build_R_matrix(Q, K, previous)
-      );
-    }
-  }
-
-  std::vector<size_t> index;
-  std::vector<Test> tests;
-  std::vector<size_t> last_updates;
-  index.reserve(n + 1);
-  tests.reserve(n + 1);
-  last_updates.reserve(n + 1);
-  index.push_back(0);
-  tests.emplace_back(std::forward<Args>(args)...);
-  last_updates.push_back(0);
-
-  for (size_t t = 1; t <= n; ++t) {
-    const size_t m = index.size();
-    nb[t - 1] = m;
-
-    double best_Q = std::numeric_limits<double>::infinity();
-    size_t best_K = std::numeric_limits<size_t>::max();
-    size_t best_s = 0;
-
-    // Equation (4), including the K=1 special case. With after-pruning,
-    // K_s is non-decreasing in candidate order. If the full prefix is valid,
-    // it is the lexicographic optimum and later candidates are deferred.
-    // Their incremental states remain untouched and are caught up if the
-    // prefix becomes invalid at a later endpoint.
-    if (prune_after_if_unvalid && !prune_before_if_invalid &&
-        !index.empty() && index[0] == 0) {
-      for (size_t u = last_updates[0] + 1; u <= t; ++u)
-        tests[0].update(data[u - 1]);
-      last_updates[0] = t;
-      if (tests[0].statistic() < gamma) {
-        Q[t] = segment_cost(S1, S2, 0, t);
-        K[t] = 1;
-        previous[t] = 0;
-        index.push_back(t);
-        tests.emplace_back(std::forward<Args>(args)...);
-        last_updates.push_back(t);
-        continue;
-      }
-    }
-
-    if (!prune_before_if_invalid && prune_after_if_unvalid) {
-      size_t write = 0;
-
-      for (size_t k = 0; k < m; ++k) {
-        const size_t s = index[k];
-        const size_t candidate_K = K[s] + 1;
-
-        if (candidate_K > best_K) {
-          for (size_t j = k; j < m; ++j) {
-            size_t last_up = last_updates[j];
-            for (size_t u = last_up + 1; u <= t; ++u) {
-              tests[j].update(data[u - 1]);
-            }
-            last_up = t;
-
-            if (tests[j].statistic() < gamma) {
-              if (write != j) {
-                index[write] = index[j];
-                tests[write] = std::move(tests[j]);
-              }
-              last_updates[write] = last_up;
-              ++write;
-            }
-          }
-          break;
-        }
-
-        size_t last_up = last_updates[k];
-        for (size_t u = last_up + 1; u <= t; ++u) {
-          tests[k].update(data[u - 1]);
-        }
-        last_up = t;
-
-        if (tests[k].statistic() < gamma) {
-          const double candidate_Q = Q[s] + segment_cost(S1, S2, s, t);
-
-          if (candidate_K < best_K ||
-              (candidate_K == best_K && candidate_Q < best_Q)) {
-            best_Q = candidate_Q;
-            best_K = candidate_K;
-            best_s = s;
-          }
-
-          if (write != k) {
-            index[write] = s;
-            tests[write] = std::move(tests[k]);
-          }
-          last_updates[write] = last_up;
-          ++write;
-        }
-      }
-
-      index.resize(write);
-      tests.erase(tests.begin() + write, tests.end());
-      last_updates.resize(write);
-    } else if (!prune_before_if_invalid && !prune_after_if_unvalid) {
-      for (size_t k = 0; k < m; ++k) {
-        const size_t s = index[k];
-
-        for (size_t u = last_updates[k] + 1; u <= t; ++u) {
-          tests[k].update(data[u - 1]);
-        }
-        last_updates[k] = t;
-
-        if (tests[k].statistic() < gamma) {
-          const size_t candidate_K = K[s] + 1;
-          const double candidate_Q = Q[s] + segment_cost(S1, S2, s, t);
-
-          if (candidate_K < best_K ||
-              (candidate_K == best_K && candidate_Q < best_Q)) {
-            best_Q = candidate_Q;
-            best_K = candidate_K;
-            best_s = s;
-          }
-        }
-      }
-    } else {
-      size_t write = 0;
-
-      for (size_t k = 0; k < m; ++k) {
-        const size_t s = index[k];
-
-        size_t last_up = last_updates[k];
-        for (size_t u = last_up + 1; u <= t; ++u) {
-          tests[k].update(data[u - 1]);
-        }
-        last_up = t;
-
-        const bool valid = tests[k].statistic() < gamma;
-
-        if (!valid) {
-          // Left-pruning discards every earlier candidate, including any
-          // candidate provisionally selected as the optimum for this endpoint.
-          // Recompute the optimum from the candidates that remain to the right.
-          write = 0;
-          best_Q = std::numeric_limits<double>::infinity();
-          best_K = std::numeric_limits<size_t>::max();
-          best_s = 0;
-        }
-
-        if (valid) {
-          const size_t candidate_K = K[s] + 1;
-          // Equation (4) optimization: once a valid candidate requires
-          // strictly more segments than the current lexicographic optimum,
-          // its cost cannot affect the result. We still retain/update it
-          // below when pruning requires the candidate state.
-          if (candidate_K <= best_K) {
-            const double candidate_Q = Q[s] + segment_cost(S1, S2, s, t);
-
-            if (candidate_K < best_K ||
-                (candidate_K == best_K && candidate_Q < best_Q)) {
-              best_Q = candidate_Q;
-              best_K = candidate_K;
-              best_s = s;
-            }
-          }
-        }
-
-        if (valid || !prune_after_if_unvalid) {
-          if (write != k) {
-            index[write] = s;
-            tests[write] = std::move(tests[k]);
-          }
-          last_updates[write] = last_up;
-          ++write;
-        }
-      }
-
-      index.resize(write);
-      tests.erase(tests.begin() + write, tests.end());
-      last_updates.resize(write);
-    }
-
-    Q[t] = best_Q;
-    K[t] = best_K;
-    previous[t] = best_s;
-
-    index.push_back(t);
-    tests.emplace_back(std::forward<Args>(args)...);
-    last_updates.push_back(t);
-  }
-
-  std::vector<size_t> changepoints;
-  changepoints.reserve(n / 2 + 1);
-  for (size_t i = n; i > 0; i = previous[i]) {
-    changepoints.push_back(i);
-  }
-  std::reverse(changepoints.begin(), changepoints.end());
-  std::reverse(index.begin(), index.end());
-
-  return List::create(
-    _["changepoints"] = changepoints,
-    _["lastIndexSet"] = index,
-    _["nb"] = nb,
-    _["costQ"] = NULL,
-    _["R"] = build_R_matrix(Q, K, previous)
-  );
-}
-
-template <typename Test, typename... Args>
-List svp_cost_impl(const std::vector<double>& data,
-                   double gamma,
-                   bool prune_after_if_unvalid,
-                   bool prune_before_if_invalid,
-                   Args&&... args)
-{
-  return svp_impl<Test>(data, gamma, prune_after_if_unvalid,
-                        prune_before_if_invalid,
-                        std::forward<Args>(args)...);
+  stop("Unknown test type: '%s'.", test.c_str());
+  return TestKind::GaussianMean;
 }
 
 } // namespace
 
-// Internal backend for the R validity wrappers.  Checking every prefix matches
-// the online pruning rule used by SVP; checking only the final statistic gives
-// the legacy valid_FOCUS_last behaviour.
-// [[Rcpp::export(name = ".focus_valid_cpp")]]
-bool focus_valid_cpp(std::vector<double> data,
-                     double gamma,
-                     bool check_all_prefixes = true)
-{
-  GaussianMean test;
-  for (double value : data) {
-    test.update(value);
-    if (check_all_prefixes && test.statistic() >= gamma) return false;
-  }
-  return test.statistic() < gamma;
-}
+// -----------------------------------------------------------------------------
+// Public SVP API
+// -----------------------------------------------------------------------------
 
 //' Smallest Valid Partitioning with Incremental Validity Tests
 //'
@@ -355,8 +63,14 @@ bool focus_valid_cpp(std::vector<double> data,
 //' interface is considerably faster than supplying an R validity function to
 //' [svp0()].
 //'
-//' A candidate segment is valid while its test statistic is strictly below its
-//' threshold. The available values of `test` are:
+//' A candidate segment is evaluated at its current endpoint. The
+//' `gaussian_mean` test uses the FOCUS statistic at that endpoint, as do the
+//' other built-in tests. Whether an invalid endpoint can be reconsidered at a
+//' later endpoint depends on `subtests`: with `subtests = "none"`, the
+//' candidate is retained and can recover; with `subtests = "right"` or
+//' `subtests = "both"`, it is removed immediately and cannot recover. With
+//' `subtests = "left"`, it can also be removed by the left-pruning rule when a
+//' later candidate fails. The available values of `test` are:
 //'
 //' * `"gaussian_mean"`: Gaussian FOCUS likelihood-ratio test for a change in
 //'   mean. Use this for independent Gaussian observations with constant
@@ -366,56 +80,140 @@ bool focus_valid_cpp(std::vector<double> data,
 //' * `"gaussian_variance"`: Gamma-rate test applied to squared observations,
 //'   for changes in Gaussian variance around a known zero mean.
 //' * `"AR1"`: exact fixed-`rho` Gaussian likelihood-ratio scan for a change in
-//'   the marginal mean of an AR(1) series. `sigma2` is the innovation variance.
-//' * `"AR1Profile"`: the same exact AR(1) scan, profiling out the innovation
-//'   variance. This is useful when its scale is unknown.
+//'   the marginal mean of an AR(1) series. In the AR(1) model, an innovation is
+//'   the new random shock after accounting for the previous observation and the
+//'   AR(1) mean structure; `sigma2` is the variance of this shock, not the
+//'   marginal variance of the observations.
+//' * `"AR1Profile"`: the same exact AR(1) scan, but profiling out the innovation
+//'   variance. The variance is estimated separately under the no-change and
+//'   change models from their residual sums of squares, which is useful when
+//'   the innovation scale is unknown.
 //' * `"AR1Focus"`: faster approximate AR(1) test that applies Gaussian FOCUS
 //'   to the innovations `x[t] - rho * x[t - 1]`. The exact `"AR1"` test is the
 //'   preferred choice when boundary accuracy matters.
 //'
-//' The main pruning setting is `prune_after_if_unvalid = TRUE`: once a segment
-//' beginning at a candidate boundary becomes invalid, that candidate is not
-//' extended further. Setting `prune_before_if_invalid = TRUE` additionally
-//' removes all older candidate boundaries when a later candidate fails. Thus
-//' `TRUE/TRUE` is the most aggressive FOCUS pruning configuration. Set either
-//' option to `FALSE` only when comparing pruning rules; doing so can retain more
-//' candidates and increase run time.
+//' For an AR(1) series generated by `ts_generator(type = "gaussAR1")`, the
+//' model is `x[t] = mu[t] + e[t]`, with
+//' `e[t] = rho * e[t - 1] + eta[t]` and
+//' `eta[t] ~ N(0, sigma2)`. Thus, `rho` controls serial dependence and
+//' `sigma2` is the innovation variance, that is, the variance of the new shock
+//' after accounting for the previous observation. It is not the marginal
+//' variance of the observed series; for a stationary AR(1) noise process, the
+//' marginal variance is `sigma2 / (1 - rho^2)`. In `ts_generator()`,
+//' `sd_noise` is the innovation standard deviation, so use
+//' `sigma2 = sd_noise^2`.
+//'
+//' `"AR1"` treats `rho` and `sigma2` as fixed and uses the exact conditional
+//' Gaussian likelihood scan. `"AR1Profile"` uses the same exact scan but
+//' estimates the innovation variance separately under the no-change and
+//' change models. This is useful when the innovation scale is unknown.
+//' `"AR1Focus"` is faster because it applies the Gaussian FOCUS calculation
+//' to the transformed innovations; it is an approximation and can produce
+//' different boundaries near a change point.
+//'
+//' The "subtests" argument selects the validity-based candidate-pruning rules.
+//' "right" removes a candidate boundary when its segment becomes invalid;
+//' "left" removes older candidate boundaries when a later candidate fails;
+//' "both" applies both rules; and "none" retains all candidates. Validity is
+//' still checked in every mode, and invalid candidates are never used.
+//' Pruning is exact only when the selected validity test has the corresponding
+//' monotonicity properties. For an arbitrary user-defined rule, use
+//' "none" unless those properties have been established.
 //'
 //' @param data Numeric vector containing the univariate series. Missing or
 //'   non-finite values are not supported.
-//' @param gamma Positive scalar validity threshold. A larger value accepts
-//'   longer or less homogeneous segments and therefore generally produces
-//'   fewer changes.
+//' @param gamma Positive finite scalar validity threshold. A larger value
+//'   generally accepts longer or less homogeneous segments.
 //' @param test Character scalar selecting one of the validity tests listed in
 //'   Details. Defaults to `"gaussian_mean"`.
-//' @param prune_after_if_unvalid Logical; discard a candidate boundary after
-//'   its current segment fails the test.
-//' @param prune_before_if_invalid Logical; when a candidate segment fails,
-//'   also discard candidate boundaries older than its start.
-//' @param sigma2 Positive finite innovation variance for the AR1 tests.
+//' @param subtests Character scalar selecting the validity-pruning rules:
+//'   "both" (default), "right", "left", or "none".
+//' @param sigma2 Positive finite innovation variance for the exact AR1 tests.
+//'   It is the conditional/error variance of the new AR(1) shock, not the
+//'   marginal variance of the observed series. It is used when the variance is
+//'   fixed; it is not used to form the profiled statistic.
 //' @param rho AR(1) coefficient for the three AR1 tests. It must be finite and
-//'   strictly between -1 and 1. Use [AR1_rho()] to obtain a robust estimate if
-//'   `rho` is unknown, it is estimated robustly from the full series.
-//' @param profile_sigma Logical; profile the innovation variance when
-//'   `test = "AR1"`. Using `test = "AR1Profile"` has the same effect.
+//'   strictly between -1 and 1. If it is `NA`, the value is estimated robustly
+//'   from the full series using [AR1_rho()].
+//' @param profile_sigma Logical; if `TRUE`, estimate the innovation variance
+//'   separately under the no-change and one-change AR(1) models when
+//'   `test = "AR1"`. This removes the need to know the innovation scale and
+//'   uses the resulting residual sums of squares in the likelihood-ratio
+//'   statistic. Using `test = "AR1Profile"` has the same effect. The argument
+//'   is ignored by other tests.
 //' @param quantile Quantile level used by `"quantile"` and
 //'   `"quantileExact"`. It is ignored by other tests.
 //'
-//' @return A list with `changepoints` (the inclusive end of every segment,
-//'   including `length(data)`), `lastIndexSet` (candidate boundaries remaining
-//'   at termination), `nb` (candidate count at each time), `costQ` (currently
-//'   `NULL`), and `R`. Row `t + 1` of matrix `R` stores the best cumulative
-//'   squared-error cost, number of segments, and previous boundary at time `t`.
+//' @return A list with "changepoints" (the inclusive end of every segment,
+//'   including "length(data)"), "lastIndexSet" (zero-based candidate boundaries
+//'   remaining at termination, in decreasing order), "nb" (the number of
+//'   active candidates at the beginning of each endpoint iteration, before
+//'   pruning), "costQ" (always "NULL"), and "R". Row "t" of matrix "R"
+//'   stores the best cumulative squared-error cost, number of segments, and
+//'   previous boundary for "data[1:t]".
 //'
 //' @examples
+//' # Gaussian mean: FOCuS test for independent Gaussian observations.
 //' set.seed(1)
-//' x <- rep(c(0, 2, -1), each = 40) + rnorm(120)
-//' SVP(x, gamma = 1.5 * log(length(x)))$changepoints
+//' gaussian_data <- ts_generator(
+//'   chpts = c(20, 40, 60), parameters = c(0, 2, -1),
+//'   sd_noise = 1, type = "gauss"
+//' )
+//' SVP(gaussian_data, gamma = 2 * log(length(gaussian_data)),
+//'     test = "gaussian_mean")$changepoints
 //'
-//' # Aggressive TRUE/TRUE pruning:
-//' SVP(x, gamma = 1.5 * log(length(x)), test = "gaussian_mean",
-//'     prune_after_if_unvalid = TRUE,
-//'     prune_before_if_invalid = TRUE)
+//' # Gamma rate: positive exponential observations with changing rates.
+//' gamma_data <- ts_generator(
+//'   chpts = c(20, 40, 60), parameters = c(1, 4, 2),
+//'   type = "exp"
+//' )
+//' SVP(gamma_data, gamma = 2 * log(length(gamma_data)),
+//'     test = "gamma_rate")$changepoints
+//'
+//' # Gaussian variance: parameters are segment standard deviations.
+//' variance_data <- ts_generator(
+//'   chpts = c(20, 40, 60), parameters = c(0.5, 1.5, 0.75),
+//'   type = "variance"
+//' )
+//' SVP(variance_data, gamma = 2 * log(length(variance_data)),
+//'     test = "gaussian_variance")$changepoints
+//'
+//' # Quantile and exact quantile tests: robust tests for changes in spread.
+//' quantile_data <- ts_generator(
+//'   chpts = c(20, 40, 60), parameters = c(0.5, 1.5, 0.75),
+//'   type = "variance"
+//' )
+//' SVP(quantile_data, gamma = 2, quantile = 0.1,
+//'     test = "quantile")$changepoints
+//' SVP(quantile_data, gamma = 2, quantile = 0.1,
+//'     test = "quantileExact")$changepoints
+//'
+//' # Robust variance, Wilcoxon, and Median-Mood tests.
+//' robust_data <- ts_generator(
+//'   chpts = c(20, 40, 60), parameters = c(0, 2, -1),
+//'   sd_noise = 1, type = "gauss"
+//' )
+//' SVP(robust_data, gamma = 2, test = "varCost")$changepoints
+//' SVP(robust_data, gamma = 2 * log(length(robust_data)),
+//'     test = "WilcoxonCost")$changepoints
+//' SVP(robust_data, gamma = 2 * log(length(robust_data)),
+//'     test = "MedianMoodCost")$changepoints
+//'
+//' # Exact AR(1), with the known innovation variance.
+//' ar1_data <- ts_generator(
+//'   chpts = c(20, 40, 60), parameters = c(0, 2, -1),
+//'   sd_noise = 0.8, rho = 0.7, type = "gaussAR1"
+//' )
+//' SVP(ar1_data, gamma = 2 * log(length(ar1_data)), test = "AR1",
+//'     rho = 0.7, sigma2 = 0.8^2)$changepoints
+//'
+//' # Exact AR(1) with the innovation variance profiled out.
+//' SVP(ar1_data, gamma = 2 * log(length(ar1_data)),
+//'     test = "AR1Profile", rho = 0.7, sigma2 = 1)$changepoints
+//'
+//' # Faster approximate AR(1) FOCUS test on the transformed innovations.
+//' SVP(ar1_data, gamma = 2 * log(length(ar1_data)),
+//'     test = "AR1Focus", rho = 0.7, sigma2 = 0.8^2)$changepoints
 //'
 //' @seealso [svp0()] for arbitrary R validity functions, [AR1_rho()], and
 //'   [AR1_single_change()].
@@ -424,82 +222,80 @@ bool focus_valid_cpp(std::vector<double> data,
 List SVP(std::vector<double> data,
          double gamma,
          std::string test = "gaussian_mean",
-         bool prune_after_if_unvalid = true,
-         bool prune_before_if_invalid = false,
+         std::string subtests = "both",
          double sigma2 = 1.0,
          double rho = NA_REAL,
          bool profile_sigma = false,
          double quantile = 0.01)
 {
-  if (!std::isfinite(sigma2) || sigma2 <= 0.0) {
-    stop("sigma2 must be finite and positive");
-  }
-  if ((test == "quantile" || test == "quantileExact") &&
-      (!std::isfinite(quantile) || quantile <= 0.0 || quantile >= 1.0)) {
-    stop("quantile must be finite and strictly between 0 and 1");
+  if (data.empty()) {
+    stop("'data' must contain at least one observation.");
   }
 
-  if (test == "gaussian_mean") {
-    return svp_impl<GaussianMean>(
-      data,
-      gamma,
-      prune_after_if_unvalid,
-      prune_before_if_invalid
-    );
+  if (!std::all_of(data.begin(), data.end(),
+                   [](double value) { return std::isfinite(value); })) {
+    stop("'data' must contain only finite observations.");
   }
-  if (test == "gamma_rate") {
-    return svp_impl<GammaRate>(
-      data,
-      gamma,
-      prune_after_if_unvalid,
-      prune_before_if_invalid
-    );
+
+  if (!std::isfinite(gamma) || gamma <= 0.0) {
+    stop("gamma must be finite and positive");
   }
-  if (test == "gaussian_variance") {
-    return svp_impl<GaussianVariance>(
-      data,
-      gamma,
-      prune_after_if_unvalid,
-      prune_before_if_invalid
-    );
+
+  const TestKind test_kind = parse_test_kind(test);
+
+  if (subtests != "both" && subtests != "right" &&
+      subtests != "left" && subtests != "none") {
+    stop("'subtests' must be one of 'both', 'right', 'left', or 'none'.");
   }
-  if (test == "quantileExact") {
-    return svp_cost_impl<QuantileCostExact>(
-      data, gamma, prune_after_if_unvalid, prune_before_if_invalid,
-      quantile
-    );
+
+  if ((test_kind == TestKind::Quantile ||
+       test_kind == TestKind::QuantileExact) &&
+      (!std::isfinite(quantile) || quantile <= 0.0 || quantile > 0.5)) {
+    stop("quantile must be finite and in (0, 0.5]");
   }
-  if (test == "quantile") {
-    return svp_cost_impl<QuantileCost>(
-      data, gamma, prune_after_if_unvalid, prune_before_if_invalid,
-      quantile
-    );
+
+  if (test_kind == TestKind::GammaRate &&
+      !std::all_of(data.begin(), data.end(),
+                   [](double value) { return value > 0.0; })) {
+    stop("'data' must be strictly positive for test 'gamma_rate'.");
   }
-  if (test == "varCost") {
-    return svp_cost_impl<varCost>(
-      data, gamma, prune_after_if_unvalid, prune_before_if_invalid
+
+  switch (test_kind) {
+  case TestKind::GaussianMean:
+    return svp_detail::svp_impl<GaussianMean>(data, gamma, subtests);
+  case TestKind::GammaRate:
+    return svp_detail::svp_impl<GammaRate>(data, gamma, subtests);
+  case TestKind::GaussianVariance:
+    return svp_detail::svp_impl<GaussianVariance>(data, gamma, subtests);
+  case TestKind::QuantileExact:
+    return svp_detail::svp_impl<QuantileCostExact>(
+      data, gamma, subtests, quantile
     );
-  }
-  if (test == "WilcoxonCost") {
-    return svp_cost_impl<WilcoxonCost>(
-      data, gamma, prune_after_if_unvalid, prune_before_if_invalid
+  case TestKind::Quantile:
+    return svp_detail::svp_impl<QuantileCost>(
+      data, gamma, subtests, quantile
     );
-  }
-  if (test == "MedianMoodCost") {
-    return svp_cost_impl<MedianMoodCost>(
-      data, gamma, prune_after_if_unvalid, prune_before_if_invalid
-    );
-  }
-  if (test == "AR1" || test == "AR1Profile" || test == "AR1Focus") {
-    const double rho_used = NumericVector::is_na(rho) ? robust_ar1_rho(data) : rho;
+  case TestKind::VarCost:
+    return svp_detail::svp_impl<varCost>(data, gamma, subtests);
+  case TestKind::WilcoxonCost:
+    return svp_detail::svp_impl<WilcoxonCost>(data, gamma, subtests);
+  case TestKind::MedianMoodCost:
+    return svp_detail::svp_impl<MedianMoodCost>(data, gamma, subtests);
+  case TestKind::AR1:
+  case TestKind::AR1Profile:
+  case TestKind::AR1Focus: {
+    if (!std::isfinite(sigma2) || sigma2 <= 0.0) {
+      stop("sigma2 must be finite and positive");
+    }
+    const double rho_used = NumericVector::is_na(rho) ?
+      svp_detail::robust_ar1_rho(data) : rho;
     if (!std::isfinite(rho_used) || std::fabs(rho_used) >= 1.0)
       stop("rho must be finite and strictly between -1 and 1");
-    if (test == "AR1Focus") {
-      List result = svp_impl<AR1MeanChange>(
+    if (test_kind == TestKind::AR1Focus) {
+      List result = svp_detail::svp_impl<AR1MeanChange>(
         data,
         gamma,
-        prune_after_if_unvalid,
-        prune_before_if_invalid,
+        subtests,
         rho_used,
         sigma2
       );
@@ -507,19 +303,19 @@ List SVP(std::vector<double> data,
       result["sigma2"] = sigma2;
       return result;
     }
-    List result = svp_impl<AR1ExactMeanChange>(
+    List result = svp_detail::svp_impl<AR1ExactMeanChange>(
       data,
       gamma,
-      prune_after_if_unvalid,
-      prune_before_if_invalid,
+      subtests,
       rho_used,
       sigma2,
-      test == "AR1Profile" || profile_sigma
+      test_kind == TestKind::AR1Profile || profile_sigma
     );
     result["rho"] = rho_used;
     result["sigma2"] = sigma2;
     return result;
   }
+  }
 
-  stop("Unknown test type");
+  stop("Internal error while selecting the SVP test.");
 }

@@ -61,21 +61,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // SVP
-List SVP(std::vector<double> data, double gamma, std::string test, bool prune_after_if_unvalid, bool prune_before_if_invalid, double sigma2, double rho, bool profile_sigma, double quantile);
-RcppExport SEXP _svpChange2_SVP(SEXP dataSEXP, SEXP gammaSEXP, SEXP testSEXP, SEXP prune_after_if_unvalidSEXP, SEXP prune_before_if_invalidSEXP, SEXP sigma2SEXP, SEXP rhoSEXP, SEXP profile_sigmaSEXP, SEXP quantileSEXP) {
+List SVP(std::vector<double> data, double gamma, std::string test, std::string subtests, double sigma2, double rho, bool profile_sigma, double quantile);
+RcppExport SEXP _svpChange2_SVP(SEXP dataSEXP, SEXP gammaSEXP, SEXP testSEXP, SEXP subtestsSEXP, SEXP sigma2SEXP, SEXP rhoSEXP, SEXP profile_sigmaSEXP, SEXP quantileSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::vector<double> >::type data(dataSEXP);
     Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< std::string >::type test(testSEXP);
-    Rcpp::traits::input_parameter< bool >::type prune_after_if_unvalid(prune_after_if_unvalidSEXP);
-    Rcpp::traits::input_parameter< bool >::type prune_before_if_invalid(prune_before_if_invalidSEXP);
+    Rcpp::traits::input_parameter< std::string >::type subtests(subtestsSEXP);
     Rcpp::traits::input_parameter< double >::type sigma2(sigma2SEXP);
     Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
     Rcpp::traits::input_parameter< bool >::type profile_sigma(profile_sigmaSEXP);
     Rcpp::traits::input_parameter< double >::type quantile(quantileSEXP);
-    rcpp_result_gen = Rcpp::wrap(SVP(data, gamma, test, prune_after_if_unvalid, prune_before_if_invalid, sigma2, rho, profile_sigma, quantile));
+    rcpp_result_gen = Rcpp::wrap(SVP(data, gamma, test, subtests, sigma2, rho, profile_sigma, quantile));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -139,7 +138,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_svpChange2_PELT", (DL_FUNC) &_svpChange2_PELT, 2},
     {"_svpChange2_SN", (DL_FUNC) &_svpChange2_SN, 2},
     {"_svpChange2_focus_valid_cpp", (DL_FUNC) &_svpChange2_focus_valid_cpp, 3},
-    {"_svpChange2_SVP", (DL_FUNC) &_svpChange2_SVP, 9},
+    {"_svpChange2_SVP", (DL_FUNC) &_svpChange2_SVP, 8},
     {"_svpChange2_svp0", (DL_FUNC) &_svpChange2_svp0, 5},
     {"_svpChange2_AR1_rho", (DL_FUNC) &_svpChange2_AR1_rho, 1},
     {"_svpChange2_AR1_single_change", (DL_FUNC) &_svpChange2_AR1_single_change, 5},

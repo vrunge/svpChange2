@@ -80,21 +80,17 @@
 #'   type = "negbin"
 #' )
 #' ts_generator(
-#'   chpts = c(50, 70, 120, 200), parameters = c(0, 3, -1, 1),
-#'   type = "gauss"
-#' )
-#' ts_generator(
 #'   chpts = c(50, 100, 180), parameters = c(3, 1, 6), type = "variance"
 #' )
 ts_generator <- function(chpts = 100,
-                        parameters = 0.5,
-                        sd_noise = 1,
-                        rho = 0,
-                        nb_trials = 10,
-                        nb_success = 10,
-                        type = "gauss",
-                        df = 2,
-                        scale = 1) {
+                         parameters = 0.5,
+                         sd_noise = 1,
+                         rho = 0,
+                         nb_trials = 10,
+                         nb_success = 10,
+                         type = "gauss",
+                         df = 2,
+                         scale = 1) {
   ############
   ### STOP ###
   ############

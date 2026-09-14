@@ -17,18 +17,25 @@ of \code{y}; otherwise, \code{FALSE}.
 }
 \description{
 Tests whether the FOCuS statistic remains below \code{gamma} for
-every prefix of the segment. This is the validity rule used by the SVP
-procedure.
+every prefix of the segment. It is the prefix-wise validity rule available
+for use with \code{\link[=svp0]{svp0()}}.
 }
 \details{
 FOCuS Validity Test for Every Prefix
 
 \code{valid_FOCUS()} updates the FOCuS statistic after each observation
 and returns \code{FALSE} as soon as a prefix statistic reaches or exceeds
-\code{gamma}. It is the stricter online test and corresponds to the
-segment-wise pruning rule used by SVP. Therefore, \code{valid_FOCUS()} is the
-appropriate function to use for the package's validity test. In contrast,
-\code{valid_FOCUS_last()} checks only the final statistic.
+\code{gamma}. Use it with \code{\link[=svp0]{svp0()}} when every prefix must be valid. In contrast,
+\code{\link[=SVP]{SVP()}} with \code{test = "gaussian_mean"} checks only the statistic at the
+current segment endpoint, and \code{\link[=valid_FOCUS_last]{valid_FOCUS_last()}} checks only the final
+statistic of a supplied segment.
+}
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = 40, parameters = 0, sd_noise = 1, type = "gauss"
+)
+valid_FOCUS(data, gamma = 2 * log(length(data)))
 }
 \seealso{
 \code{\link[=valid_FOCUS_last]{valid_FOCUS_last()}}

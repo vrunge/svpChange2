@@ -97,15 +97,13 @@ fit_ar1_methods <- function(y, rho = 0.8, svp_constant = 3.75,
       decafs_boundaries(y, rho, innovation_variance),
     "SVP AR1Focus" = normalise_boundaries(
       SVP(y, svp_constant * log(n), "AR1Focus",
-          prune_after_if_unvalid = TRUE,
-          prune_before_if_invalid = FALSE,
+          subtests = "right",
           rho = rho, sigma2 = innovation_variance)$changepoints,
       n
     ),
     "SVP AR1Focus multiscale" = normalise_boundaries(
       SVP(y, true_true_constant * log(n), "AR1Focus",
-          prune_after_if_unvalid = TRUE,
-          prune_before_if_invalid = TRUE,
+          subtests = "both",
           rho = rho, sigma2 = innovation_variance)$changepoints,
       n
     )

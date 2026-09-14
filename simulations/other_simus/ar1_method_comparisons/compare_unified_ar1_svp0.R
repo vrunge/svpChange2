@@ -24,12 +24,10 @@ simulate_ar1_unified_example <- function(n = 1000, tau = c(300, 650), means = c(
 
 compare_one <- function(y, rho = .7, sigma2 = 1, gamma = 8) {
   tm <- system.time(exact <- SVP(y, gamma, "AR1", rho=rho, sigma2=sigma2,
-                                  prune_after_if_unvalid=TRUE,
-                                  prune_before_if_invalid=FALSE))
+                                  subtests = "right"))
   tf <- system.time(focus <- SVP(y, gamma, "AR1Focus", rho=rho,
                                  sigma2=sigma2,
-                                 prune_after_if_unvalid=TRUE,
-                                 prune_before_if_invalid=FALSE))
+                                 subtests = "right"))
   exact_test <- exact_ar1_validity(rho, sigma2)
   te <- system.time(exact_svp0 <- svp0(
     y, gamma, exact_test, subtests = "right",

@@ -5,8 +5,7 @@ test_that("SVP dispatches every former cost test", {
              "WilcoxonCost", "MedianMoodCost")
   for (test_name in tests) {
     result <- SVP(y, gamma = 10, test = test_name,
-                  prune_after_if_unvalid = TRUE,
-                  prune_before_if_invalid = FALSE, quantile = 0.1)
+                  subtests = "right", quantile = 0.1)
     expect_true(is.list(result), info = test_name)
     expect_true(all(c("changepoints", "nb", "R") %in% names(result)),
                 info = test_name)
@@ -67,16 +66,18 @@ test_that("rank cost tests retain exact tie handling", {
   set.seed(1)
   data <- round(c(rnorm(20), rnorm(20, 1)), 1)
   for (gamma in c(3, 7, 15)) {
-    expect_equal(
-      SVP(data, gamma, "WilcoxonCost")$changepoints,
-      svp0(data, gamma, wilcoxon_valid,
-           subtests = "right", PELT_pruning = FALSE)$changepoints
-    )
-    expect_equal(
-      SVP(data, gamma, "MedianMoodCost")$changepoints,
-      svp0(data, gamma, mood_valid,
-           subtests = "right", PELT_pruning = FALSE)$changepoints
-    )
+    for (subtests in c("none", "right")) {
+      expect_equal(
+        SVP(data, gamma, "WilcoxonCost", subtests = subtests)$changepoints,
+        svp0(data, gamma, wilcoxon_valid,
+             subtests = subtests, PELT_pruning = FALSE)$changepoints
+      )
+      expect_equal(
+        SVP(data, gamma, "MedianMoodCost", subtests = subtests)$changepoints,
+        svp0(data, gamma, mood_valid,
+             subtests = subtests, PELT_pruning = FALSE)$changepoints
+      )
+    }
   }
 })
 

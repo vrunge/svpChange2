@@ -1,13 +1,13 @@
 SVP PRUNING TIME-COMPLEXITY STUDY
 
-This folder isolates the computational effect of the two SVP pruning switches:
+This folder isolates the computational effect of the four SVP pruning modes:
 
-  prune_after_if_unvalid   prune_before_if_invalid
-  ----------------------   ------------------------
-             FALSE                    FALSE
-             TRUE                     FALSE
-             FALSE                    TRUE
-             TRUE                     TRUE
+  subtests
+  --------
+  none
+  right
+  left
+  both
 
 Each strategy is compared with PELT, following the two runtime experiments
 used in the SVP paper:

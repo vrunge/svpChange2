@@ -28,3 +28,10 @@ Validity Test Based on Interquantile Range
 The test computes the difference between the quantiles at
 \code{probs[2]} and \code{probs[1]}.
 }
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = 30, parameters = 0, sd_noise = 1, type = "gauss"
+)
+valid_QUANTILE(data, gamma = 4)
+}

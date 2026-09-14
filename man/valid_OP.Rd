@@ -23,3 +23,11 @@ the best two-part penalized segmentation cost.
 \details{
 Optimal Partitioning Cost Test
 }
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = c(20, 40), parameters = c(0, 2),
+  sd_noise = 1, type = "gauss"
+)
+valid_OP(data, gamma = 2 * log(length(data)))
+}

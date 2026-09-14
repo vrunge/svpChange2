@@ -27,6 +27,13 @@ interval is the set of all constant means satisfying the SMUCE constraint
 on every subinterval of \code{y}. An interval containing \code{NA} values means that
 no constant mean is admissible.
 }
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = 20, parameters = 0, sd_noise = 1, type = "gauss"
+)
+smuce_theta_interval(data, gamma = 2, sigma2 = 1)
+}
 \references{
 Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
 Inference. \emph{Journal of the Royal Statistical Society: Series B}, 76(3),

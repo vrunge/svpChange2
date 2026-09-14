@@ -4,7 +4,7 @@
 #include <chrono>
 #include <memory>
 #include <string>
-#include "../../src/tests.h"
+#include "../../src/validity_tests.h"
 
 using namespace Rcpp;
 

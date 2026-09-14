@@ -25,18 +25,15 @@ fit_gaussian_time_method <- function(y, method) {
     ),
     "SVP BIC" = SVP(
       y, 2 * log(n), "gaussian_mean",
-      prune_after_if_unvalid = TRUE,
-      prune_before_if_invalid = FALSE
+      subtests = "right"
     ),
     "SVP BIC calibrated" = SVP(
       y, 1.5 * log(n), "gaussian_mean",
-      prune_after_if_unvalid = TRUE,
-      prune_before_if_invalid = FALSE
+      subtests = "right"
     ),
     "SVP BIC multiscale" = SVP(
       y, 1.5 * log(n), "gaussian_mean",
-      prune_after_if_unvalid = TRUE,
-      prune_before_if_invalid = TRUE
+      subtests = "both"
     )
   )
   if (method == "PELT") {

@@ -61,17 +61,19 @@ Smallest Valid Partitioning with a User-Defined Validity Test
 A candidate boundary \code{s} at endpoint \code{t} represents the R segment
 \code{data[(s + 1):t]}; \code{s} is zero-based and \code{t} is one-based. The quadratic
 cost is the residual sum of squares around the segment mean. Singleton
-segments are always valid, regardless of the result of \code{test}. The validity-
-based pruning rules and \code{PELT_pruning} require assumptions on the validity
-test.
+segments are always valid, regardless of the result of \code{test}.
 }
 \examples{
 range_test <- function(segment, gamma) {
   diff(range(segment)) <= gamma
 }
-y <- c(rnorm(5), rnorm(5, mean = 5))
-fit <- svp0(y, gamma = 3, test = range_test,
+set.seed(1)
+data <- ts_generator(
+  chpts = c(30, 60), parameters = c(0, 4),
+  sd_noise = 0.25, type = "gauss"
+)
+fit <- svp0(data, gamma = 2, test = range_test,
            subtests = "both")
-y; fit
+fit$changepoints
 
 }

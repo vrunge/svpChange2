@@ -7,8 +7,7 @@ SVP(
   data,
   gamma,
   test = "gaussian_mean",
-  prune_after_if_unvalid = TRUE,
-  prune_before_if_invalid = FALSE,
+  subtests = "both",
   sigma2 = 1,
   rho = NA_real_,
   profile_sigma = FALSE,
@@ -19,25 +18,30 @@ SVP(
 \item{data}{Numeric vector containing the univariate series. Missing and
 non-finite values are not supported.}
 
-\item{gamma}{Scalar validity threshold. Larger values accept less homogeneous
-segments and generally produce fewer changes.}
+\item{gamma}{Positive finite scalar validity threshold. Larger values
+generally accept longer or less homogeneous segments.}
 
 \item{test}{Character scalar selecting a validity test; see Details. Defaults
 to \code{"gaussian_mean"}.}
 
-\item{prune_after_if_unvalid}{If \code{TRUE}, discard a candidate boundary
-after its current segment fails the test.}
+\item{subtests}{Character scalar selecting the validity-pruning rules:
+\code{"both"} (default), \code{"right"}, \code{"left"}, or \code{"none"}.}
 
-\item{prune_before_if_invalid}{If \code{TRUE}, when a candidate segment fails,
-also discard candidate boundaries older than its start.}
-
-\item{sigma2}{Positive finite innovation variance for the AR1 tests.}
+\item{sigma2}{Positive finite innovation variance for the exact AR1 tests.
+It is the conditional/error variance of the new AR(1) shock, not the
+marginal variance of the observed series. It is used when the variance is
+fixed; it is not used to form the profiled statistic.}
 
 \item{rho}{AR(1) coefficient for the AR1 tests. It must be finite and strictly
-  between -1 and 1. If omitted, it is estimated robustly from the full series.}
+  between -1 and 1. If it is \code{NA}, it is estimated robustly from the full
+  series using \code{AR1_rho()}.}
 
-\item{profile_sigma}{If \code{TRUE}, profile the innovation variance for
-\code{test = "AR1"}; \code{test = "AR1Profile"} has the same effect.}
+\item{profile_sigma}{If \code{TRUE}, estimate the innovation variance
+separately under the no-change and one-change AR(1) models when
+\code{test = "AR1"}. This removes the need to know the innovation scale and
+uses the resulting residual sums of squares in the likelihood-ratio
+statistic. Using \code{test = "AR1Profile"} has the same effect. The argument
+is ignored by other tests.}
 
 \item{quantile}{Quantile level used by \code{"quantile"} and
 \code{"quantileExact"}; ignored by other tests.}
@@ -48,33 +52,47 @@ A list containing:
   \item{changepoints}{Inclusive end of every segment, including
   \code{length(data)}.}
   \item{lastIndexSet}{Candidate boundaries remaining at termination.}
-  \item{nb}{Number of candidate boundaries considered at each time.}
+  \item{nb}{Number of active candidate boundaries at the beginning of each
+  endpoint iteration, before pruning.}
   \item{costQ}{Currently \code{NULL}.}
-  \item{R}{Dynamic-programming matrix. Row \code{t + 1} contains the best
-  cumulative squared-error cost, number of segments, and previous boundary at
-  time \code{t}.}
+  \item{R}{Dynamic-programming matrix. Row \code{t} contains the best
+  cumulative squared-error cost, number of segments, and previous boundary for
+  \code{data[1:t]}.}
 }
 }
 \description{
 Segments a univariate series into the smallest number of segments that pass a
-selected validity test. Among partitions with the same number of segments, it
-chooses the one with the smallest within-segment squared-error cost. Validity
-statistics are maintained incrementally in C++.
+selected validity test. The \code{"gaussian_mean"} test uses the FOCUS
+statistic at the current segment endpoint, as do the other built-in tests.
+Whether an invalid endpoint can be reconsidered at a later endpoint depends on
+\code{subtests}: with \code{subtests = "none"}, the candidate is retained and
+can recover; with \code{subtests = "right"} or \code{subtests = "both"}, it is
+removed immediately and cannot recover. With \code{subtests = "left"}, it can
+also be removed by the left-pruning rule when a later candidate fails. Among
+partitions with the same number of segments, it chooses the one with the
+smallest within-segment squared-error cost. Validity statistics are maintained
+incrementally in C++.
 }
 \details{
 The available validity tests are:
 \itemize{
-  \item \code{"gaussian_mean"}: Gaussian FOCUS likelihood-ratio test for a
-  change in mean. Use for independent Gaussian data with constant variance.
+  \item \code{"gaussian_mean"}: Gaussian FOCUS likelihood-ratio statistic
+  evaluated at the current segment endpoint for a change in mean. Use for
+  independent Gaussian data with constant variance. To require every prefix
+  to be valid, use \code{svp0()} with \code{valid_FOCUS()}.
   \item \code{"gamma_rate"}: likelihood-ratio test for a rate change in
   positive Gamma data (unit shape in the current implementation).
   \item \code{"gaussian_variance"}: the Gamma-rate test applied to squared
   observations, for variance changes around a known zero mean.
   \item \code{"AR1"}: exact fixed-\code{rho} Gaussian likelihood-ratio scan
-  for a change in the marginal AR(1) mean. \code{sigma2} is the innovation
-  variance.
-  \item \code{"AR1Profile"}: the same exact AR(1) scan, profiling out the
-  innovation variance.
+  for a change in the marginal mean of an AR(1) series. In the AR(1) model, an
+  innovation is the new random shock after accounting for the previous
+  observation and the AR(1) mean structure; \code{sigma2} is the variance of
+  this shock, not the marginal variance of the observations.
+  \item \code{"AR1Profile"}: the same exact AR(1) scan, but profiling out the
+  innovation variance. The variance is estimated separately under the
+  no-change and change models from their residual sums of squares, which is
+  useful when the innovation scale is unknown.
   \item \code{"AR1Focus"}: faster approximation applying Gaussian FOCUS to
   innovations \code{x[t] - rho * x[t - 1]}. Prefer \code{"AR1"} when exact
   boundary treatment matters.
@@ -85,24 +103,102 @@ The available validity tests are:
   \item \code{"MedianMoodCost"}: Median-Mood rank-based cost test.
 }
 
-The usual pruning configuration is \code{TRUE/FALSE}. The \code{TRUE/TRUE}
-configuration enables both after- and before-invalid pruning and is the most
-aggressive FOCUS variant. Disabling pruning retains more candidates and can
-substantially increase run time.
+For an AR(1) series generated by \code{ts_generator(type = "gaussAR1")}, the
+model is \code{x[t] = mu[t] + e[t]}, with
+\code{e[t] = rho * e[t - 1] + eta[t]} and
+\code{eta[t] ~ N(0, sigma2)}. Thus, \code{rho} controls serial dependence and
+\code{sigma2} is the innovation variance, that is, the variance of the new shock
+after accounting for the previous observation. It is not the marginal
+variance of the observed series; for a stationary AR(1) noise process, the
+marginal variance is \code{sigma2 / (1 - rho^2)}. In \code{ts_generator()},
+\code{sd_noise} is the innovation standard deviation, so use
+\code{sigma2 = sd_noise^2}.
+
+\code{"AR1"} treats \code{rho} and \code{sigma2} as fixed and uses the exact
+conditional Gaussian likelihood scan. \code{"AR1Profile"} uses the same exact
+scan but estimates the innovation variance separately under the no-change and
+change models. This is useful when the innovation scale is unknown.
+\code{"AR1Focus"} is faster because it applies the Gaussian FOCUS calculation
+to the transformed innovations; it is an approximation and can produce
+different boundaries near a change point.
+
+The \code{subtests} argument selects validity-based candidate pruning.
+\code{"right"} removes a candidate when its segment becomes invalid,
+\code{"left"} removes older candidates when a later candidate fails,
+\code{"both"} applies both rules, and \code{"none"} retains all candidates.
+Validity is still checked in every mode, and invalid candidates are never used.
+Pruning is exact only when the selected validity statistic has the
+corresponding monotonicity properties.
 
 The available nonparametric and robust cost tests are \code{"quantile"},
 \code{"quantileExact"}, \code{"varCost"}, \code{"WilcoxonCost"}, and
 \code{"MedianMoodCost"}. They are selected through the same \code{test}
-argument and use the same pruning options as the Gaussian tests.
+argument and use the same pruning options as the Gaussian tests. The
+\code{nb} output records the number of active candidates at the beginning of
+each endpoint iteration, before pruning.
 }
 \examples{
+# Gaussian mean: FOCuS test for independent Gaussian observations.
 set.seed(1)
-x <- rep(c(0, 2, -1), each = 40) + rnorm(120)
-SVP(x, gamma = 1.5 * log(length(x)))$changepoints
+gaussian_data <- ts_generator(
+  chpts = c(20, 40, 60), parameters = c(0, 2, -1),
+  sd_noise = 1, type = "gauss"
+)
+SVP(gaussian_data, gamma = 2 * log(length(gaussian_data)),
+    test = "gaussian_mean")$changepoints
 
-SVP(x, gamma = 1.5 * log(length(x)), test = "gaussian_mean",
-    prune_after_if_unvalid = TRUE,
-    prune_before_if_invalid = TRUE)
+# Gamma rate: positive exponential observations with changing rates.
+gamma_data <- ts_generator(
+  chpts = c(20, 40, 60), parameters = c(1, 4, 2),
+  type = "exp"
+)
+SVP(gamma_data, gamma = 2 * log(length(gamma_data)),
+    test = "gamma_rate")$changepoints
+
+# Gaussian variance: parameters are segment standard deviations.
+variance_data <- ts_generator(
+  chpts = c(20, 40, 60), parameters = c(0.5, 1.5, 0.75),
+  type = "variance"
+)
+SVP(variance_data, gamma = 2 * log(length(variance_data)),
+    test = "gaussian_variance")$changepoints
+
+# Quantile and exact quantile tests: robust tests for changes in spread.
+quantile_data <- ts_generator(
+  chpts = c(20, 40, 60), parameters = c(0.5, 1.5, 0.75),
+  type = "variance"
+)
+SVP(quantile_data, gamma = 2, quantile = 0.1,
+    test = "quantile")$changepoints
+SVP(quantile_data, gamma = 2, quantile = 0.1,
+    test = "quantileExact")$changepoints
+
+# Robust variance, Wilcoxon, and Median-Mood tests.
+robust_data <- ts_generator(
+  chpts = c(20, 40, 60), parameters = c(0, 2, -1),
+  sd_noise = 1, type = "gauss"
+)
+SVP(robust_data, gamma = 2, test = "varCost")$changepoints
+SVP(robust_data, gamma = 2 * log(length(robust_data)),
+    test = "WilcoxonCost")$changepoints
+SVP(robust_data, gamma = 2 * log(length(robust_data)),
+    test = "MedianMoodCost")$changepoints
+
+# Exact AR(1), with the known innovation variance.
+ar1_data <- ts_generator(
+  chpts = c(20, 40, 60), parameters = c(0, 2, -1),
+  sd_noise = 0.8, rho = 0.7, type = "gaussAR1"
+)
+SVP(ar1_data, gamma = 2 * log(length(ar1_data)), test = "AR1",
+    rho = 0.7, sigma2 = 0.8^2)$changepoints
+
+# Exact AR(1) with the innovation variance profiled out.
+SVP(ar1_data, gamma = 2 * log(length(ar1_data)),
+    test = "AR1Profile", rho = 0.7, sigma2 = 1)$changepoints
+
+# Faster approximate AR(1) FOCUS test on the transformed innovations.
+SVP(ar1_data, gamma = 2 * log(length(ar1_data)),
+    test = "AR1Focus", rho = 0.7, sigma2 = 0.8^2)$changepoints
 }
 \seealso{
 \code{\link{svp0}}, \code{\link{AR1_rho}}, \code{\link{AR1_single_change}}

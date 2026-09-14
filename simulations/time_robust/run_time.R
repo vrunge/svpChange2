@@ -28,7 +28,7 @@ fit_robust_time_method <- function(y, method) {
     "SVP Wilcoxon" = SVP(y, 2 * log(n), "WilcoxonCost"),
     "SVP MedianMood" = SVP(y, 2 * log(n), "MedianMoodCost"),
     "SVP BIC multiscale" =
-      SVP(y, 1.5 * log(n), "gaussian_mean", TRUE, TRUE)
+      SVP(y, 1.5 * log(n), "gaussian_mean", "both")
   )
   if (method == "PELT") {
     return(sort(unique(c(changepoint::cpts(fit), n))))

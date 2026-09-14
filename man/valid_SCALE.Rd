@@ -25,3 +25,10 @@ observations are appended; use \code{subtests = "none"} and
 \code{PELT_pruning = FALSE} in \code{\link{svp0}} unless the required
 pruning properties have been established for the intended application.
 }
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = 30, parameters = 0, sd_noise = 1, type = "gauss"
+)
+valid_SCALE(data, gamma = 2)
+}

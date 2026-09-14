@@ -12,12 +12,8 @@ options(
 source(file.path("simulations", "time_common.R"))
 
 PRUNING_STRATEGIES <- data.frame(
-  method = c("SVP after=FALSE before=FALSE",
-             "SVP after=TRUE before=FALSE",
-             "SVP after=FALSE before=TRUE",
-             "SVP after=TRUE before=TRUE"),
-  prune_after_if_unvalid = c(FALSE, TRUE, FALSE, TRUE),
-  prune_before_if_invalid = c(FALSE, FALSE, TRUE, TRUE),
+  method = c("SVP none", "SVP right", "SVP left", "SVP both"),
+  subtests = c("none", "right", "left", "both"),
   stringsAsFactors = FALSE
 )
 
@@ -33,8 +29,7 @@ time_pruning_strategy <- function(data, strategy) {
                pen.value = 2 * log(n))
     } else {
       SVP(data, gamma = 2 * log(n), test = "gaussian_mean",
-          prune_after_if_unvalid = strategy$prune_after_if_unvalid,
-          prune_before_if_invalid = strategy$prune_before_if_invalid)
+          subtests = strategy$subtests)
     }
   })[["elapsed"]]
 
@@ -49,8 +44,7 @@ time_pruning_strategy <- function(data, strategy) {
 all_strategies <- function() {
   rbind(
     data.frame(method = "PELT",
-               prune_after_if_unvalid = NA,
-               prune_before_if_invalid = NA,
+               subtests = NA_character_,
                stringsAsFactors = FALSE),
     PRUNING_STRATEGIES
   )
@@ -111,5 +105,4 @@ if (identical(tolower(Sys.getenv("SVP_RUN_SIMULATIONS")), "true")) {
     "pruning_time"
   )
 }
-
 

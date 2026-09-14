@@ -28,6 +28,13 @@ constrained Gaussian negative log-likelihood cost up to an additive and
 multiplicative constant. \code{Inf} is returned when the segment has no
 admissible constant mean.
 }
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = 20, parameters = 0, sd_noise = 1, type = "gauss"
+)
+smuce_cost(data, gamma = 2, sigma2 = 1)
+}
 \references{
 Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
 Inference. \emph{Journal of the Royal Statistical Society: Series B}, 76(3),

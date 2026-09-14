@@ -14,6 +14,13 @@ using namespace Rcpp;
 //' Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
 //' Inference. *Journal of the Royal Statistical Society: Series B*, 76(3),
 //' 495--580. doi:10.1111/rssb.12047.
+//' @examples
+//' set.seed(1)
+//' data <- ts_generator(
+//'   chpts = c(20, 40), parameters = c(0, 2),
+//'   sd_noise = 1, type = "gauss"
+//' )
+//' svp_smuce_cpp(data, q = 1.5, sigma2 = 1)
 // [[Rcpp::export]]
 IntegerVector svp_smuce_cpp(NumericVector y, double q, double sigma2 = 1.0) {
   int n = y.size();
@@ -22,45 +29,91 @@ IntegerVector svp_smuce_cpp(NumericVector y, double q, double sigma2 = 1.0) {
   std::vector<double> cs(n + 1, 0.0), cs2(n + 1, 0.0);
   for (int i = 0; i < n; ++i) {
     if (!R_finite(y[i])) stop("y must contain only finite values");
-    cs[i+1] = cs[i] + y[i];
-    cs2[i+1] = cs2[i] + y[i]*y[i];
   }
+  // Center before prefix sums to avoid cancellation for translated data.
+  const double offset = y[0];
+  for (int i = 0; i < n; ++i) {
+    const double centered = y[i] - offset;
+    cs[i+1] = cs[i] + centered;
+    cs2[i+1] = cs2[i] + centered * centered;
+  }
+
+  // The SMUCE radius depends only on the interval length.
+  std::vector<double> radius(n + 1, 0.0);
+  for (int len = 1; len <= n; ++len) {
+    double length = static_cast<double>(len);
+    radius[len] = std::sqrt(sigma2 / length) *
+      (q + std::sqrt(2.0 * (1.0 + std::log(n / length))));
+  }
+
   std::vector<int> K(n+1, n+1), prev(n+1, -1);
   std::vector<double> C(n+1, R_PosInf);
   K[0] = 0; C[0] = 0.0;
-  // For each start s, extend the segment and update constraints ending at t.
-  for (int s = 0; s < n; ++s) {
-    // BEFORE-invalid pruning: a start with no finite optimal prefix can
-    // never contribute to a later partition.
-    if (K[s] > n || !R_finite(C[s])) continue;
-    double lo = R_NegInf, hi = R_PosInf;
-    for (int t = s; t < n; ++t) {
-      int m = t - s + 1;
-      // Add every new subinterval [u,t].
-      for (int u = s; u <= t; ++u) {
-        int len = t-u+1;
-        double mean = (cs[t+1]-cs[u])/len;
-        double rad = std::sqrt(sigma2/len) *
-          (q + std::sqrt(2.0 *
-                         (1.0 + std::log(static_cast<double>(n)/len))));
-        lo = std::max(lo, mean-rad);
-        hi = std::min(hi, mean+rad);
+
+  // lo_previous[s] and hi_previous[s] describe the admissible mean interval
+  // for segment [s, t - 1]. The current column is computed for decreasing s
+  // from the two neighbouring segments and the local interval [s, t].
+  std::vector<double> lo_previous(n, R_NegInf);
+  std::vector<double> hi_previous(n, R_PosInf);
+  std::vector<double> lo_current(n, R_NegInf);
+  std::vector<double> hi_current(n, R_PosInf);
+
+  for (int t = 0; t < n; ++t) {
+    int first_valid_start = 0;
+
+    for (int s = t; s >= 0; --s) {
+      int len = t - s + 1;
+      double segment_sum = cs[t+1] - cs[s];
+      double mean_segment = segment_sum / len;
+      double local_lo = mean_segment - radius[len];
+      double local_hi = mean_segment + radius[len];
+
+      if (s == t) {
+        lo_current[s] = local_lo;
+        hi_current[s] = local_hi;
+      } else {
+        lo_current[s] = std::max(
+          local_lo,
+          std::max(lo_current[s+1], lo_previous[s])
+        );
+        hi_current[s] = std::min(
+          local_hi,
+          std::min(hi_current[s+1], hi_previous[s])
+        );
       }
-      // AFTER-invalid pruning: SMUCE feasibility is hereditary under
-      // extension. Once the admissible theta interval is empty, every
-      // longer segment with this same start is invalid as well.
-      if (lo > hi) break;
-      double mean_seg = (cs[t+1]-cs[s])/m;
-      double theta = std::min(std::max(mean_seg, lo), hi);
-      double rss = (cs2[t+1]-cs2[s]) -
-        2.0*theta*(cs[t+1]-cs[s]) + m*theta*theta;
-      rss = std::max(0.0, rss);
-      double cost = C[s] + rss/sigma2;
-      int nk = K[s] + 1;
-      if (nk < K[t+1] || (nk == K[t+1] && cost < C[t+1])) {
-        K[t+1] = nk; C[t+1] = cost; prev[t+1] = s;
+
+      // If [s, t] is invalid, every [s', t] with s' < s is invalid too.
+      if (lo_current[s] > hi_current[s]) {
+        first_valid_start = s + 1;
+        break;
       }
     }
+
+    // Process starts in increasing order to preserve the previous tie rule.
+    for (int s = first_valid_start; s <= t; ++s) {
+      if (K[s] > n || !R_finite(C[s])) continue;
+
+      int len = t - s + 1;
+      double segment_sum = cs[t+1] - cs[s];
+      double mean_segment = segment_sum / len;
+      double theta = std::min(
+        std::max(mean_segment, lo_current[s]),
+        hi_current[s]
+      );
+      double rss = (cs2[t+1] - cs2[s]) -
+        2.0 * theta * segment_sum + len * theta * theta;
+      rss = std::max(0.0, rss);
+      double cost = C[s] + rss / sigma2;
+      int nk = K[s] + 1;
+      if (nk < K[t+1] || (nk == K[t+1] && cost < C[t+1])) {
+        K[t+1] = nk;
+        C[t+1] = cost;
+        prev[t+1] = s;
+      }
+    }
+
+    std::swap(lo_previous, lo_current);
+    std::swap(hi_previous, hi_current);
   }
   std::vector<int> ends; int t = n;
   while (t > 0) {

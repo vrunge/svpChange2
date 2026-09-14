@@ -25,8 +25,7 @@ fit_gaussian_methods <- function(y) {
     ),
     "SVP BIC multiscale" = normalise_boundaries(
       SVP(y, GAUSSIAN_TRUE_TRUE_CONSTANT * log(n), "gaussian_mean",
-          prune_after_if_unvalid = TRUE,
-          prune_before_if_invalid = TRUE)$changepoints,
+          subtests = "both")$changepoints,
       n
     )
   )

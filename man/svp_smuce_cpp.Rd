@@ -24,6 +24,14 @@ For independent Gaussian observations with known variance, this function
 returns the segment endpoints of one SMUCE-optimal partition. Internal
 endpoints are estimated changepoints.
 }
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = c(20, 40), parameters = c(0, 2),
+  sd_noise = 1, type = "gauss"
+)
+svp_smuce_cpp(data, q = 1.5, sigma2 = 1)
+}
 \references{
 Frick, K., Munk, A., and Sieling, H. (2014). Multiscale Change-Point
 Inference. \emph{Journal of the Royal Statistical Society: Series B}, 76(3),

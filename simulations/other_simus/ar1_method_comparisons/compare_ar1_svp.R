@@ -19,14 +19,12 @@ run_ar1_svp_comparison <- function(y, gamma = 8, rho = .7, sigma2 = 1) {
   fits <- lapply(methods, function(m) {
     system.time(SVP(y, gamma = gamma, test = m, rho = rho,
                     sigma2 = sigma2, profile_sigma = (m == "AR1Profile"),
-                    prune_after_if_unvalid = TRUE,
-                    prune_before_if_invalid = FALSE))
+                    subtests = "right"))
   })
   ## Re-run to retain the actual results and measure elapsed time separately.
   results <- lapply(methods, function(m) SVP(
     y, gamma = gamma, test = m, rho = rho, sigma2 = sigma2,
-    profile_sigma = (m == "AR1Profile"), prune_after_if_unvalid = TRUE,
-    prune_before_if_invalid = FALSE))
+    profile_sigma = (m == "AR1Profile"), subtests = "right"))
   times <- sapply(seq_along(methods), function(i) unname(fits[[i]][["elapsed"]]))
   list(partitions = setNames(lapply(results, `[[`, "changepoints"), methods),
        elapsed = setNames(times, methods), results = setNames(results, methods))
@@ -42,8 +40,7 @@ benchmark_ar1_svp <- function(n_values = c(200, 500, 1000, 2000),
     for (m in c("AR1", "AR1Profile", "AR1Focus")) {
       tm <- system.time(SVP(y, gamma=gamma, test=m, rho=rho,
                              sigma2=sigma^2, profile_sigma=(m == "AR1Profile"),
-                             prune_after_if_unvalid=TRUE,
-                             prune_before_if_invalid=FALSE))
+                             subtests = "right"))
       rows[[z]] <- data.frame(n=n, replicate=b, method=m,
                               elapsed=unname(tm[["elapsed"]])); z <- z+1L
     }

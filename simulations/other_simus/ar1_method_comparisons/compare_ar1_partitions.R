@@ -20,8 +20,7 @@ fit_three_methods <- function(y, rho = 0.7, sigma2 = 1, gamma = 8) {
   fits <- setNames(lapply(methods, function(method) {
     SVP(y, gamma = gamma, test = method, rho = rho, sigma2 = sigma2,
         profile_sigma = method == "AR1Profile",
-        prune_after_if_unvalid = TRUE,
-        prune_before_if_invalid = FALSE)
+        subtests = "right")
   }), methods)
   lapply(fits, function(fit) as.integer(fit$changepoints))
 }

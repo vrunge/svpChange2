@@ -17,8 +17,13 @@ valid_AR1(
   \item{rho}{An optional known AR(1) coefficient. If \code{NA}, it is
   estimated robustly from \code{y}.}
   \item{sigma2}{A positive innovation variance used by the known-variance
-  statistic.}
-  \item{profile_sigma}{If \code{TRUE}, profile out the innovation variance.}
+  statistic. In the AR(1) model, this is the variance of the new random shock
+  after accounting for the previous observation and the AR(1) mean structure;
+  it is not the marginal variance of the observed series. It is ignored when
+  \code{profile_sigma = TRUE}.}
+  \item{profile_sigma}{If \code{TRUE}, estimate the innovation variance
+  separately under the no-change and one-change models from their residual sums
+  of squares. This is useful when the innovation scale is unknown.}
 }
 \value{
 \code{TRUE} if the AR(1) statistic is strictly below \code{gamma}; otherwise,
@@ -37,6 +42,17 @@ same convention as \code{\link{AR1_single_change}}. If \code{rho} is
 function can be passed to \code{\link{svp0}} directly when \code{rho} is fixed,
 or through a closure when other optional arguments are needed. The caller
 should enforce any minimum segment length required by the chosen SVP procedure.
+When \code{profile_sigma = FALSE}, the statistic uses the supplied
+\code{sigma2}; when \code{profile_sigma = TRUE}, the innovation variance is
+profiled out and estimated under each competing model.
+}
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = 60, parameters = 0, sd_noise = 1,
+  rho = 0.6, type = "gaussAR1"
+)
+valid_AR1(data, gamma = 10, rho = 0.6, sigma2 = 1)
 }
 \seealso{
 \code{\link{AR1_single_change}}, \code{\link{svp0}}

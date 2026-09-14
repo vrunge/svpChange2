@@ -69,16 +69,16 @@ If `rho` is omitted, `SVP()` estimates it robustly using `AR1_rho()`.
 
 ## Pruning and multiscale thresholds
 
-The two pruning switches control the candidate set:
+The `subtests` argument controls the candidate set:
 
 ```r
 SVP(y, gamma = 10, test = "gaussian_mean",
-    prune_after_if_unvalid = TRUE,
-    prune_before_if_invalid = TRUE)
+    subtests = "both")
 ```
 
-The usual setting is `TRUE/FALSE`. `TRUE/TRUE` is more aggressive and should
-be assessed by simulation for the chosen validity test.
+The values are `"none"`, `"right"`, `"left"`, and `"both"`. Use `"none"`
+for arbitrary validity rules unless the pruning assumptions have been
+established for the selected test.
 
 ## User-defined validity tests
 

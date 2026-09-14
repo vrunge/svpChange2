@@ -22,3 +22,10 @@ is lower than or equal to a threshold.
 \details{
 Validity Test Based on Sum of Squared Errors
 }
+\examples{
+set.seed(1)
+data <- ts_generator(
+  chpts = 30, parameters = 0, sd_noise = 1, type = "gauss"
+)
+valid_SSE(data, gamma = 40)
+}
