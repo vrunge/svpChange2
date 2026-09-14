@@ -112,8 +112,9 @@ innovation variance under the null and alternative:
 T_{\mathrm{prof}}=\frac{m-1}{2}\log\left(\frac{RSS_0}{RSS_1}\right).
 \]
 
-It is exactly equivalent to `test = "AR1", profile_sigma = TRUE`.
-`sigma2` must still be a positive argument but does not enter this statistic.
+It is exactly equivalent to `test = "AR1", profile_sigma = TRUE`. Because the
+innovation variance is profiled out, `sigma2` is ignored in these two forms and
+does not need to be positive.
 Because $T_{\mathrm{prof}}$ and $T_{\mathrm{fix}}$ have different null laws,
 their values of `gamma` require separate calibration.
 
@@ -165,7 +166,7 @@ is requested. Consequently, without candidate pruning, the generic SVP loop
 has $O(n^2)$ candidate--endpoint pairs but an $O(n^3)$ worst-case total for
 `AR1` and `AR1Profile`. `AR1Focus` replaces the inner scan by functional
 updates and is generally faster; its work depends on how many quadratic pieces
-survive. `subtests = "right"`, `"left"`, or `"both"` removes SVP candidates;
+survive. `subtests = "right"` or `"both"` removes SVP candidates;
 `"none"` is the assumption-free reference when the needed pruning
 implications have not been established for a chosen statistic.
 
@@ -392,7 +393,7 @@ The log--log slopes are `r paste(sprintf("%s %.2f", names(timing_slopes),
 timing_slopes), collapse=", ")`. At $n=2000$, `AR1Focus` is
 `r sprintf("%.1f", timing_table$AR1[3L] / timing_table$AR1Focus[3L])` times
 faster than `AR1`. Thus the expected ranking is confirmed for a controlled,
-large unpruned workload. With `left`, `right`, or `both`, wall time also depends
+large unpruned workload. With `right` or `both`, wall time also depends
 on how many SVP candidates each statistic removes; timings are then not a pure
 comparison of the three segment-test algorithms.
 

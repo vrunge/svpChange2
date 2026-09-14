@@ -30,5 +30,9 @@ calibration; its calibration table is saved as `rfpop_null_calibration.csv`.
 This makes the false-positive trade-off explicit rather than altering the paper
 curve without disclosure.
 
+The single-scale Median-Mood and Wilcoxon calls use `subtests = "right"` to
+match the historical API; only the multiscale Wilcoxon call uses
+`subtests = "both"`.
+
 The seven PDFs and result files have the same meanings as in the Gaussian
 folder.

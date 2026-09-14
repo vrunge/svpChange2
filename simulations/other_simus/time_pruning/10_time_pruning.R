@@ -1,4 +1,4 @@
-## Runtime complexity of the four SVP pruning configurations versus PELT.
+## Runtime complexity of the three SVP pruning configurations versus PELT.
 
 library(svpChange2)
 library(changepoint)
@@ -12,13 +12,19 @@ options(
 source(file.path("simulations", "time_common.R"))
 
 PRUNING_STRATEGIES <- data.frame(
-  method = c("SVP none", "SVP right", "SVP left", "SVP both"),
-  subtests = c("none", "right", "left", "both"),
+  method = c("SVP none", "SVP right", "SVP both"),
+  subtests = c("none", "right", "both"),
   stringsAsFactors = FALSE
 )
 
 generate_pruning_signal <- function(n, k = 0, jump = 10) {
-  alternating_mean(n, k, jump) + rnorm(n)
+  sizes <- balanced_segment_sizes(n, k)
+  ts_generator(
+    chpts = cumsum(sizes),
+    parameters = rep(c(0, jump), length.out = k + 1L),
+    sd_noise = 1,
+    type = "gauss"
+  )
 }
 
 time_pruning_strategy <- function(data, strategy) {
@@ -105,4 +111,3 @@ if (identical(tolower(Sys.getenv("SVP_RUN_SIMULATIONS")), "true")) {
     "pruning_time"
   )
 }
-

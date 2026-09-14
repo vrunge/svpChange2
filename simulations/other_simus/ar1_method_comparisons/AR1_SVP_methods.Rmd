@@ -74,7 +74,7 @@ SVP(y, gamma=8, test="AR1Focus", rho=.7, sigma2=1)
 | `rho` | Fixed AR coefficient, strictly between -1 and 1. |
 | `sigma2` | Innovation variance for fixed-variance tests. |
 | `profile_sigma` | Profile the innovation variance. |
-| `subtests` | Select `none`, `right`, `left`, or `both` validity-pruning rules. |
+| `subtests` | Select `none`, `right`, or `both` validity-pruning rules. |
 | `quantile` | Quantile used for robust nuisance-parameter estimation. |
 
 Estimate an unknown AR coefficient with `AR1_rho(y)` and pass the same estimate

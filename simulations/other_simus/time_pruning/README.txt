@@ -1,12 +1,11 @@
 SVP PRUNING TIME-COMPLEXITY STUDY
 
-This folder isolates the computational effect of the four SVP pruning modes:
+This folder isolates the computational effect of the three SVP pruning modes:
 
   subtests
   --------
   none
   right
-  left
   both
 
 Each strategy is compared with PELT, following the two runtime experiments

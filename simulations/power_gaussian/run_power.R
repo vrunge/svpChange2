@@ -18,10 +18,12 @@ fit_gaussian_methods <- function(y) {
   list(
     "PELT" = normalise_boundaries(changepoint::cpts(pelt), n),
     "SVP BIC calibrated" = normalise_boundaries(
-      SVP(y, 1.5 * log(n), "gaussian_mean")$changepoints, n
+      SVP(y, 1.5 * log(n), "gaussian_mean", subtests = "right")$changepoints,
+      n
     ),
     "SVP BIC" = normalise_boundaries(
-      SVP(y, 2 * log(n), "gaussian_mean")$changepoints, n
+      SVP(y, 2 * log(n), "gaussian_mean", subtests = "right")$changepoints,
+      n
     ),
     "SVP BIC multiscale" = normalise_boundaries(
       SVP(y, GAUSSIAN_TRUE_TRUE_CONSTANT * log(n), "gaussian_mean",
@@ -44,10 +46,11 @@ run_gaussian_power <- function(
   )
 }
 
-run_and_save_gaussian <- function(workers = power_default_workers()) {
+run_and_save_gaussian <- function(
+    workers = power_default_workers(), root = GAUSSIAN_ROOT) {
   results <- run_gaussian_power(workers = workers)
   save_power_outputs(
-    results, GAUSSIAN_ROOT,
+    results, root,
     power_scenario_plot(1000L, 0.6, stats::rnorm),
     plot_results = set_algorithm_order(
       results,

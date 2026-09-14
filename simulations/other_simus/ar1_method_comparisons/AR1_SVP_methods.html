@@ -378,7 +378,7 @@ cost.</p>
 <div id="exact-fixed-variance-test-ar1" class="section level2">
 <h2>Exact fixed-variance test: <code>AR1</code></h2>
 <p><code>AR1</code> scans every possible change-point using the exact
-fixed-<span class="math inline">\(\rho\)</span> Gaussian likelihood
+fixed-<span class="math inline">\(\rho\)</span> Gaussian log-likelihood
 ratio. Prefix sums make each candidate calculation constant time after
 updating sufficient statistics. Use it when <code>rho</code> and
 <code>sigma2</code> are known.</p>
@@ -388,7 +388,7 @@ updating sufficient statistics. Use it when <code>rho</code> and
 <h2>Profiled exact test: <code>AR1Profile</code></h2>
 <p><code>AR1Profile</code> uses the same transition-corrected likelihood
 but profiles out the innovation variance. Its statistic is based on</p>
-<p><span class="math display">\[T=m\log(RSS_0/RSS_1),\]</span></p>
+<p><span class="math display">\[T=\frac{m}{2}\log(RSS_0/RSS_1),\]</span></p>
 <p>where <span class="math inline">\(m\)</span> is the number of usable
 AR transitions. Its threshold calibration is different from the
 fixed-variance test.</p>
@@ -444,18 +444,10 @@ method and need not return the exact likelihood partition.</p>
 </tr>
 <tr class="odd">
 <td><code>subtests</code></td>
-<td>Select <code>none</code>, <code>right</code>, <code>left</code>, or
-<code>both</code> validity-pruning rules.</td>
-</tr>
-<tr class="odd">
-<td><code>use_multiscale_gamma</code></td>
-<td>Use a length-dependent multiscale threshold.</td>
+<td>Select <code>none</code>, <code>right</code>, or <code>both</code>
+validity-pruning rules.</td>
 </tr>
 <tr class="even">
-<td><code>q_alpha_n</code></td>
-<td>Multiscale threshold parameter.</td>
-</tr>
-<tr class="odd">
 <td><code>quantile</code></td>
 <td>Quantile used for robust nuisance-parameter estimation.</td>
 </tr>

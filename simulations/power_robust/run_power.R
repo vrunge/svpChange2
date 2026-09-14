@@ -60,10 +60,14 @@ fit_robust_methods <- function(y, true_segments, rfpop_constant) {
     "PELT" = normalise_boundaries(changepoint::cpts(pelt), n),
     "RFPOP paper" = paper_rfpop$boundaries,
     "SVP MedianMood" = normalise_boundaries(
-      SVP(y, mood_threshold(n, true_segments), "MedianMoodCost")$changepoints, n
+      SVP(y, mood_threshold(n, true_segments), "MedianMoodCost",
+          subtests = "right")$changepoints,
+      n
     ),
     "SVP Wilcoxon" = normalise_boundaries(
-      SVP(y, 1.5 * wilcoxon_gamma, "WilcoxonCost")$changepoints, n
+      SVP(y, 1.5 * wilcoxon_gamma, "WilcoxonCost",
+          subtests = "right")$changepoints,
+      n
     ),
     "SVP Wilcoxon multiscale" = normalise_boundaries(
       SVP(y, ROBUST_TRUE_TRUE_CONSTANT * wilcoxon_gamma, "WilcoxonCost",

@@ -1,5 +1,5 @@
-#include "validity_tests.h"
 #include "svp_ar1_helpers.h"
+#include "svp_tests_ar1.h"
 #include <Rcpp.h>
 #include <cmath>
 #include <vector>
@@ -24,7 +24,8 @@ List AR1_single_change(std::vector<double> data,
   if (!std::isfinite(rho_used) || std::fabs(rho_used) >= 1.0) {
     stop("rho must be finite and strictly between -1 and 1");
   }
-  if (!std::isfinite(sigma2) || sigma2 <= 0.0) {
+  if (!profile_sigma &&
+      (!std::isfinite(sigma2) || sigma2 <= 0.0)) {
     stop("sigma2 must be finite and positive");
   }
 

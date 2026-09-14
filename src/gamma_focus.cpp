@@ -11,7 +11,7 @@
  See DESCRIPTION for further information about the authors.
  */
 
-# include "focus.h"
+#include "gamma_focus.h"
 
 /*
  * PRUNING FUNCTION checks and removes quadratics that are no longer optimal
@@ -109,33 +109,11 @@ double get_max_all (const Cost& Q, const CUSUM& cs, const double& theta0, const 
   return max;
 }
 
-int get_tau_max (const Cost& Q, const CUSUM& cs, const double& theta0, const double& m0val)
-{
-  auto tau = 0;
-  double max = -INFINITY;
-
-  for (long unsigned int i = 0; i <= Q.k; i++)
-  {
-    const double value = get_max(Q.ps[i], cs, theta0) - m0val;
-    if (max < value)
-    {
-      tau = Q.ps[i]->tau;
-      max = value;
-    }
-  }
-
-  return tau;
-}
-
-
-// to write the adaptive maxima checking
-
-
 /*
  * focus recursion, one iteration
  */
 
-void Info::update(const double& y)
+void GammaFocusInfo::update(const double& y)
 {
   cs.n++;
   cs.Sn += y;
@@ -174,3 +152,4 @@ void Info::update(const double& y)
     Ql.k = Ql.ps.size() - 1;
   }
 }
+

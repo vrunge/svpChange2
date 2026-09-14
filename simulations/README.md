@@ -14,6 +14,15 @@ Each primary folder has one entry point (`run_power.R` or `run_time.R`), one
 README, and its generated results. Supporting experiments and historical
 scripts live under `other_simus/`.
 
+The paper-figure refresh is driven by
+`other_simus/maintenance/rebuild_svp_new_figures2.R`. It writes the 33
+updated PDFs (and current result/report files) to the sibling folder
+`../SVP_NEW_Figures2`, leaving the historical `../SVP_NEW_Figures` untouched.
+The default quick mode consumes the maintained v0.2.0 result objects; set
+`SVP_REBUILD_FULL=true` together with `SVP_REBUILD_FIGURES2=true` to run the
+approved 1000-null/200-signal calibration grids and regenerate all power
+studies.
+
 Shared code is defined once:
 
 - `power_common.R` contains power-study simulation, metrics, plotting, and

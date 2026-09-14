@@ -21,6 +21,29 @@ test_that("quantile is only accepted on its valid parameter range", {
   expect_silent(SVP(y, 5, "quantile", quantile = 0.1))
 })
 
+test_that("quantile tests evaluate short non-singleton segments", {
+  y <- c(0, 10, 20)
+
+  exact <- SVP(
+    y, gamma = 5, test = "quantileExact",
+    subtests = "none", quantile = 0.25
+  )
+  approximate <- SVP(
+    y, gamma = 5, test = "quantile",
+    subtests = "none", quantile = 0.25
+  )
+
+  expect_gt(exact$R[3, 2], 1)
+  expect_gt(approximate$R[2, 2], 1)
+})
+
+test_that("varCost evaluates short non-singleton segments", {
+  result <- SVP(c(0, 10), gamma = 1, test = "varCost",
+                subtests = "none")
+
+  expect_equal(result$changepoints, c(1, 2))
+})
+
 test_that("rank cost tests retain exact tie handling", {
   wilcoxon_valid <- function(x, gamma) {
     if (length(x) < 2) return(TRUE)
@@ -95,4 +118,33 @@ test_that("integrated AR1 cost tests retain rho metadata", {
     expect_equal(result$sigma2, 1, info = test_name)
     expect_equal(tail(result$changepoints, 1), length(y), info = test_name)
   }
+})
+
+test_that("profiled AR1 tests ignore sigma2", {
+  set.seed(322)
+  y <- numeric(40)
+  y[1] <- rnorm(1)
+  for (i in 2:length(y)) y[i] <- 0.4 * y[i - 1] + rnorm(1)
+
+  profile_default <- SVP(
+    y, gamma = 6, test = "AR1Profile", rho = 0.4, sigma2 = 1
+  )
+  profile_zero <- SVP(
+    y, gamma = 6, test = "AR1Profile", rho = 0.4, sigma2 = 0
+  )
+  profile_flag <- SVP(
+    y, gamma = 6, test = "AR1", rho = 0.4, sigma2 = 0,
+    profile_sigma = TRUE
+  )
+
+  expect_equal(profile_zero$changepoints, profile_default$changepoints)
+  expect_equal(profile_flag$changepoints, profile_default$changepoints)
+  expect_error(
+    SVP(y, gamma = 6, test = "AR1", rho = 0.4, sigma2 = 0),
+    "sigma2"
+  )
+  expect_error(
+    SVP(y, gamma = 6, test = "AR1Focus", rho = 0.4, sigma2 = 0),
+    "sigma2"
+  )
 })

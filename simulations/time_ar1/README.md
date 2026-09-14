@@ -4,6 +4,9 @@
 `SVP AR1 estimated rho` under stationary AR(1) noise. It varies sequence
 length under no change and the number of changes at fixed length.
 
+All three calls explicitly use `subtests = "right"`, matching the historical
+SVP defaults used for the paper runtime comparison.
+
 Run from the package root:
 
 ```r

@@ -8,6 +8,9 @@ Method labels follow the power-study legend style:
 - `SVP MedianMood`
 - `SVP BIC multiscale`
 
+The Wilcoxon and Median-Mood calls explicitly use `subtests = "right"`; the
+Gaussian multiscale call uses `subtests = "both"`.
+
 Both timing experiments enforce a maximum sequence length of 1,000.
 
 Run from the package root:

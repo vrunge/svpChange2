@@ -25,8 +25,10 @@ fit_robust_time_method <- function(y, method) {
     "PELT" = changepoint::cpt.mean(
       y, method = "PELT", penalty = "Manual", pen.value = 2 * log(n)
     ),
-    "SVP Wilcoxon" = SVP(y, 2 * log(n), "WilcoxonCost"),
-    "SVP MedianMood" = SVP(y, 2 * log(n), "MedianMoodCost"),
+    "SVP Wilcoxon" =
+      SVP(y, 2 * log(n), "WilcoxonCost", subtests = "right"),
+    "SVP MedianMood" =
+      SVP(y, 2 * log(n), "MedianMoodCost", subtests = "right"),
     "SVP BIC multiscale" =
       SVP(y, 1.5 * log(n), "gaussian_mean", "both")
   )

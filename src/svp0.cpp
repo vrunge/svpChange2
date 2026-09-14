@@ -19,11 +19,11 @@ using namespace Rcpp;
 //'   non-missing logical value: `TRUE` if the segment is valid. The function
 //'   is not called for singleton segments; they are always valid.
 //' @param subtests Character scalar controlling validity-based pruning. The
-//'   choices are `"both"` (default), `"right"`, `"left"`, and `"none"`.
+//'   choices are `"both"` (default), `"right"`, and `"none"`.
 //'   `"right"` removes a candidate start when its current segment is invalid;
-//'   `"left"` removes starts smaller than the largest invalid start at the
-//'   current endpoint; `"both"` applies both rules; and `"none"` applies
-//'   neither rule. Invalid candidates are never used for the current optimum.
+//'   `"both"` additionally removes that start and all older starts; and
+//'   `"none"` applies neither rule. Invalid candidates are never used for the
+//'   current optimum.
 //' @param PELT_pruning Logical; whether to apply the additional cost-based
 //'   candidate pruning rule.
 //'
@@ -86,10 +86,9 @@ List svp0(std::vector<double> data,
   {
     stop("'data' must contain at least one observation.");
   }
-  if (subtests != "both" && subtests != "right" &&
-      subtests != "left" && subtests != "none")
+  if (subtests != "both" && subtests != "right" && subtests != "none")
   {
-    stop("Invalid value for 'subtests'. Must be 'both', 'right', 'left', or 'none'.");
+    stop("Invalid value for 'subtests'. Must be 'both', 'right', or 'none'.");
   }
 
   // Initialization of elements
@@ -124,7 +123,7 @@ List svp0(std::vector<double> data,
 
   std::vector<size_t> INDEX = {0};
   std::vector<size_t> valid_INDEX; //indices that pass the validity test
-  std::vector<size_t> non_pruned_INDEX; // indices not pruned by left subtests and/or PELT rule
+  std::vector<size_t> non_pruned_INDEX; // candidates retained by pruning
 
   //
   // MAIN LOOP
@@ -191,8 +190,9 @@ List svp0(std::vector<double> data,
       INDEX.swap(valid_INDEX);
     }
 
-    // Left subtests remove candidates smaller than an invalid candidate.
-    if (subtests == "both" || subtests == "left")
+    // In "both", the inclusive left rule removes candidates older than the
+    // largest invalid candidate (the invalid candidate was removed above).
+    if (subtests == "both")
     {
       non_pruned_INDEX.clear();
       for (size_t k = 0; k < INDEX.size(); k++)

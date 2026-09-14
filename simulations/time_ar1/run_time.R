@@ -27,11 +27,12 @@ fit_ar1_time_method <- function(y, method, rho = AR1_TIME_RHO) {
   n <- length(y)
   fit <- switch(
     method,
-    "SVP BIC" = SVP(y, 2 * log(n), "gaussian_mean"),
+    "SVP BIC" = SVP(y, 2 * log(n), "gaussian_mean", subtests = "right"),
     "SVP AR1" =
-      SVP(y, 2 * log(n), "AR1", rho = rho, sigma2 = 1),
+      SVP(y, 2 * log(n), "AR1", subtests = "right", rho = rho, sigma2 = 1),
     "SVP AR1 estimated rho" = SVP(
-      y, 2 * log(n), "AR1", rho = AR1_rho(y), sigma2 = 1
+      y, 2 * log(n), "AR1", subtests = "right",
+      rho = AR1_rho(y), sigma2 = 1
     )
   )
   extract_svp_boundaries(fit, n)

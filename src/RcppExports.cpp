@@ -47,6 +47,32 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// AR1_rho
+double AR1_rho(std::vector<double> data);
+RcppExport SEXP _svpChange2_AR1_rho(SEXP dataSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<double> >::type data(dataSEXP);
+    rcpp_result_gen = Rcpp::wrap(AR1_rho(data));
+    return rcpp_result_gen;
+END_RCPP
+}
+// AR1_single_change
+List AR1_single_change(std::vector<double> data, double gamma, double rho, double sigma2, bool profile_sigma);
+RcppExport SEXP _svpChange2_AR1_single_change(SEXP dataSEXP, SEXP gammaSEXP, SEXP rhoSEXP, SEXP sigma2SEXP, SEXP profile_sigmaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<double> >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma2(sigma2SEXP);
+    Rcpp::traits::input_parameter< bool >::type profile_sigma(profile_sigmaSEXP);
+    rcpp_result_gen = Rcpp::wrap(AR1_single_change(data, gamma, rho, sigma2, profile_sigma));
+    return rcpp_result_gen;
+END_RCPP
+}
 // focus_valid_cpp
 bool focus_valid_cpp(std::vector<double> data, double gamma, bool check_all_prefixes);
 RcppExport SEXP _svpChange2_focus_valid_cpp(SEXP dataSEXP, SEXP gammaSEXP, SEXP check_all_prefixesSEXP) {
@@ -93,32 +119,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// AR1_rho
-double AR1_rho(std::vector<double> data);
-RcppExport SEXP _svpChange2_AR1_rho(SEXP dataSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<double> >::type data(dataSEXP);
-    rcpp_result_gen = Rcpp::wrap(AR1_rho(data));
-    return rcpp_result_gen;
-END_RCPP
-}
-// AR1_single_change
-List AR1_single_change(std::vector<double> data, double gamma, double rho, double sigma2, bool profile_sigma);
-RcppExport SEXP _svpChange2_AR1_single_change(SEXP dataSEXP, SEXP gammaSEXP, SEXP rhoSEXP, SEXP sigma2SEXP, SEXP profile_sigmaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<double> >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
-    Rcpp::traits::input_parameter< double >::type sigma2(sigma2SEXP);
-    Rcpp::traits::input_parameter< bool >::type profile_sigma(profile_sigmaSEXP);
-    rcpp_result_gen = Rcpp::wrap(AR1_single_change(data, gamma, rho, sigma2, profile_sigma));
-    return rcpp_result_gen;
-END_RCPP
-}
 // svp_smuce_cpp
 IntegerVector svp_smuce_cpp(NumericVector y, double q, double sigma2);
 RcppExport SEXP _svpChange2_svp_smuce_cpp(SEXP ySEXP, SEXP qSEXP, SEXP sigma2SEXP) {
@@ -137,11 +137,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_svpChange2_OP", (DL_FUNC) &_svpChange2_OP, 2},
     {"_svpChange2_PELT", (DL_FUNC) &_svpChange2_PELT, 2},
     {"_svpChange2_SN", (DL_FUNC) &_svpChange2_SN, 2},
+    {"_svpChange2_AR1_rho", (DL_FUNC) &_svpChange2_AR1_rho, 1},
+    {"_svpChange2_AR1_single_change", (DL_FUNC) &_svpChange2_AR1_single_change, 5},
     {"_svpChange2_focus_valid_cpp", (DL_FUNC) &_svpChange2_focus_valid_cpp, 3},
     {"_svpChange2_SVP", (DL_FUNC) &_svpChange2_SVP, 8},
     {"_svpChange2_svp0", (DL_FUNC) &_svpChange2_svp0, 5},
-    {"_svpChange2_AR1_rho", (DL_FUNC) &_svpChange2_AR1_rho, 1},
-    {"_svpChange2_AR1_single_change", (DL_FUNC) &_svpChange2_AR1_single_change, 5},
     {"_svpChange2_svp_smuce_cpp", (DL_FUNC) &_svpChange2_svp_smuce_cpp, 3},
     {NULL, NULL, 0}
 };

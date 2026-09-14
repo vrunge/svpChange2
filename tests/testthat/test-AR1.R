@@ -83,6 +83,37 @@ test_that("AR1 profiled statistic equals the exact reference", {
   expect_equal(result$changepoint, reference$changepoint)
 })
 
+test_that("profiled AR1 diagnostics and R validity ignore sigma2", {
+  set.seed(9)
+  data <- simulate_ar1_change(80, 40, c(0, 1), 0.4)
+
+  default <- AR1_single_change(
+    data, gamma = Inf, rho = 0.4, sigma2 = 1,
+    profile_sigma = TRUE
+  )
+  zero <- AR1_single_change(
+    data, gamma = Inf, rho = 0.4, sigma2 = 0,
+    profile_sigma = TRUE
+  )
+
+  expect_equal(zero$statistic, default$statistic)
+  expect_equal(zero$changepoint, default$changepoint)
+  expect_identical(
+    valid_AR1(data, gamma = 5, rho = 0.4, sigma2 = 0,
+              profile_sigma = TRUE),
+    valid_AR1(data, gamma = 5, rho = 0.4, sigma2 = 1,
+              profile_sigma = TRUE)
+  )
+  expect_error(
+    AR1_single_change(data, gamma = 5, rho = 0.4, sigma2 = 0),
+    "sigma2"
+  )
+  expect_error(
+    valid_AR1(data, gamma = 5, rho = 0.4, sigma2 = 0),
+    "sigma2"
+  )
+})
+
 test_that("AR1 validity test works inside SVP", {
   set.seed(42)
   data <- simulate_ar1_change(400, 200, c(0, 2), 0.7)

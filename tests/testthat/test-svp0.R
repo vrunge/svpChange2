@@ -28,7 +28,7 @@ test_that("svp0 returns the same partition for every pruning option", {
   data <- c(rep(0, 3), rep(3, 3))
   expected <- c(3, 6)
 
-  for (subtests in c("none", "right", "left", "both")) {
+  for (subtests in c("none", "right", "both")) {
     for (PELT_pruning in c(FALSE, TRUE)) {
       result <- svp0(
         data,
@@ -48,6 +48,10 @@ test_that("svp0 validates subtests and rejects empty data", {
   expect_error(
     svp0(1:3, gamma = 1, test = valid, subtests = "invalid"),
     "Invalid value for 'subtests'"
+  )
+  expect_error(
+    svp0(1:3, gamma = 1, test = valid, subtests = "left"),
+    "both.*right.*none"
   )
   expect_error(
     svp0(numeric(), gamma = 1, test = valid),

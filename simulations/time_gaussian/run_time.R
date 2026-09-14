@@ -13,7 +13,13 @@ GAUSSIAN_TIME_METHODS <- c(
 )
 
 simulate_gaussian_time_data <- function(n, changes = 0L, jump = 10) {
-  stats::rnorm(n, alternating_mean(n, changes, jump), 1)
+  sizes <- balanced_segment_sizes(n, changes)
+  ts_generator(
+    chpts = cumsum(sizes),
+    parameters = rep(c(0, jump), length.out = changes + 1L),
+    sd_noise = 1,
+    type = "gauss"
+  )
 }
 
 fit_gaussian_time_method <- function(y, method) {
@@ -32,7 +38,7 @@ fit_gaussian_time_method <- function(y, method) {
       subtests = "right"
     ),
     "SVP BIC multiscale" = SVP(
-      y, 1.5 * log(n), "gaussian_mean",
+      y, 1.8 * log(n), "gaussian_mean",
       subtests = "both"
     )
   )
@@ -58,9 +64,9 @@ run_time_gaussian <- function(
   )
 }
 
-run_and_save_time_gaussian <- function() {
+run_and_save_time_gaussian <- function(prefix = "gaussian_time") {
   results <- run_time_gaussian()
-  save_time_outputs(results, GAUSSIAN_TIME_ROOT, "gaussian_time")
+  save_time_outputs(results, GAUSSIAN_TIME_ROOT, prefix)
 }
 
 if (identical(tolower(Sys.getenv("SVP_RUN_SIMULATIONS")), "true")) {

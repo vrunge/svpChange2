@@ -16,11 +16,11 @@ non-missing logical value: \code{TRUE} if the segment is valid. The function
 is not called for singleton segments; they are always valid.}
 
 \item{subtests}{Character scalar controlling validity-based pruning. The
-choices are \code{"both"} (default), \code{"right"}, \code{"left"}, and \code{"none"}.
+choices are \code{"both"} (default), \code{"right"}, and \code{"none"}.
 \code{"right"} removes a candidate start when its current segment is invalid;
-\code{"left"} removes starts smaller than the largest invalid start at the
-current endpoint; \code{"both"} applies both rules; and \code{"none"} applies
-neither rule. Invalid candidates are never used for the current optimum.}
+\code{"both"} additionally removes that start and all older starts; and
+\code{"none"} applies neither rule. Invalid candidates are never used for the
+current optimum.}
 
 \item{PELT_pruning}{Logical; whether to apply the additional cost-based
 candidate pruning rule.}

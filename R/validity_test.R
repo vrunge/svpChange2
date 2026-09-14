@@ -122,11 +122,14 @@ valid_AR1 <- function(y, gamma, rho = NA_real_, sigma2 = 1,
     is.numeric(rho),
     length(sigma2) == 1L,
     is.numeric(sigma2),
-    is.finite(sigma2),
-    sigma2 > 0,
     length(profile_sigma) == 1L,
-    is.logical(profile_sigma)
+    is.logical(profile_sigma),
+    !is.na(profile_sigma)
   )
+
+  if (!profile_sigma) {
+    stopifnot(is.finite(sigma2), sigma2 > 0)
+  }
 
   if (is.na(rho)) {
     rho <- .valid_AR1_rho(y)

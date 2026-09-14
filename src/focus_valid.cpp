@@ -1,4 +1,4 @@
-#include "validity_tests.h"
+#include "svp_tests_gaussian.h"
 #include <Rcpp.h>
 #include <vector>
 

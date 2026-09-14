@@ -16,9 +16,10 @@ AR1_single_change(
   \item{rho}{An optional known AR(1) coefficient. If missing, it is estimated
   robustly.}
   \item{sigma2}{A positive innovation variance used for the known-variance
-  likelihood-ratio statistic.}
+  likelihood-ratio statistic. It is ignored when
+  \code{profile_sigma = TRUE}.}
   \item{profile_sigma}{If \code{TRUE}, profile the innovation variance and use
-  the log RSS-ratio statistic.}
+  the log RSS-ratio statistic; in this case, \code{sigma2} is ignored.}
 }
 \value{
 A list with the coefficient and variance used, test statistic, null and

@@ -11,17 +11,13 @@
  See DESCRIPTION for further information about the authors.
  */
 
-#ifndef ___FCOST_H___
-#define ___FCOST_H___
+#ifndef SVPCHANGE2_GAMMA_FOCUS_H
+#define SVPCHANGE2_GAMMA_FOCUS_H
 
-#include <iostream>
-//#include <list>
-#include <vector>
-#include <numeric>      // std::iota
 #include <cmath>
-//#include <algorithm>
 #include <functional>
 #include <memory>
+#include <vector>
 
 struct CUSUM {
   double Sn = 0.0;
@@ -50,78 +46,6 @@ struct Piece
     throw("This is only to set a gamma shape");
   };
 
-};
-
-struct PieceGau:Piece
-{
-  double eval (const CUSUM& cs, double x, const double& theta0) const
-  {
-    auto c = (double)(cs.n - tau);
-    auto S = (cs.Sn - St);
-
-    // std::cout << "running gaussian" << std::endl;
-
-    if (std::isnan(theta0))
-      return - 0.5 * c * x * x + S * x + m0;
-    else
-      return - 0.5 * c * x * x + S * x;
-
-  }
-};
-
-struct PieceBer:Piece
-{
-  double eval (const CUSUM& cs, double x, const double& theta0) const
-  {
-    auto c = (double)(cs.n - tau);
-    auto S = (cs.Sn - St);
-
-    // std::cout << "running bernoulli" << std::endl;
-
-    if (std::isnan(theta0))
-      return S * log(x) + (c - S) * log((1-x)) + m0;
-    else
-      return S * log(x/theta0) + (c - S) * log((1-x) / (1 - theta0));
-  }
-
-  // this is to avoid nans that might be quite annoying in comparisons
-  double argmax (const CUSUM &cs ) const
-  {
-    auto agm = (cs.Sn - St) / (double)(cs.n - tau);
-    if (agm == 0) {
-      return 0.000000001;
-    } else if (agm == 1) {
-      return 0.99999999;
-    } else {
-      return agm;
-    }
-  }
-
-};
-
-struct PiecePoi:Piece
-{
-  double eval (const CUSUM& cs, double x, const double& theta0) const {
-    auto c = (double)(cs.n - tau);
-    auto S = (cs.Sn - St);
-
-    if (std::isnan(theta0))
-      return - c * (x) + S * log(x) + m0;
-    else
-      return -c * (x - theta0) + S * log(x/theta0);
-
-  }
-
-  // this is to avoid nans that might be quite annoying in comparisons
-  double argmax (const CUSUM &cs ) const
-  {
-    auto agm = (cs.Sn - St) / (double)(cs.n - tau);
-    if (agm == 0) {
-      return 0.000000001;
-    } else {
-      return agm;
-    }
-  }
 };
 
 struct PieceGam:Piece {
@@ -159,7 +83,9 @@ struct Cost {
   Cost() = default;
 };
 
-struct Info {
+// Incremental two-sided FOCuS state used only by the Gamma-rate test.
+// The specific name avoids confusion with changepoint::Info.
+struct GammaFocusInfo {
   CUSUM cs;
   Cost Ql;
   Cost Qr;
@@ -169,7 +95,9 @@ struct Info {
   void update(const double& y); // Remove adp_max_check
   double statistic() const { return std::max(Ql.opt, Qr.opt); }
 
-  Info(std::function<std::unique_ptr<Piece>(double, int, double)> newP_, double theta0_)
+  GammaFocusInfo(
+      std::function<std::unique_ptr<Piece>(double, int, double)> newP_,
+      double theta0_)
     : newP(newP_), theta0(theta0_) {
     std::vector<std::unique_ptr<Piece>> initpsl;
     initpsl.reserve(16);
@@ -187,13 +115,5 @@ struct Info {
   }
 };
 
-int get_tau_max (const Cost&, const CUSUM&, const double& , const double&);
-// double argmax (const Piece &q, const CUSUM &cs );
-// double argmax (const PieceGam &q, const CUSUM &cs );
-//
-// double eval (const PieceGau &q, const CUSUM &cs, double x, const double &theta0);
-// double eval (const PieceBer &q, const CUSUM &cs, double x, const double &theta0);
-// void prune (Cost &Q, const CUSUM &cs, const double &theta0, std::function<bool(Piece, Piece)> cond);
-//Info focus_step (Info I, const double& y, std::function<std::unique_ptr<Piece>(double, int, double)> newP, const double& thres, const double& theta0, const bool& adp_max_check);
-
 #endif
+

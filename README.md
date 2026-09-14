@@ -26,7 +26,10 @@ remotes::install_local("path/to/svpChange2")
 library(svpChange2)
 set.seed(1)
 n <- 120
-y <- rep(c(0, 2, -1), each = n / 3) + rnorm(n)
+y <- ts_generator(
+  chpts = c(40, 80, 120), parameters = c(0, 2, -1),
+  sd_noise = 1, type = "gauss"
+)
 
 fit <- SVP(y, gamma = 1.5 * log(length(y)), test = "gaussian_mean")
 fit$changepoints
@@ -76,7 +79,7 @@ SVP(y, gamma = 10, test = "gaussian_mean",
     subtests = "both")
 ```
 
-The values are `"none"`, `"right"`, `"left"`, and `"both"`. Use `"none"`
+The values are `"none"`, `"right"`, and `"both"`. Use `"none"`
 for arbitrary validity rules unless the pruning assumptions have been
 established for the selected test.
 

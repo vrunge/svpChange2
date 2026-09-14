@@ -25,12 +25,14 @@ generally accept longer or less homogeneous segments.}
 to \code{"gaussian_mean"}.}
 
 \item{subtests}{Character scalar selecting the validity-pruning rules:
-\code{"both"} (default), \code{"right"}, \code{"left"}, or \code{"none"}.}
+\code{"both"} (default), \code{"right"}, or \code{"none"}.}
 
-\item{sigma2}{Positive finite innovation variance for the exact AR1 tests.
-It is the conditional/error variance of the new AR(1) shock, not the
-marginal variance of the observed series. It is used when the variance is
-fixed; it is not used to form the profiled statistic.}
+\item{sigma2}{Positive finite innovation variance for fixed-variance AR1
+tests (\code{"AR1"} with \code{profile_sigma = FALSE}, and
+\code{"AR1Focus"}). It is the conditional/error variance of the new AR(1)
+shock, not the marginal variance of the observed series. It is ignored by
+\code{"AR1Profile"} and by \code{"AR1"} when
+\code{profile_sigma = TRUE}.}
 
 \item{rho}{AR(1) coefficient for the AR1 tests. It must be finite and strictly
   between -1 and 1. If it is \code{NA}, it is estimated robustly from the full
@@ -62,16 +64,16 @@ A list containing:
 }
 \description{
 Segments a univariate series into the smallest number of segments that pass a
-selected validity test. The \code{"gaussian_mean"} test uses the FOCUS
-statistic at the current segment endpoint, as do the other built-in tests.
-Whether an invalid endpoint can be reconsidered at a later endpoint depends on
-\code{subtests}: with \code{subtests = "none"}, the candidate is retained and
-can recover; with \code{subtests = "right"} or \code{subtests = "both"}, it is
-removed immediately and cannot recover. With \code{subtests = "left"}, it can
-also be removed by the left-pruning rule when a later candidate fails. Among
-partitions with the same number of segments, it chooses the one with the
-smallest within-segment squared-error cost. Validity statistics are maintained
-incrementally in C++.
+selected validity test. A candidate segment is evaluated only at its current
+endpoint; its incremental state receives intervening observations, but earlier
+endpoints are not tested again. With \code{subtests = "none"}, an invalid
+endpoint does not remove the candidate and it can recover later. With
+\code{subtests = "right"} or \code{subtests = "both"}, it is removed
+immediately. With \code{subtests = "both"}, an invalid boundary also removes
+that boundary and every older boundary under the inclusive left-pruning rule.
+Among partitions with the same number of
+segments, it chooses the one with the smallest within-segment squared-error
+cost. Validity statistics are maintained incrementally in C++.
 }
 \details{
 The available validity tests are:
@@ -103,6 +105,51 @@ The available validity tests are:
   \item \code{"MedianMoodCost"}: Median-Mood rank-based cost test.
 }
 
+\subsection{Per-candidate update complexity}{
+Let \eqn{m} be the current length of one candidate segment and let
+\eqn{a_m} be the number of active functional-pruning pieces, with
+\eqn{a_m \le m}. A state update incorporates one new observation. A complete
+endpoint check also computes the statistic needed to decide validity. These
+are per-candidate costs; total SVP time also depends on the number of
+candidates examined under the selected \code{subtests} mode.
+
+\tabular{lll}{
+Test \tab State update \tab Update and endpoint check \cr
+\code{"gaussian_mean"} \tab amortized \eqn{O(1)}, worst \eqn{O(m)}
+  \tab expected \eqn{O(\log m)}, worst \eqn{O(m)} \cr
+\code{"gamma_rate"} \tab \eqn{O(a_m)}, worst \eqn{O(m)}
+  \tab \eqn{O(a_m)}, worst \eqn{O(m)} \cr
+\code{"gaussian_variance"} \tab \eqn{O(a_m)}, worst \eqn{O(m)}
+  \tab \eqn{O(a_m)}, worst \eqn{O(m)} \cr
+\code{"AR1"} \tab \eqn{O(1)} \tab \eqn{O(m)} \cr
+\code{"AR1Profile"} \tab \eqn{O(1)} \tab \eqn{O(m)} \cr
+\code{"AR1Focus"} \tab \eqn{O(a_m)}, worst \eqn{O(m)}
+  \tab \eqn{O(a_m)}, worst \eqn{O(m)} \cr
+\code{"quantile"} \tab \eqn{O(1)} \tab \eqn{O(1)} \cr
+\code{"quantileExact"} \tab expected \eqn{O(\log m)}, worst \eqn{O(m)}
+  \tab expected \eqn{O(\log m)}, worst \eqn{O(m)} \cr
+\code{"varCost"} \tab \eqn{O(1)} \tab \eqn{O(1)} \cr
+\code{"WilcoxonCost"} \tab \eqn{O(m)} \tab \eqn{O(m)} \cr
+\code{"MedianMoodCost"} \tab expected \eqn{O(\log m)}, worst \eqn{O(m)}
+  \tab \eqn{O(m)} \cr
+}
+
+For the Gaussian FOCuS test, the standard FOCuS result gives
+\eqn{E[a_m] = O(\log m)} under independent continuous noise with a constant
+or single-change mean. Its complete endpoint update is therefore expected
+\eqn{O(\log m)} and worst-case \eqn{O(m)}. The recurrence itself is amortized
+\eqn{O(1)}; the logarithmic term comes from maximizing over the active pieces.
+The Gamma, Gaussian-variance, and AR1Focus implementations use the same
+active-piece strategy and cost \eqn{O(a_m)}, but this package does not claim
+the Gaussian theorem for those different data models without additional
+model-specific assumptions.
+
+The genuinely constant-time complete endpoint updates are \code{"quantile"}
+and \code{"varCost"}. \code{"quantileExact"} has expected logarithmic cost.
+Functional-pruning tests can be fast when \eqn{a_m} remains small, but their
+worst-case endpoint cost is linear.
+}
+
 For an AR(1) series generated by \code{ts_generator(type = "gaussAR1")}, the
 model is \code{x[t] = mu[t] + e[t]}, with
 \code{e[t] = rho * e[t - 1] + eta[t]} and
@@ -123,10 +170,16 @@ to the transformed innovations; it is an approximation and can produce
 different boundaries near a change point.
 
 The \code{subtests} argument selects validity-based candidate pruning.
-\code{"right"} removes a candidate when its segment becomes invalid,
-\code{"left"} removes older candidates when a later candidate fails,
-\code{"both"} applies both rules, and \code{"none"} retains all candidates.
-Validity is still checked in every mode, and invalid candidates are never used.
+\code{"right"} removes a candidate when its current endpoint is invalid;
+when the one-segment candidate is valid, later candidates are deferred until
+it fails. If the shortcut ends, deferred candidates are replayed through the
+missed endpoints so that the right-pruning history is preserved; after that,
+they are tested only at the current endpoint. \code{"both"} additionally
+removes that boundary and every older boundary; candidates are examined from
+newest to oldest and the scan stops at the first invalid boundary.
+\code{"none"} retains all candidates and groups them by their predecessor
+segment count, stopping after the first group containing a valid candidate.
+Invalid candidates are never used in the current optimum.
 Pruning is exact only when the selected validity statistic has the
 corresponding monotonicity properties.
 

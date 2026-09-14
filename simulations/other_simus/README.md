@@ -7,7 +7,7 @@ power/runtime workflows:
   AR(1) methods.
 - `robust_validity_benchmark/`: the C++ validity-update microbenchmark.
 - `smuce_comparison/`: SMUCE comparisons.
-- `time_pruning/`: the four pruning-switch timing experiment.
+- `time_pruning/`: the three pruning-switch timing experiment.
 - `well_log/`: the real-data well-log application.
 - `maintenance/`: plot regeneration and calibration utilities.
 - `time_gaussian_legacy/`: superseded Gaussian timing scripts and their

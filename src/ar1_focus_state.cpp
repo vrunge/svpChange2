@@ -1,4 +1,4 @@
-#include "unified_ARpInfo.h"
+#include "ar1_focus_state.h"
 
 #include <algorithm>
 #include <array>
@@ -29,7 +29,6 @@ struct State {
 
   std::vector<Triple> triples;
   double max_val = -1.0;
-  int cpt = -1;
 };
 
 struct Ar1State {
@@ -138,7 +137,6 @@ inline double optimized_loglikelihood(const Triple& triple) {
 inline void compute_max(State& state, int current_n,
                         const Ar1State& detector, double sign) {
   state.max_val = -1.0;
-  state.cpt = -1;
 
   const double a0 = -0.5 * static_cast<double>(current_n) *
     detector.one_minus_rho * detector.one_minus_rho;
@@ -156,7 +154,6 @@ inline void compute_max(State& state, int current_n,
       (optimized_loglikelihood(triple) - null_loglikelihood);
     if (value > state.max_val) {
       state.max_val = value;
-      state.cpt = triple.tau;
     }
   }
 }
@@ -203,33 +200,20 @@ inline void update_side(State& state, Ar1State& detector, bool right_side,
 
 }  // namespace
 
-void arp_detector_update_impl(double observation,
-                              const std::vector<double>& rho,
-                              int p,
-                              int /* buf_max */,
-                              bool known_prechange,
-                              double /* n */,
-                              void*& opaque_states,
-                              double& out_max_stat,
-                              int& out_cpt) {
-  if (p != 1 || rho.size() != 1) {
-    throw std::invalid_argument("AR1Focus supports AR order 1 only");
-  }
-  if (known_prechange) {
-    throw std::invalid_argument("AR1Focus requires an unknown pre-change mean");
-  }
-
-  Ar1State* state = reinterpret_cast<Ar1State*>(opaque_states);
+void update_ar1_focus_state(double observation,
+                            double rho,
+                            void*& opaque_state,
+                            double& out_max_stat) {
+  Ar1State* state = reinterpret_cast<Ar1State*>(opaque_state);
   if (state == nullptr) {
-    state = new Ar1State(rho[0]);
-    opaque_states = state;
+    state = new Ar1State(rho);
+    opaque_state = state;
   }
 
   ++state->observation_count;
   if (state->observation_count == 1) {
     state->previous_observation = observation;
     out_max_stat = -1.0;
-    out_cpt = -1;
     return;
   }
 
@@ -239,7 +223,6 @@ void arp_detector_update_impl(double observation,
 
   if (state->innovation_count < 3) {
     out_max_stat = -1.0;
-    out_cpt = -1;
     return;
   }
 
@@ -256,11 +239,10 @@ void arp_detector_update_impl(double observation,
     if (candidate->max_val > best->max_val) best = candidate;
   }
   out_max_stat = best->max_val;
-  out_cpt = best->cpt;
 }
 
-void cleanup_arp_states(void* opaque_states) {
-  delete reinterpret_cast<Ar1State*>(opaque_states);
+void destroy_ar1_focus_state(void* opaque_state) {
+  delete reinterpret_cast<Ar1State*>(opaque_state);
 }
 
 }  // namespace changepoint
