@@ -169,7 +169,111 @@ test_that("AR1Focus reproduces exact AR1 SVP partitions", {
       PELT_pruning = FALSE
     )
 
+    # svp0() always ranks equal-length partitions with the Gaussian cost, so
+    # the boundary comparison against it uses SVP() on the same cost scale.
+    focus_gaussian <- SVP(
+      data, gamma = 8, test = "AR1Focus", rho = rho, sigma2 = 1,
+      subtests = "right", cost = "gaussian"
+    )
+
     expect_equal(focus$changepoints, exact$changepoints)
-    expect_equal(focus$changepoints, reference$changepoints)
+    expect_equal(focus_gaussian$changepoints, reference$changepoints)
+
+    # The cost never changes how many segments the validity test allows.
+    expect_equal(
+      length(focus$changepoints), length(reference$changepoints)
+    )
   }
+})
+
+test_that("the AR(1) cost sums the interior innovations of each segment", {
+  # Independent recomputation of the documented cost: within each segment
+  # (s, t], the sum of squared deviations of z[u] = y[u] - rho * y[u - 1] from
+  # their mean, taken over u = s + 2, ..., t.
+  ar1_partition_cost <- function(y, boundaries, rho) {
+    starts <- c(0L, head(boundaries, -1L))
+    sum(vapply(seq_along(boundaries), function(k) {
+      first <- starts[k] + 2L
+      last <- boundaries[k]
+      if (last < first) return(0)
+      z <- y[first:last] - rho * y[(first - 1L):(last - 1L)]
+      sum((z - mean(z))^2)
+    }, numeric(1)))
+  }
+
+  for (rho in c(0, 0.5, 0.85, -0.6)) {
+    set.seed(11)
+    data <- simulate_ar1_change(240, 120, c(0, 2), rho)
+    fit <- SVP(
+      data, gamma = 8, test = "AR1Focus", rho = rho, sigma2 = 1,
+      subtests = "right"
+    )
+    expect_equal(
+      fit$R[length(data), 1L],
+      ar1_partition_cost(data, fit$changepoints, rho)
+    )
+  }
+})
+
+test_that("cost = 'gaussian' keeps the previous squared-error ranking", {
+  gaussian_partition_cost <- function(y, boundaries) {
+    starts <- c(1L, head(boundaries, -1L) + 1L)
+    sum(vapply(seq_along(boundaries), function(k) {
+      segment <- y[starts[k]:boundaries[k]]
+      sum((segment - mean(segment))^2)
+    }, numeric(1)))
+  }
+
+  set.seed(12)
+  data <- simulate_ar1_change(240, 120, c(0, 2), 0.7)
+  fit <- SVP(
+    data, gamma = 8, test = "AR1Focus", rho = 0.7, sigma2 = 1,
+    subtests = "right", cost = "gaussian"
+  )
+  expect_equal(
+    fit$R[length(data), 1L], gaussian_partition_cost(data, fit$changepoints)
+  )
+
+  # The default for a non-AR(1) test is still the Gaussian cost.
+  set.seed(13)
+  independent <- ts_generator(
+    chpts = c(60, 120), parameters = c(0, 2), sd_noise = 1, type = "gauss"
+  )
+  expect_equal(
+    SVP(independent, gamma = 8)$changepoints,
+    SVP(independent, gamma = 8, cost = "gaussian")$changepoints
+  )
+})
+
+test_that("the AR(1) cost localises a strongly correlated change better", {
+  # Under strong serial dependence the Gaussian cost is misspecified, so it
+  # places the boundary of an otherwise identical partition less accurately.
+  rho <- 0.85
+  errors <- vapply(seq_len(120), function(seed) {
+    set.seed(2000 + seed)
+    data <- simulate_ar1_change(400, 200, c(0, 4), rho)
+    vapply(c("ar1", "gaussian"), function(cost) {
+      changepoints <- SVP(
+        data, gamma = 4 * log(400), test = "AR1Focus", rho = rho,
+        sigma2 = 1, subtests = "right", cost = cost
+      )$changepoints
+      internal <- changepoints[changepoints < 400]
+      if (length(internal) != 1L) return(NA_real_)
+      abs(internal - 200)
+    }, numeric(1))
+  }, numeric(2))
+
+  usable <- !is.na(errors[1L, ]) & !is.na(errors[2L, ])
+  expect_gt(sum(usable), 40L)
+  expect_lt(mean(errors[1L, usable]), mean(errors[2L, usable]))
+  expect_gt(
+    sum(errors[1L, usable] < errors[2L, usable]),
+    sum(errors[1L, usable] > errors[2L, usable])
+  )
+})
+
+test_that("cost accepts only the documented values", {
+  set.seed(14)
+  data <- simulate_ar1_change(120, 60, c(0, 2), 0.5)
+  expect_error(SVP(data, gamma = 8, cost = "ar2"), "Unknown cost type")
 })

@@ -38,6 +38,26 @@ ar1_null_stream <- function(n, rho, reps, seed) {
   lapply(seq_len(reps), function(i) simulate_ar1_null(n, rho, seed + i))
 }
 
+# DeCAFS 3.3.6 fixed the weight given to the first observation in its dynamic
+# programme: it used precision `1 / (sdNu^2 (1 - phi^2))` for `mu_1` instead of
+# the stationary AR(1) precision `(1 - phi^2) / sdNu^2` that the model implies.
+# At rho = 0.8 that over-weights y[1] by a factor 7.7, which buys an almost free
+# spurious change in the first few observations and inflates the penalty needed
+# to reach the null target from about 2.75*log(n) to 7.75*log(n). The study is
+# not comparable against earlier builds, so the version is checked up front.
+DECAFS_MIN_VERSION <- "3.3.6"
+
+require_decafs <- function() {
+  if (!requireNamespace("DeCAFS", quietly = TRUE)) {
+    stop("the optional package 'DeCAFS' is required for the AR(1) study")
+  }
+  if (utils::packageVersion("DeCAFS") < DECAFS_MIN_VERSION) {
+    stop("DeCAFS ", DECAFS_MIN_VERSION, " or later is required; found ",
+         utils::packageVersion("DeCAFS"))
+  }
+  invisible(TRUE)
+}
+
 wilson_interval <- function(successes, trials, level = 0.95) {
   z <- stats::qnorm(1 - (1 - level) / 2)
   p <- successes / trials
@@ -83,13 +103,20 @@ decafs_ar1_boundaries <- function(
   normalise_boundaries(fit$changepoints, n)
 }
 
+# SVP ranks the partitions that attain the smallest number of valid segments by
+# their within-segment cost, so `cost` moves the boundaries without changing how
+# many there are. "ar1" scores each segment by the sum of squared deviations of
+# its interior innovations z[u] = y[u] - rho*y[u-1], skipping the innovation
+# that straddles the boundary because its mean carries the jump. "gaussian" is
+# the squared-error cost on the raw observations, which is what this study used
+# before and which is misspecified under serial dependence.
 svp_ar1focus_boundaries <- function(
-    y, rho = AR1_RHO, constant = 1) {
+    y, rho = AR1_RHO, constant = 1, cost = "ar1") {
   n <- length(y)
   normalise_boundaries(
     SVP(
       y, constant * log(n), "AR1Focus", subtests = "right",
-      rho = rho, sigma2 = ar1_innovation_variance(rho)
+      rho = rho, sigma2 = ar1_innovation_variance(rho), cost = cost
     )$changepoints,
     n
   )
@@ -229,7 +256,7 @@ ar1_method_labels <- function(calibration) {
     "PELT inflated",
     "DeCAFS AR1",
     paste0(
-      "SVP AR1Focus / right / c = ",
+      "SVP AR1Focus + AR1 cost / right / c = ",
       formatC(calibration$selected$svp_constant, digits = 3L, format = "f")
     )
   )
@@ -242,14 +269,12 @@ run_ar1_calibration <- function(
     validation_reps = AR1_VALIDATION_REPS,
     calibration_seed = AR1_CALIBRATION_SEED,
     validation_seed = AR1_VALIDATION_SEED,
-    decafs_grid = seq(2, 12, 0.25),
+    decafs_grid = seq(1, 8, 0.25),
     approximate_grid = seq(0.5, 4, 0.05),
     svp_grid = seq(1, 8, 0.05),
     workers = 1L,
     write_outputs = TRUE) {
-  if (!requireNamespace("DeCAFS", quietly = TRUE)) {
-    stop("the optional package 'DeCAFS' is required for AR(1) calibration")
-  }
+  require_decafs()
   calibration_null <- ar1_null_stream(
     n, rho, calibration_reps, calibration_seed
   )

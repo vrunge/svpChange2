@@ -147,10 +147,10 @@ AR1_single_change <- function(data, gamma, rho = NA_real_, sigma2 = 1.0, profile
 #'
 #' Segments a univariate series into the smallest number of segments that pass
 #' a selected validity test. Among partitions with the same number of segments,
-#' the function chooses the one with the smallest within-segment squared-error
-#' cost. The validity statistics are maintained incrementally in C++, so this
-#' interface is considerably faster than supplying an R validity function to
-#' [svp0()].
+#' the function chooses the one with the smallest within-segment cost, selected
+#' with `cost`. The validity statistics are maintained incrementally in C++, so
+#' this interface is considerably faster than supplying an R validity function
+#' to [svp0()].
 #'
 #' A candidate segment is evaluated only at its current endpoint. The
 #' incremental state still receives every intervening observation, but a
@@ -246,6 +246,32 @@ AR1_single_change <- function(data, gamma, rho = NA_real_, sigma2 = 1.0, profile
 #' to the transformed innovations; it is an approximation and can produce
 #' different boundaries near a change point.
 #'
+#' ## Within-segment cost
+#'
+#' The validity test fixes the number of segments; `cost` decides between the
+#' partitions that attain it, so it controls where the boundaries are placed
+#' and not how many there are. Two cost series are available:
+#'
+#' * `"gaussian"`: the sum of squared deviations of `data[(s + 1):t]` from the
+#'   segment mean. This is the right choice for independent observations.
+#' * `"ar1"`: the same quantity for the innovations
+#'   `z[u] = data[u] - rho * data[u - 1]`. Inside a segment with constant mean
+#'   `mu` these have constant mean `(1 - rho) * mu`, so their sum of squared
+#'   deviations is the profiled conditional cost of the AR(1) mean model. The
+#'   innovation `z[s + 1]` that straddles the boundary is skipped, because its
+#'   mean is `mu_new - rho * mu_old` rather than `(1 - rho) * mu_new`; keeping
+#'   it would charge every segment for the jump in front of it and pull the
+#'   boundary away from the change. Costs are only ever compared across
+#'   partitions with the same number of segments `K`, and every such partition
+#'   skips exactly `K - 1` innovations, so the comparison remains fair.
+#'
+#' `"auto"`, the default, uses `"ar1"` for `"AR1"`, `"AR1Profile"`, and
+#' `"AR1Focus"`, and `"gaussian"` for every other test. Under serial
+#' dependence the Gaussian cost is misspecified, so an AR(1) test combined
+#' with the Gaussian cost detects the right number of changes but places them
+#' less accurately. Selecting `"ar1"` with a non-AR(1) test is allowed and
+#' uses `rho` in the same way.
+#'
 #' The "subtests" argument selects the validity-based candidate-pruning rules.
 #' "right" removes a candidate boundary when its current segment endpoint is
 #' invalid; "both" additionally removes that boundary and every older
@@ -288,14 +314,19 @@ AR1_single_change <- function(data, gamma, rho = NA_real_, sigma2 = 1.0, profile
 #'   is ignored by other tests.
 #' @param quantile Quantile level used by `"quantile"` and
 #'   `"quantileExact"`. It is ignored by other tests.
+#' @param cost Character scalar selecting the within-segment cost used to rank
+#'   partitions with the same number of segments: `"auto"` (default),
+#'   `"gaussian"`, or `"ar1"`. See Details. `"ar1"` uses `rho`, estimating it
+#'   from the full series with [AR1_rho()] when it is `NA`.
 #'
 #' @return A list with "changepoints" (the inclusive end of every segment,
 #'   including "length(data)"), "lastIndexSet" (zero-based candidate boundaries
 #'   remaining at termination, in decreasing order), "nb" (the number of
 #'   active candidates at the beginning of each endpoint iteration, before
 #'   pruning), "costQ" (always "NULL"), and "R". Row "t" of matrix "R"
-#'   stores the best cumulative squared-error cost, number of segments, and
-#'   previous boundary for `data[1:t]`.
+#'   stores the best cumulative cost on the scale selected by `cost`, the
+#'   number of segments, and the previous boundary for `data[1:t]`. The three
+#'   AR(1) tests also return "rho" and "sigma2".
 #'
 #' @examples
 #' # Gaussian mean: FOCuS test for independent Gaussian observations.
@@ -360,11 +391,17 @@ AR1_single_change <- function(data, gamma, rho = NA_real_, sigma2 = 1.0, profile
 #' SVP(ar1_data, gamma = 2 * log(length(ar1_data)),
 #'     test = "AR1Focus", rho = 0.7, sigma2 = 0.8^2)$changepoints
 #'
+#' # The same test ranking partitions with the Gaussian cost instead, which
+#' # keeps the number of segments but can move the boundaries.
+#' SVP(ar1_data, gamma = 2 * log(length(ar1_data)),
+#'     test = "AR1Focus", rho = 0.7, sigma2 = 0.8^2,
+#'     cost = "gaussian")$changepoints
+#'
 #' @seealso [svp0()] for arbitrary R validity functions, [AR1_rho()], and
 #'   [AR1_single_change()].
 #' @export
-SVP <- function(data, gamma, test = "gaussian_mean", subtests = "both", sigma2 = 1.0, rho = NA_real_, profile_sigma = FALSE, quantile = 0.01) {
-    .Call(`_svpChange2_SVP`, data, gamma, test, subtests, sigma2, rho, profile_sigma, quantile)
+SVP <- function(data, gamma, test = "gaussian_mean", subtests = "both", sigma2 = 1.0, rho = NA_real_, profile_sigma = FALSE, quantile = 0.01, cost = "auto") {
+    .Call(`_svpChange2_SVP`, data, gamma, test, subtests, sigma2, rho, profile_sigma, quantile, cost)
 }
 
 #' Smallest Valid Partitioning with a User-Defined Validity Test
@@ -459,3 +496,4 @@ svp0 <- function(data, gamma, test, subtests = "both", PELT_pruning = FALSE) {
 svp_smuce_cpp <- function(y, q, sigma2 = 1.0) {
     .Call(`_svpChange2_svp_smuce_cpp`, y, q, sigma2)
 }
+

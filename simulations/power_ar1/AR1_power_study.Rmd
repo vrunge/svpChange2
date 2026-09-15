@@ -55,6 +55,48 @@ stopifnot(
 )
 ```
 
+# DeCAFS version
+
+DeCAFS 3.3.6 is required, and `calibrate_ar1.R` stops against anything older.
+Equation (4) of the DeCAFS paper, and the package's own README, put the
+stationary AR(1) precision \((1-\phi^2)/\sigma_\nu^2\) on
+\((y_1-\mu_1)^2\); builds before 3.3.6 initialised the dynamic programme with
+\(1/(\sigma_\nu^2(1-\phi^2))\) instead. At `rho = 0.8` that over-weights the
+first observation by \((1-\rho^2)^{-2} = 7.7\), pinning \(\mu_1\) to
+\(y_1\) so that a change in the first few observations pays for itself. Under
+the null at `beta = 2 log(n)`, 37% of series then carried a false change and
+about half of those lay in the first 20 points. The calibration below removes
+them by raising the penalty, which is why the older build selected
+`7.75 log(n)` and lost power against every alternative. With the fix the
+selected constant is `2.75 log(n)`, next to the package default `2 log(n)`, and
+DeCAFS becomes the strongest method in the study.
+
+This is a defect in the DeCAFS implementation, not a tuning choice: on null
+series the older build returned a segmentation whose own penalised cost was
+strictly worse than the no-change segmentation under the cost the paper
+specifies.
+
+# The SVP within-segment cost
+
+SVP minimises the number of valid segments first and uses a within-segment cost
+only to rank the partitions that attain that number, so the cost decides where
+the boundaries go and never how many there are. The study passes
+`cost = "ar1"`, which scores a segment \((s, t]\) by the sum of squared
+deviations of its interior innovations \(Z_u = Y_u - \rho Y_{u-1}\),
+\(u = s+2, \dots, t\). The innovation \(Z_{s+1}\) that straddles the
+boundary is skipped: its mean is \(\mu_{new} - \rho \mu_{old}\) rather than
+\((1-\rho)\mu_{new}\), so charging a segment for it would pull the boundary
+away from the change. Every partition into \(K\) segments skips exactly
+\(K-1\) innovations, so the comparison SVP actually makes stays fair.
+
+Before this change the study used the Gaussian squared-error cost on the raw
+observations, which is misspecified under serial dependence.
+`compare_svp_costs.R` runs both costs over the full grid at the same calibrated
+threshold and writes `svp_cost_comparison.csv`. Segment counts agree on all
+8,400 series; F1 and signal MSE improve in every non-null pattern; and the mean
+localisation error given the correct number of changes falls from 1.61 to 0.31
+(`up`), 1.79 to 0.38 (`updown`), and 7.36 to 2.21 (`rand1`).
+
 # Calibration
 
 The DeCAFS AR(1) penalty is `beta = c_D log(n)` with
@@ -95,10 +137,11 @@ The final four methods are exactly:
 1. `PELT AR1 approximate`;
 2. `PELT inflated`;
 3. `DeCAFS AR1`;
-4. `SVP AR1Focus / right / c = ...`.
+4. `SVP AR1Focus + AR1 cost / right / c = ...`.
 
-The SVP call uses `test = "AR1Focus"` and `subtests = "right"` only. No
-multiscale or `both` configuration is part of this study.
+The SVP call uses `test = "AR1Focus"`, `subtests = "right"`, and
+`cost = "ar1"` only. No multiscale or `both` configuration is part of this
+study.
 
 # Reproduction
 
@@ -107,6 +150,7 @@ Run from the package root:
 ```{r reproduction, eval=FALSE}
 calibration <- run_ar1_calibration(workers = 8L)
 run_and_save_ar1(workers = 8L, calibration = calibration)
+source("simulations/power_ar1/compare_svp_costs.R")
 source("simulations/power_ar1/export_paper_figures.R")
 export_ar1_paper_figures(calibration = calibration)
 ```
@@ -116,3 +160,32 @@ paper-facing Section 5.3 PDFs are written to the sibling `SVP_NEW_Figures2`
 directory using the `5_` filename convention. The calibration table records
 all candidates, null F1 values, confidence intervals, seeds, selected values,
 and validation results.
+
+# Outcome
+
+```{r outcome}
+results <- readRDS(file.path("simulations", "power_ar1", "results.rds"))
+calibration <- readRDS(
+  file.path("simulations", "power_ar1", "ar1_calibration.rds")
+)
+knitr::kable(
+  dplyr::summarise(
+    dplyr::group_by(results, algorithm, pattern),
+    F1 = mean(F1), Precision = mean(Precision), Recall = mean(Recall),
+    CorrectNumCP = mean(CorrectNumCP), MSE = mean(MSE),
+    NumSegments = mean(NumSegments), .groups = "drop"
+  ),
+  digits = 3
+)
+```
+
+With DeCAFS corrected it is the strongest method on every non-null pattern,
+which is what the model predicts: it minimises the exact AR(1) penalised
+likelihood, while approximate PELT drops the dependence across segments and SVP
+keeps it only inside the validity test and the cost. Approximate PELT remains
+the weakest of the four. Its transformed series has a spike at every change,
+`Z_{tau+1} = Y_{tau+1} - rho Y_tau`, whose mean is
+`mu_new - rho mu_old`; PELT fits that spike with short spurious segments, which
+is why it detects around ten segments where the truth has eight and why its
+localisation error is large even when the segment count happens to be right.
+Skipping that innovation is exactly what the SVP AR(1) cost does.

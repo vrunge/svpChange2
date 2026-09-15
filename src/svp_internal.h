@@ -16,20 +16,100 @@
 // test used by the public dispatcher.
 namespace svp_detail {
 
-// Return the within-segment sum of squared errors for data[s + 1:t]. The
-// boundaries use the SVP convention: s is zero-based and t is one-based.
-inline double segment_cost(const std::vector<double>& S1,
-                           const std::vector<double>& S2,
-                           std::size_t s,
-                           std::size_t t)
+// Within-segment cost used to rank partitions that have the same number of
+// segments. Boundaries follow the SVP convention: s is zero-based and t is
+// one-based, so the pair (s, t) is the R segment data[(s + 1):t].
+//
+// Two cost series are supported. The Gaussian cost sums the squared deviations
+// of data[s + 1:t] from the segment mean. The AR(1) cost does the same for the
+// innovations z[u] = data[u] - rho * data[u - 1], which are the residuals of
+// the AR(1) mean model: inside a segment with constant mean mu they have a
+// constant mean (1 - rho) * mu, so their sum of squared deviations is the
+// profiled conditional cost of that segment.
+//
+// The AR(1) cost skips z[s + 1], the innovation that straddles the boundary.
+// That innovation has mean mu_new - rho * mu_old rather than
+// (1 - rho) * mu_new, so keeping it would charge every segment for the jump
+// that precedes it and pull boundaries away from the change. SVP compares
+// costs only within a fixed number of segments K, and every partition into K
+// segments skips exactly K - 1 innovations, so the comparison stays fair.
+class SegmentCost
 {
-  const double sum = S1[t] - S1[s];
-  const double length = static_cast<double>(t - s);
-  const double cost = (S2[t] - S2[s]) - sum * sum / length;
+public:
+  // Gaussian cost over data[s + 1:t].
+  static SegmentCost gaussian(const std::vector<double>& data)
+  {
+    return SegmentCost(data, 0, 0.0);
+  }
 
-  if (cost <= 0.0) return 0.0;
-  return cost;
-}
+  // AR(1) innovation cost over z[s + 2], ..., z[t].
+  static SegmentCost ar1(const std::vector<double>& data, double rho)
+  {
+    return SegmentCost(data, 1, rho);
+  }
+
+  double operator()(std::size_t s, std::size_t t) const
+  {
+    // A segment shorter than the offset contributes no cost term: it is a
+    // single observation under the Gaussian cost, or a segment with no
+    // interior innovation under the AR(1) cost.
+    if (t < s + offset_ + 1) return 0.0;
+
+    const std::size_t first = s + offset_;
+    const double sum = S1_[t] - S1_[first];
+    const double count = static_cast<double>(t - first);
+    const double cost = (S2_[t] - S2_[first]) - sum * sum / count;
+
+    if (cost <= 0.0) return 0.0;
+    return cost;
+  }
+
+private:
+  // offset is the number of leading observations of a segment that carry no
+  // cost term; rho is used only when offset is one.
+  SegmentCost(const std::vector<double>& data, std::size_t offset, double rho)
+    : offset_(offset), S1_(data.size() + 1, 0.0), S2_(data.size() + 1, 0.0)
+  {
+    const std::size_t n = data.size();
+
+    // Terms are indexed by their one-based endpoint u, and the first
+    // "offset_" of them do not exist. term(u) is the Gaussian observation
+    // data[u] or the AR(1) innovation data[u] - rho * data[u - 1].
+    std::vector<double> term(n + 1, 0.0);
+    for (std::size_t u = offset_ + 1; u <= n; ++u) {
+      term[u] = offset_ == 0 ? data[u - 1] : data[u - 1] - rho * data[u - 2];
+    }
+
+    // Center only the cost calculation. This does not alter the validity test
+    // or the data passed to it, but avoids cancellation in
+    // sum(term^2) - sum(term)^2 / count.
+    double center = 0.0;
+    std::size_t seen = 0;
+    for (std::size_t u = offset_ + 1; u <= n; ++u) {
+      ++seen;
+      center += (term[u] - center) / static_cast<double>(seen);
+    }
+    if (!std::isfinite(center)) {
+      Rcpp::stop("Unable to compute a stable center for the segment costs.");
+    }
+
+    for (std::size_t u = offset_ + 1; u <= n; ++u) {
+      const double centered = term[u] - center;
+      if (!std::isfinite(centered)) {
+        Rcpp::stop("The data range is too large for stable segment costs.");
+      }
+      S1_[u] = S1_[u - 1] + centered;
+      S2_[u] = S2_[u - 1] + centered * centered;
+      if (!std::isfinite(S1_[u]) || !std::isfinite(S2_[u])) {
+        Rcpp::stop("The data range is too large for stable segment costs.");
+      }
+    }
+  }
+
+  std::size_t offset_;
+  std::vector<double> S1_;
+  std::vector<double> S2_;
+};
 
 // State associated with one possible previous boundary in the dynamic
 // program. Each candidate owns an incremental validity-test object for its
@@ -156,14 +236,16 @@ inline Rcpp::NumericMatrix build_R_matrix(
   return R;
 }
 
-// Run SVP for one concrete validity-test type. Test-specific constructor
-// arguments are forwarded through Args (for example quantile, rho, or sigma2).
-// The public SVP() function validates arguments and selects the Test type before
-// calling this implementation.
+// Run SVP for one concrete validity-test type. "cost" ranks partitions that
+// have the same number of segments. Test-specific constructor arguments are
+// forwarded through Args (for example quantile, rho, or sigma2). The public
+// SVP() function validates arguments and selects the Test type and the cost
+// before calling this implementation.
 template <typename Test, typename... Args>
 Rcpp::List svp_impl(const std::vector<double>& data,
                     double gamma,
                     const std::string& subtests,
+                    const SegmentCost& cost,
                     Args&&... args)
 {
   const std::size_t n = data.size();
@@ -177,30 +259,6 @@ Rcpp::List svp_impl(const std::vector<double>& data,
   K[0] = 0;
 
   std::vector<std::size_t> nb(n);
-
-  // Center only the cost calculation. This does not alter the validity test
-  // or the data passed to it, but avoids cancellation in sum(y^2) - sum(y)^2/n.
-  double center = 0.0;
-  for (std::size_t i = 0; i < n; ++i) {
-    center += (data[i] - center) / static_cast<double>(i + 1);
-  }
-  if (!std::isfinite(center)) {
-    Rcpp::stop("Unable to compute a stable center for the segment costs.");
-  }
-
-  std::vector<double> S1(n + 1, 0.0);
-  std::vector<double> S2(n + 1, 0.0);
-  for (std::size_t i = 0; i < n; ++i) {
-    const double centered = data[i] - center;
-    if (!std::isfinite(centered)) {
-      Rcpp::stop("The data range is too large for stable segment costs.");
-    }
-    S1[i + 1] = S1[i] + centered;
-    S2[i + 1] = S2[i] + centered * centered;
-    if (!std::isfinite(S1[i + 1]) || !std::isfinite(S2[i + 1])) {
-      Rcpp::stop("The data range is too large for stable segment costs.");
-    }
-  }
 
   using Candidate = CandidateState<Test>;
   std::vector<Candidate> candidates;
@@ -244,8 +302,7 @@ Rcpp::List svp_impl(const std::vector<double>& data,
           update_to_endpoint(candidate, data, t, gamma);
           if (!candidate.valid) continue;
 
-          const double candidate_Q = Q[boundary] +
-            segment_cost(S1, S2, boundary, t);
+          const double candidate_Q = Q[boundary] + cost(boundary, t);
           if (!std::isfinite(candidate_Q)) continue;
 
           found_valid = true;
@@ -283,7 +340,7 @@ Rcpp::List svp_impl(const std::vector<double>& data,
         candidates.front().boundary == 0) {
       update_to_endpoint(candidates.front(), data, t, gamma);
       if (candidates.front().valid) {
-        Q[t] = segment_cost(S1, S2, 0, t);
+        Q[t] = cost(0, t);
         K[t] = 1;
         previous[t] = 0;
         candidates.emplace_back(t, std::forward<Args>(args)...);
@@ -327,8 +384,7 @@ Rcpp::List svp_impl(const std::vector<double>& data,
           continue;
         }
 
-        const double candidate_Q = Q[boundary] +
-          segment_cost(S1, S2, boundary, t);
+        const double candidate_Q = Q[boundary] + cost(boundary, t);
         if (std::isfinite(candidate_Q) &&
             is_better_candidate(candidate_K, candidate_Q,
                                 best_K, best_Q)) {
@@ -368,8 +424,7 @@ Rcpp::List svp_impl(const std::vector<double>& data,
           continue;
         }
 
-        const double candidate_Q = Q[boundary] +
-          segment_cost(S1, S2, boundary, t);
+        const double candidate_Q = Q[boundary] + cost(boundary, t);
         if (std::isfinite(candidate_Q) && candidate_Q < best_Q) {
           best_Q = candidate_Q;
           best_s = boundary;

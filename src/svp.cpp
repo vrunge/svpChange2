@@ -30,6 +30,24 @@ enum class TestKind {
   AR1Focus
 };
 
+// Within-segment cost used to rank partitions with the same segment count.
+enum class CostKind {
+  Auto,
+  Gaussian,
+  AR1
+};
+
+// Convert the user-facing cost name to the corresponding internal enum value.
+CostKind parse_cost_kind(const std::string& cost)
+{
+  if (cost == "auto") return CostKind::Auto;
+  if (cost == "gaussian") return CostKind::Gaussian;
+  if (cost == "ar1") return CostKind::AR1;
+
+  stop("Unknown cost type: '%s'.", cost.c_str());
+  return CostKind::Auto;
+}
+
 // Convert the user-facing test name to the corresponding internal enum value.
 TestKind parse_test_kind(const std::string& test)
 {
@@ -59,10 +77,10 @@ TestKind parse_test_kind(const std::string& test)
 //'
 //' Segments a univariate series into the smallest number of segments that pass
 //' a selected validity test. Among partitions with the same number of segments,
-//' the function chooses the one with the smallest within-segment squared-error
-//' cost. The validity statistics are maintained incrementally in C++, so this
-//' interface is considerably faster than supplying an R validity function to
-//' [svp0()].
+//' the function chooses the one with the smallest within-segment cost, selected
+//' with `cost`. The validity statistics are maintained incrementally in C++, so
+//' this interface is considerably faster than supplying an R validity function
+//' to [svp0()].
 //'
 //' A candidate segment is evaluated only at its current endpoint. The
 //' incremental state still receives every intervening observation, but a
@@ -158,6 +176,32 @@ TestKind parse_test_kind(const std::string& test)
 //' to the transformed innovations; it is an approximation and can produce
 //' different boundaries near a change point.
 //'
+//' ## Within-segment cost
+//'
+//' The validity test fixes the number of segments; `cost` decides between the
+//' partitions that attain it, so it controls where the boundaries are placed
+//' and not how many there are. Two cost series are available:
+//'
+//' * `"gaussian"`: the sum of squared deviations of `data[(s + 1):t]` from the
+//'   segment mean. This is the right choice for independent observations.
+//' * `"ar1"`: the same quantity for the innovations
+//'   `z[u] = data[u] - rho * data[u - 1]`. Inside a segment with constant mean
+//'   `mu` these have constant mean `(1 - rho) * mu`, so their sum of squared
+//'   deviations is the profiled conditional cost of the AR(1) mean model. The
+//'   innovation `z[s + 1]` that straddles the boundary is skipped, because its
+//'   mean is `mu_new - rho * mu_old` rather than `(1 - rho) * mu_new`; keeping
+//'   it would charge every segment for the jump in front of it and pull the
+//'   boundary away from the change. Costs are only ever compared across
+//'   partitions with the same number of segments `K`, and every such partition
+//'   skips exactly `K - 1` innovations, so the comparison remains fair.
+//'
+//' `"auto"`, the default, uses `"ar1"` for `"AR1"`, `"AR1Profile"`, and
+//' `"AR1Focus"`, and `"gaussian"` for every other test. Under serial
+//' dependence the Gaussian cost is misspecified, so an AR(1) test combined
+//' with the Gaussian cost detects the right number of changes but places them
+//' less accurately. Selecting `"ar1"` with a non-AR(1) test is allowed and
+//' uses `rho` in the same way.
+//'
 //' The "subtests" argument selects the validity-based candidate-pruning rules.
 //' "right" removes a candidate boundary when its current segment endpoint is
 //' invalid; "both" additionally removes that boundary and every older
@@ -200,14 +244,19 @@ TestKind parse_test_kind(const std::string& test)
 //'   is ignored by other tests.
 //' @param quantile Quantile level used by `"quantile"` and
 //'   `"quantileExact"`. It is ignored by other tests.
+//' @param cost Character scalar selecting the within-segment cost used to rank
+//'   partitions with the same number of segments: `"auto"` (default),
+//'   `"gaussian"`, or `"ar1"`. See Details. `"ar1"` uses `rho`, estimating it
+//'   from the full series with [AR1_rho()] when it is `NA`.
 //'
 //' @return A list with "changepoints" (the inclusive end of every segment,
 //'   including "length(data)"), "lastIndexSet" (zero-based candidate boundaries
 //'   remaining at termination, in decreasing order), "nb" (the number of
 //'   active candidates at the beginning of each endpoint iteration, before
 //'   pruning), "costQ" (always "NULL"), and "R". Row "t" of matrix "R"
-//'   stores the best cumulative squared-error cost, number of segments, and
-//'   previous boundary for `data[1:t]`.
+//'   stores the best cumulative cost on the scale selected by `cost`, the
+//'   number of segments, and the previous boundary for `data[1:t]`. The three
+//'   AR(1) tests also return "rho" and "sigma2".
 //'
 //' @examples
 //' # Gaussian mean: FOCuS test for independent Gaussian observations.
@@ -272,6 +321,12 @@ TestKind parse_test_kind(const std::string& test)
 //' SVP(ar1_data, gamma = 2 * log(length(ar1_data)),
 //'     test = "AR1Focus", rho = 0.7, sigma2 = 0.8^2)$changepoints
 //'
+//' # The same test ranking partitions with the Gaussian cost instead, which
+//' # keeps the number of segments but can move the boundaries.
+//' SVP(ar1_data, gamma = 2 * log(length(ar1_data)),
+//'     test = "AR1Focus", rho = 0.7, sigma2 = 0.8^2,
+//'     cost = "gaussian")$changepoints
+//'
 //' @seealso [svp0()] for arbitrary R validity functions, [AR1_rho()], and
 //'   [AR1_single_change()].
 //' @export
@@ -283,7 +338,8 @@ List SVP(std::vector<double> data,
          double sigma2 = 1.0,
          double rho = NA_REAL,
          bool profile_sigma = false,
-         double quantile = 0.01)
+         double quantile = 0.01,
+         std::string cost = "auto")
 {
   if (data.empty()) {
     stop("'data' must contain at least one observation.");
@@ -299,6 +355,7 @@ List SVP(std::vector<double> data,
   }
 
   const TestKind test_kind = parse_test_kind(test);
+  const CostKind cost_kind = parse_cost_kind(cost);
 
   if (subtests != "both" && subtests != "right" && subtests != "none") {
     stop("'subtests' must be one of 'both', 'right', or 'none'.");
@@ -316,27 +373,55 @@ List SVP(std::vector<double> data,
     stop("'data' must be strictly positive for test 'gamma_rate'.");
   }
 
+  const bool ar1_test = test_kind == TestKind::AR1 ||
+    test_kind == TestKind::AR1Profile ||
+    test_kind == TestKind::AR1Focus;
+  const bool ar1_cost = cost_kind == CostKind::AR1 ||
+    (cost_kind == CostKind::Auto && ar1_test);
+
+  // The AR(1) cost and the three AR(1) tests share one rho, so it is resolved
+  // once here. It is estimated from the full series when it is not supplied.
+  double rho_used = rho;
+  if (ar1_test || ar1_cost) {
+    if (NumericVector::is_na(rho_used)) {
+      rho_used = svp_detail::robust_ar1_rho(data);
+    }
+    if (!std::isfinite(rho_used) || std::fabs(rho_used) >= 1.0) {
+      stop("rho must be finite and strictly between -1 and 1");
+    }
+  }
+
+  const svp_detail::SegmentCost segment_cost = ar1_cost ?
+    svp_detail::SegmentCost::ar1(data, rho_used) :
+    svp_detail::SegmentCost::gaussian(data);
+
   switch (test_kind) {
   case TestKind::GaussianMean:
-    return svp_detail::svp_impl<GaussianMean>(data, gamma, subtests);
+    return svp_detail::svp_impl<GaussianMean>(data, gamma, subtests,
+                                              segment_cost);
   case TestKind::GammaRate:
-    return svp_detail::svp_impl<GammaRate>(data, gamma, subtests);
+    return svp_detail::svp_impl<GammaRate>(data, gamma, subtests,
+                                          segment_cost);
   case TestKind::GaussianVariance:
-    return svp_detail::svp_impl<GaussianVariance>(data, gamma, subtests);
+    return svp_detail::svp_impl<GaussianVariance>(data, gamma, subtests,
+                                                 segment_cost);
   case TestKind::QuantileExact:
     return svp_detail::svp_impl<QuantileCostExact>(
-      data, gamma, subtests, quantile
+      data, gamma, subtests, segment_cost, quantile
     );
   case TestKind::Quantile:
     return svp_detail::svp_impl<QuantileCost>(
-      data, gamma, subtests, quantile
+      data, gamma, subtests, segment_cost, quantile
     );
   case TestKind::VarCost:
-    return svp_detail::svp_impl<VarianceCost>(data, gamma, subtests);
+    return svp_detail::svp_impl<VarianceCost>(data, gamma, subtests,
+                                             segment_cost);
   case TestKind::WilcoxonCost:
-    return svp_detail::svp_impl<WilcoxonCost>(data, gamma, subtests);
+    return svp_detail::svp_impl<WilcoxonCost>(data, gamma, subtests,
+                                             segment_cost);
   case TestKind::MedianMoodCost:
-    return svp_detail::svp_impl<MedianMoodCost>(data, gamma, subtests);
+    return svp_detail::svp_impl<MedianMoodCost>(data, gamma, subtests,
+                                               segment_cost);
   case TestKind::AR1:
   case TestKind::AR1Profile:
   case TestKind::AR1Focus: {
@@ -346,15 +431,12 @@ List SVP(std::vector<double> data,
         (!std::isfinite(sigma2) || sigma2 <= 0.0)) {
       stop("sigma2 must be finite and positive");
     }
-    const double rho_used = NumericVector::is_na(rho) ?
-      svp_detail::robust_ar1_rho(data) : rho;
-    if (!std::isfinite(rho_used) || std::fabs(rho_used) >= 1.0)
-      stop("rho must be finite and strictly between -1 and 1");
     if (test_kind == TestKind::AR1Focus) {
       List result = svp_detail::svp_impl<AR1FocusMeanChange>(
         data,
         gamma,
         subtests,
+        segment_cost,
         rho_used,
         sigma2
       );
@@ -366,6 +448,7 @@ List SVP(std::vector<double> data,
       data,
       gamma,
       subtests,
+      segment_cost,
       rho_used,
       sigma2,
       profiles_sigma

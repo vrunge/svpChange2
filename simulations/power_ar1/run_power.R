@@ -21,23 +21,19 @@ fit_ar1_methods <- function(y, rho = AR1_RHO, calibration) {
   }
   n <- length(y)
   selected <- calibration$selected
-  svp_label <- ar1_method_labels(calibration)[[4L]]
   fits <- list(
-    "PELT AR1 approximate" = pelt_ar1_approximate_boundaries(
+    pelt_ar1_approximate_boundaries(
       y, rho, penalty = selected$approximate_constant * log(n)
     ),
-    "PELT inflated" = pelt_inflated_boundaries(y, rho),
-    "DeCAFS AR1" = decafs_ar1_boundaries(
+    pelt_inflated_boundaries(y, rho),
+    decafs_ar1_boundaries(
       y, rho, penalty = selected$decafs_constant * log(n)
     ),
-    svp_label = svp_ar1focus_boundaries(
-      y, rho, constant = selected$svp_constant
+    svp_ar1focus_boundaries(
+      y, rho, constant = selected$svp_constant, cost = "ar1"
     )
   )
-  names(fits) <- c(
-    "PELT AR1 approximate", "PELT inflated", "DeCAFS AR1", svp_label
-  )
-  fits
+  stats::setNames(fits, ar1_method_labels(calibration))
 }
 
 run_ar1_power <- function(
@@ -48,6 +44,7 @@ run_ar1_power <- function(
     workers = power_default_workers(),
     seed = 123L,
     calibration = NULL) {
+  require_decafs()
   if (is.null(calibration)) {
     calibration_path <- file.path(AR1_ROOT, "ar1_calibration.rds")
     calibration <- if (file.exists(calibration_path)) {
@@ -76,6 +73,7 @@ run_ar1_power <- function(
 
 run_and_save_ar1 <- function(
     workers = power_default_workers(), calibration = NULL) {
+  require_decafs()
   if (is.null(calibration)) {
     calibration_path <- file.path(AR1_ROOT, "ar1_calibration.rds")
     calibration <- if (file.exists(calibration_path)) {

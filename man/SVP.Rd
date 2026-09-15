@@ -11,7 +11,8 @@ SVP(
   sigma2 = 1,
   rho = NA_real_,
   profile_sigma = FALSE,
-  quantile = 0.01
+  quantile = 0.01,
+  cost = "auto"
 )
 }
 \arguments{
@@ -47,6 +48,12 @@ is ignored by other tests.}
 
 \item{quantile}{Quantile level used by \code{"quantile"} and
 \code{"quantileExact"}; ignored by other tests.}
+
+\item{cost}{Character scalar selecting the within-segment cost used to rank
+partitions with the same number of segments: \code{"auto"} (default),
+\code{"gaussian"}, or \code{"ar1"}. See Details. \code{"ar1"} uses
+\code{rho}, estimating it from the full series with \code{AR1_rho()} when it
+is \code{NA}.}
 }
 \value{
 A list containing:
@@ -58,8 +65,9 @@ A list containing:
   endpoint iteration, before pruning.}
   \item{costQ}{Currently \code{NULL}.}
   \item{R}{Dynamic-programming matrix. Row \code{t} contains the best
-  cumulative squared-error cost, number of segments, and previous boundary for
-  \code{data[1:t]}.}
+  cumulative cost on the scale selected by \code{cost}, the number of
+  segments, and the previous boundary for \code{data[1:t]}.}
+  \item{rho, sigma2}{Returned by the three AR(1) tests only.}
 }
 }
 \description{
@@ -72,8 +80,8 @@ endpoint does not remove the candidate and it can recover later. With
 immediately. With \code{subtests = "both"}, an invalid boundary also removes
 that boundary and every older boundary under the inclusive left-pruning rule.
 Among partitions with the same number of
-segments, it chooses the one with the smallest within-segment squared-error
-cost. Validity statistics are maintained incrementally in C++.
+segments, it chooses the one with the smallest within-segment cost, selected
+with \code{cost}. Validity statistics are maintained incrementally in C++.
 }
 \details{
 The available validity tests are:
@@ -169,6 +177,35 @@ change models. This is useful when the innovation scale is unknown.
 to the transformed innovations; it is an approximation and can produce
 different boundaries near a change point.
 
+\subsection{Within-segment cost}{
+The validity test fixes the number of segments; \code{cost} decides between
+the partitions that attain it, so it controls where the boundaries are placed
+and not how many there are. Two cost series are available:
+\itemize{
+  \item \code{"gaussian"}: the sum of squared deviations of
+  \code{data[(s + 1):t]} from the segment mean. This is the right choice for
+  independent observations.
+  \item \code{"ar1"}: the same quantity for the innovations
+  \code{z[u] = data[u] - rho * data[u - 1]}. Inside a segment with constant
+  mean \code{mu} these have constant mean \code{(1 - rho) * mu}, so their sum
+  of squared deviations is the profiled conditional cost of the AR(1) mean
+  model. The innovation \code{z[s + 1]} that straddles the boundary is
+  skipped, because its mean is \code{mu_new - rho * mu_old} rather than
+  \code{(1 - rho) * mu_new}; keeping it would charge every segment for the
+  jump in front of it and pull the boundary away from the change. Costs are
+  only ever compared across partitions with the same number of segments
+  \code{K}, and every such partition skips exactly \code{K - 1} innovations,
+  so the comparison remains fair.
+}
+
+\code{"auto"}, the default, uses \code{"ar1"} for \code{"AR1"},
+\code{"AR1Profile"}, and \code{"AR1Focus"}, and \code{"gaussian"} for every
+other test. Under serial dependence the Gaussian cost is misspecified, so an
+AR(1) test combined with the Gaussian cost detects the right number of changes
+but places them less accurately. Selecting \code{"ar1"} with a non-AR(1) test
+is allowed and uses \code{rho} in the same way.
+}
+
 The \code{subtests} argument selects validity-based candidate pruning.
 \code{"right"} removes a candidate when its current endpoint is invalid;
 when the one-segment candidate is valid, later candidates are deferred until
@@ -252,6 +289,12 @@ SVP(ar1_data, gamma = 2 * log(length(ar1_data)),
 # Faster approximate AR(1) FOCUS test on the transformed innovations.
 SVP(ar1_data, gamma = 2 * log(length(ar1_data)),
     test = "AR1Focus", rho = 0.7, sigma2 = 0.8^2)$changepoints
+
+# The same test ranking partitions with the Gaussian cost instead, which keeps
+# the number of segments but can move the boundaries.
+SVP(ar1_data, gamma = 2 * log(length(ar1_data)),
+    test = "AR1Focus", rho = 0.7, sigma2 = 0.8^2,
+    cost = "gaussian")$changepoints
 }
 \seealso{
 \code{\link{svp0}}, \code{\link{AR1_rho}}, \code{\link{AR1_single_change}}
