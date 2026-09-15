@@ -12,6 +12,7 @@ library(ggplot2)
 
 source(file.path("simulations", "power_common.R"))
 source(file.path("simulations", "time_common.R"))
+source(file.path("simulations", "gaussian_common.R"))
 source(file.path("simulations", "other_simus", "maintenance",
                  "calibrate_current_svp.R"))
 
@@ -19,6 +20,7 @@ FIGURE_ROOT <- normalizePath(
   file.path("..", "SVP_NEW_Figures2"), mustWork = FALSE
 )
 FIGURE_PLOTS <- FIGURE_ROOT
+FIGURE_BASE_SIZE <- 14
 
 fmt_constant <- function(family, value, n = 1000L, true_segments = 8L) {
   family <- tolower(family)
@@ -98,14 +100,15 @@ fit_robust_refresh <- function(y, true_segments, selected) {
   boundaries
 }
 
-run_gaussian_refresh <- function(selected, workers = power_default_workers()) {
-  run_power_grid(
-    n = 1000L, jump_sizes = seq(0.1, 2, 0.1), reps = 100L,
-    simulate_noise = stats::rnorm,
-    fit_methods = function(y, true_segments) {
-      fit_gaussian_refresh(y, selected)
-    },
-    tolerance = round(1000 * 0.0025), workers = workers, seed = 123L
+run_gaussian_refresh <- function(selected = NULL,
+                                 workers = power_default_workers()) {
+  old_flag <- Sys.getenv("SVP_RUN_SIMULATIONS", unset = NA_character_)
+  Sys.setenv(SVP_RUN_SIMULATIONS = "false")
+  source(file.path("simulations", "power_gaussian", "run_power.R"))
+  if (is.na(old_flag)) Sys.unsetenv("SVP_RUN_SIMULATIONS") else
+    Sys.setenv(SVP_RUN_SIMULATIONS = old_flag)
+  run_gaussian_power(
+    workers = workers, constants = read_gaussian_calibration()
   )
 }
 
@@ -170,7 +173,7 @@ plot_metric_refresh <- function(results, metric, y_label, log_y = FALSE) {
     geom_line(linewidth = 0.75) + geom_point(size = 1.1) +
     facet_wrap(~pattern, nrow = 2L) +
     labs(x = "Jump size", y = y_label, colour = "Algorithm") +
-    theme_minimal(base_size = 11) +
+    theme_minimal(base_size = FIGURE_BASE_SIZE) +
     theme(panel.grid.minor = element_blank())
   if (log_y) p <- p + scale_y_continuous(trans = scales::pseudo_log_trans())
   p
@@ -195,7 +198,7 @@ plot_distribution_refresh <- function(results, n, selected_jump) {
                    linewidth = 0.15) +
     facet_grid(pattern ~ algorithm) +
     labs(x = "Sequence position", y = "Frequency of detected change") +
-    theme_minimal(base_size = 10) +
+    theme_minimal(base_size = FIGURE_BASE_SIZE) +
     theme(panel.grid.minor = element_blank(), legend.position = "none")
 }
 
@@ -213,7 +216,7 @@ plot_scenarios_refresh <- function(n, jump, noise_fun) {
     geom_line(aes(y = mean), colour = "red", linewidth = 0.7) +
     facet_wrap(~pattern, nrow = 2L) +
     labs(x = "Time (Index)", y = "Value") +
-    theme_minimal(base_size = 11) +
+    theme_minimal(base_size = FIGURE_BASE_SIZE) +
     theme(panel.grid.minor = element_blank(), legend.position = "none")
 }
 
@@ -270,7 +273,7 @@ plot_runtime_refresh <- function(results, x = c("n", "k"), methods = NULL,
     geom_smooth(method = "loess", se = TRUE, na.rm = TRUE) +
     labs(x = if (x == "n") "Sequence length" else "Number of true changes",
          y = "Time (s)", colour = "Method") +
-    theme_minimal(base_size = 11)
+    theme_minimal(base_size = FIGURE_BASE_SIZE)
   if (log_x) p <- p + scale_x_log10()
   if (log_y) p <- p + scale_y_log10()
   p
@@ -290,7 +293,7 @@ rename_quick_results <- function(gaussian, robust, ar1) {
     config_label("gaussian", "both", 1.8)
 
   robust$algorithm[robust$algorithm == "SVP MedianMood"] <-
-    "SVP MedianMood / right / alpha = 0.01 (K-dependent threshold)"
+    "SVP MedianMood / right / alpha = 0.01"
   robust$algorithm[robust$algorithm == "SVP Wilcoxon"] <-
     config_label("wilcoxon", "right", 1.5)
   robust$algorithm[robust$algorithm == "SVP Wilcoxon multiscale"] <-
@@ -317,19 +320,27 @@ write_runtime_figures <- function(root = FIGURE_ROOT) {
     file.path("simulations", "time_ar1", "ar1_time_results.csv")
   )
   if (!is.null(g)) {
+    if (any(grepl("^SVP Gaussian / none /", g$method))) {
+      old_flag <- Sys.getenv("SVP_RUN_SIMULATIONS", unset = NA_character_)
+      Sys.setenv(SVP_RUN_SIMULATIONS = "false")
+      source(file.path("simulations", "time_gaussian", "run_time.R"))
+      if (is.na(old_flag)) Sys.unsetenv("SVP_RUN_SIMULATIONS") else
+        Sys.setenv(SVP_RUN_SIMULATIONS = old_flag)
+      plot_gaussian_paper_time(g, root)
+    } else {
     g$method[g$method == "SVP BIC multiscale"] <-
-      "SVP Gaussian / both / 1.800 log(n)"
+      "SVP Gaussian / both / c = 1.800"
     g$method[g$method == "SVP BIC calibrated"] <-
-      "SVP Gaussian / right / 1.500 log(n)"
+      "SVP Gaussian / right / c = 1.500"
     g$method[g$method == "SVP BIC"] <-
-      "SVP Gaussian / right / 2.000 log(n)"
+      "SVP Gaussian / right / c = 2.000"
     g$experiment[g$experiment == "vary_k"] <- "vary_k"
     p <- plot_runtime_refresh(g, "n")
     ggsave(file.path(root, "2_gaussian_time_vs_n.pdf"), p, width = 8, height = 5)
     ggsave(file.path(root, "2_gaussian_time_vs_detected.pdf"),
            ggplot(g, aes(detected, time, colour = method)) +
              geom_smooth(method = "loess", se = TRUE, na.rm = TRUE) +
-             scale_y_log10() + theme_minimal(base_size = 11) +
+             scale_y_log10() + theme_minimal(base_size = FIGURE_BASE_SIZE) +
              labs(x = "Detected number of segments", y = "Time (s, log scale)",
                   colour = "Method"), width = 8, height = 5)
     ggsave(file.path(root, "2_exp1_time_vs_n.pdf"), p, width = 8, height = 5)
@@ -338,39 +349,40 @@ write_runtime_figures <- function(root = FIGURE_ROOT) {
     ggsave(file.path(root, "2_time_vs_detected_changes.pdf"),
            ggplot(g, aes(detected, time, colour = method)) +
              geom_smooth(method = "loess", se = TRUE, na.rm = TRUE) +
-             scale_y_log10() + theme_minimal(base_size = 11) +
+             scale_y_log10() + theme_minimal(base_size = FIGURE_BASE_SIZE) +
              labs(x = "Detected number of changes", y = "Time (s, log scale)",
                   colour = "Method"), width = 8, height = 5)
+    }
   }
   if (!is.null(r)) {
     r$method[r$method == "SVP BIC multiscale"] <-
-      "SVP Gaussian / both / 1.500 log(n)"
+      "SVP Gaussian / both / c = 1.500"
     r$method[r$method == "SVP Wilcoxon"] <-
-      "SVP Wilcoxon / right / 2.000 log(n)"
+      "SVP Wilcoxon / right / c = 2.000"
     r$method[r$method == "SVP MedianMood"] <-
-      "SVP MedianMood / right / 2.000 log(n)"
+      "SVP MedianMood / right / c = 2.000"
     ggsave(file.path(root, "2_robust_time_vs_n.pdf"),
            plot_runtime_refresh(r, "n"), width = 8, height = 5)
     ggsave(file.path(root, "2_robust_time_vs_detected.pdf"),
            ggplot(r, aes(detected, time, colour = method)) +
              geom_smooth(method = "loess", se = TRUE, na.rm = TRUE) +
-             scale_y_log10() + theme_minimal(base_size = 11) +
+             scale_y_log10() + theme_minimal(base_size = FIGURE_BASE_SIZE) +
              labs(x = "Detected number of segments", y = "Time (s, log scale)",
                   colour = "Method"), width = 8, height = 5)
   }
   if (!is.null(a)) {
     a$method[a$method == "SVP AR1 estimated rho"] <-
-      "SVP AR1 / right / 2.000 log(n) (estimated rho)"
+      "SVP AR1 estimated rho / right / c = 2.000"
     a$method[a$method == "SVP AR1"] <-
-      "SVP AR1 / right / 2.000 log(n)"
+      "SVP AR1 / right / c = 2.000"
     a$method[a$method == "SVP BIC"] <-
-      "SVP Gaussian / right / 2.000 log(n)"
+      "SVP Gaussian / right / c = 2.000"
     ggsave(file.path(root, "2_ar1_time_vs_n.pdf"),
            plot_runtime_refresh(a, "n"), width = 8, height = 5)
     ggsave(file.path(root, "2_ar1_time_vs_detected.pdf"),
            ggplot(a, aes(detected, time, colour = method)) +
              geom_smooth(method = "loess", se = TRUE, na.rm = TRUE) +
-             scale_y_log10() + theme_minimal(base_size = 11) +
+             scale_y_log10() + theme_minimal(base_size = FIGURE_BASE_SIZE) +
              labs(x = "Detected number of segments", y = "Time (s, log scale)",
                   colour = "Method"), width = 8, height = 5)
   }
@@ -409,7 +421,10 @@ write_well_log_figure <- function(root = FIGURE_ROOT, wilcoxon_row = NULL,
   }
   out <- file.path(root, "4_segmentation_logdata.pdf")
   pdf(out, width = 10, height = 8)
-  op <- par(mfrow = c(4, 1), mar = c(4, 4, 2, 0))
+  op <- par(
+    mfrow = c(4, 1), mar = c(4.8, 4.8, 2.8, 0.5),
+    cex.axis = 1.35, cex.lab = 1.4, cex.main = 1.35
+  )
   on.exit({par(op); dev.off()}, add = TRUE)
   plot_piecewise_constant(y, pelt@cpts, "PELT", 4)
   plot_piecewise_constant(y, rfpop$t.est, "Robust FPOP", 3)
@@ -429,14 +444,18 @@ write_well_log_figure <- function(root = FIGURE_ROOT, wilcoxon_row = NULL,
 canonical_algorithm <- function(x) {
   dplyr::case_when(
     x == "PELT" ~ "PELT",
-    grepl("SVP Gaussian / right / 1\\.500", x) ~ "SVP BIC calibrated",
-    grepl("SVP Gaussian / right / 2\\.000", x) ~ "SVP BIC",
-    grepl("SVP Gaussian / both /", x) ~ "SVP BIC multiscale",
+    x == "SVP BIC calibrated" |
+      grepl("SVP Gaussian / right / c = 1\\.500", x) ~ "SVP BIC calibrated",
+    x == "SVP BIC" | grepl("SVP Gaussian / right / c = 2\\.000", x) ~ "SVP BIC",
+    x == "SVP BIC multiscale" | grepl("SVP Gaussian / both /", x) ~
+      "SVP Gaussian / both",
     grepl("MedianMood", x) ~ "SVP MedianMood",
-    grepl("Wilcoxon / right /", x) ~ "SVP Wilcoxon",
-    grepl("Wilcoxon / both /", x) ~ "SVP Wilcoxon multiscale",
-    grepl("AR1Focus / right /", x) ~ "SVP AR1Focus",
-    grepl("AR1Focus / both /", x) ~ "SVP AR1Focus multiscale",
+    x == "SVP Wilcoxon" | grepl("Wilcoxon / right /", x) ~ "SVP Wilcoxon",
+    x == "SVP Wilcoxon multiscale" | grepl("Wilcoxon / both /", x) ~
+      "SVP Wilcoxon / both",
+    x == "SVP AR1Focus" | grepl("AR1Focus / right /", x) ~ "SVP AR1Focus",
+    x == "SVP AR1Focus multiscale" | grepl("AR1Focus / both /", x) ~
+      "SVP AR1Focus / both",
     TRUE ~ x
   )
 }
@@ -518,11 +537,22 @@ write_change_report <- function(new_results, root = FIGURE_ROOT) {
     method_summary <- function(x) {
       x |>
         group_by(experiment, method) |>
-        summarise(mean_time = mean(time, na.rm = TRUE), .groups = "drop")
+        summarise(
+          mean_time = mean(time, na.rm = TRUE),
+          median_time = median(time, na.rm = TRUE),
+          max_time = max(time, na.rm = TRUE),
+          .groups = "drop"
+        )
     }
     means <- full_join(
-      method_summary(current) |> rename(new_mean_time = mean_time),
-      method_summary(old) |> rename(old_mean_time = mean_time),
+      method_summary(current) |> rename(
+        new_mean_time = mean_time, new_median_time = median_time,
+        new_max_time = max_time
+      ),
+      method_summary(old) |> rename(
+        old_mean_time = mean_time, old_median_time = median_time,
+        old_max_time = max_time
+      ),
       by = c("experiment", "method")
     )
     slope <- function(x, method, experiment) {
@@ -549,6 +579,28 @@ write_change_report <- function(new_results, root = FIGURE_ROOT) {
                                 na.rm = TRUE) >= 2
     means$flag_slope <- abs(means$delta_slope) >= 0.2
     means$flag_any <- means$flag_runtime | means$flag_slope
+    if (family == "gaussian") {
+      means$method[means$method == "SVP BIC"] <-
+        "SVP Gaussian / right / c = 2.000"
+      means$method[means$method == "SVP BIC calibrated"] <-
+        "SVP Gaussian / right / c = 1.500"
+      means$method[means$method == "SVP BIC multiscale"] <-
+        "SVP Gaussian / both / c = 1.800"
+    } else if (family == "robust") {
+      means$method[means$method == "SVP Wilcoxon"] <-
+        "SVP Wilcoxon / right / c = 2.000"
+      means$method[means$method == "SVP MedianMood"] <-
+        "SVP MedianMood / right / c = 2.000"
+      means$method[means$method == "SVP BIC multiscale"] <-
+        "SVP Gaussian / both / c = 1.500"
+    } else if (family == "ar1") {
+      means$method[means$method == "SVP AR1"] <-
+        "SVP AR1 / right / c = 2.000"
+      means$method[means$method == "SVP AR1 estimated rho"] <-
+        "SVP AR1 estimated rho / right / c = 2.000"
+      means$method[means$method == "SVP BIC"] <-
+        "SVP Gaussian / right / c = 2.000"
+    }
     means$study <- paste0("runtime_", family)
     runtime_rows[[family]] <- select(means, study, everything())
   }
@@ -582,6 +634,10 @@ write_refresh_readme <- function(root = FIGURE_ROOT, run_full = FALSE) {
     paste0("This folder was generated in ", mode, "."),
     "The original SVP_NEW_Figures folder is never modified.",
     "All SVP figure legends state the explicit subtests mode and calibration.",
+    paste0("All paper figures use a ", FIGURE_BASE_SIZE,
+           "-point base font for manuscript readability."),
+    "Historical timing diagnostics are kept under",
+    "simulations/other_simus/time_gaussian_legacy/paper_audit/.",
     "",
     "To regenerate with the approved calibration grids (1000 null and 200",
     "signal replicates), run from the svpChange2 package root:",
@@ -626,10 +682,14 @@ rebuild_svp_new_figures2 <- function(
   calibration <- list()
   if (run_full) {
     candidates <- default_calibration_candidates()
-    calibration$gaussian <- calibrate_svp_family(
-      "gaussian", candidates$gaussian, 1000L, stats::rnorm,
-      seed = 710000L, null_reps = null_reps, signal_reps = signal_reps,
-      workers = workers
+    gaussian_scores <- read.csv(
+      GAUSSIAN_CALIBRATION_FILE, stringsAsFactors = FALSE
+    )
+    calibration$gaussian <- list(
+      scores = gaussian_scores,
+      selected_by_mode = transform(
+        gaussian_scores[, c("mode", "constant")], value = constant
+      )[, c("mode", "value")]
     )
     calibration$ar1 <- calibrate_svp_family(
       "ar1", candidates$ar1, 600L,
@@ -672,7 +732,7 @@ rebuild_svp_new_figures2 <- function(
     )
     ar1 <- run_ar1_refresh(make_candidate_table(calibration$ar1, "ar1"), workers)
   } else {
-    gaussian <- readRDS("simulations/power_gaussian/reproduced_v020_matched/results.rds")
+    gaussian <- readRDS("simulations/power_gaussian/results.rds")
     robust <- readRDS("simulations/power_robust/results.rds")
     ar1 <- readRDS("simulations/power_ar1/results.rds")
     renamed <- rename_quick_results(gaussian, robust, ar1)

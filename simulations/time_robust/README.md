@@ -4,12 +4,12 @@
 Method labels follow the power-study legend style:
 
 - `PELT`
-- `SVP Wilcoxon`
-- `SVP MedianMood`
-- `SVP BIC multiscale`
+- `SVP Wilcoxon / right / c = 2.000`
+- `SVP MedianMood / right / c = 2.000`
+- `SVP Gaussian / both / c = 1.500`
 
 The Wilcoxon and Median-Mood calls explicitly use `subtests = "right"`; the
-Gaussian multiscale call uses `subtests = "both"`.
+Gaussian call uses `subtests = "both"`.
 
 Both timing experiments enforce a maximum sequence length of 1,000.
 

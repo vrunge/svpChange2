@@ -6,11 +6,18 @@ library(dplyr)
 library(ggplot2)
 
 source(file.path("simulations", "time_common.R"))
+source(file.path("simulations", "gaussian_common.R"))
 
 GAUSSIAN_TIME_ROOT <- file.path("simulations", "time_gaussian")
-GAUSSIAN_TIME_METHODS <- c(
-  "PELT", "SVP BIC", "SVP BIC calibrated", "SVP BIC multiscale"
-)
+
+gaussian_time_methods <- function(constants = read_gaussian_calibration()) {
+  c(
+    "PELT",
+    gaussian_method_label("none", constants[["none"]]),
+    gaussian_method_label("right", constants[["right"]]),
+    gaussian_method_label("both", constants[["both"]])
+  )
+}
 
 simulate_gaussian_time_data <- function(n, changes = 0L, jump = 10) {
   sizes <- balanced_segment_sizes(n, changes)
@@ -22,51 +29,294 @@ simulate_gaussian_time_data <- function(n, changes = 0L, jump = 10) {
   )
 }
 
-fit_gaussian_time_method <- function(y, method) {
+fit_gaussian_time_method <- function(
+  y, method, constants = read_gaussian_calibration()
+) {
   n <- length(y)
-  fit <- switch(
-    method,
-    "PELT" = changepoint::cpt.mean(
-      y, method = "PELT", penalty = "Manual", pen.value = 2 * log(n)
-    ),
-    "SVP BIC" = SVP(
-      y, 2 * log(n), "gaussian_mean",
-      subtests = "right"
-    ),
-    "SVP BIC calibrated" = SVP(
-      y, 1.5 * log(n), "gaussian_mean",
-      subtests = "right"
-    ),
-    "SVP BIC multiscale" = SVP(
-      y, 1.8 * log(n), "gaussian_mean",
-      subtests = "both"
-    )
-  )
   if (method == "PELT") {
+    fit <- changepoint::cpt.mean(
+      y,
+      method = "PELT", penalty = "Manual", pen.value = 2 * log(n)
+    )
     return(sort(unique(c(changepoint::cpts(fit), n))))
   }
+  mode <- names(constants)[vapply(names(constants), function(candidate) {
+    identical(method, gaussian_method_label(candidate, constants[[candidate]]))
+  }, logical(1))]
+  if (length(mode) != 1L) stop("Unknown Gaussian timing method: ", method)
+  fit <- SVP(
+    y, constants[[mode]] * log(n), "gaussian_mean",
+    subtests = mode
+  )
   extract_svp_boundaries(fit, n)
 }
 
 run_time_gaussian <- function(
-    n_values = round(2^(seq(8, 14, length.out = 20))),
-    k_values = 0:100,
-    fixed_n = 10000L,
-    reps_n = 20L,
-    reps_k = 10L,
-    seed = 456L) {
+  n_values = round(2^(seq(8, 14, length.out = 20))),
+  k_values = 0:100,
+  fixed_n = 10000L,
+  reps_n = 100L,
+  reps_k = 100L, seed = 456L, min_batch_time = 0.05,
+  constants = read_gaussian_calibration()
+) {
+  methods <- gaussian_time_methods(constants)
+  set.seed(seed - 1L)
+  warm_data <- simulate_gaussian_time_data(256L, 0L)
+  invisible(lapply(methods, function(method) {
+    fit_gaussian_time_method(warm_data, method, constants)
+  }))
   benchmark_time_study(
     n_values, k_values, fixed_n, reps_n, reps_k,
-    methods = GAUSSIAN_TIME_METHODS,
+    methods = methods,
     simulate_data = simulate_gaussian_time_data,
-    fit_method = fit_gaussian_time_method,
-    seed = seed
+    fit_method = function(y, method) {
+      fit_gaussian_time_method(y, method, constants)
+    },
+    seed = seed, min_batch_time = min_batch_time,
+    randomize_method_order = TRUE
   )
+}
+
+bootstrap_median_interval <- function(x, draws = 1000L) {
+  values <- replicate(draws, stats::median(sample(x, replace = TRUE)))
+  stats::quantile(values, c(0.025, 0.975), names = FALSE)
+}
+
+summarise_gaussian_time_n <- function(results, draws = 1000L, seed = 901L) {
+  set.seed(seed)
+  results |>
+    dplyr::filter(experiment == "vary_n", is.finite(time), time > 0) |>
+    dplyr::group_by(method, n) |>
+    dplyr::group_modify(function(data, key) {
+      interval <- bootstrap_median_interval(data$time, draws)
+      data.frame(
+        median_time = stats::median(data$time),
+        lower = interval[1L], upper = interval[2L]
+      )
+    }) |>
+    dplyr::ungroup()
+}
+
+bootstrap_log_slope <- function(data, tail_only = FALSE, min_n = NULL,
+                                draws = 1000L) {
+  n_values <- sort(unique(data$n))
+  if (!is.null(min_n)) {
+    n_values <- n_values[n_values >= min_n]
+  } else if (tail_only) {
+    n_values <- n_values[n_values >= stats::median(n_values)]
+  }
+  if (length(n_values) < 2L) {
+    return(c(estimate = NA_real_, lower = NA_real_, upper = NA_real_))
+  }
+  estimate <- function(resample = FALSE) {
+    medians <- vapply(n_values, function(n_value) {
+      values <- data$time[data$n == n_value]
+      if (resample) values <- sample(values, replace = TRUE)
+      stats::median(values)
+    }, numeric(1))
+    unname(stats::coef(stats::lm(log(medians) ~ log(n_values)))[2L])
+  }
+  samples <- replicate(draws, estimate(TRUE))
+  interval <- stats::quantile(
+    samples, c(0.025, 0.975),
+    names = FALSE, na.rm = TRUE
+  )
+  c(estimate = estimate(FALSE), lower = interval[1L], upper = interval[2L])
+}
+
+gaussian_time_slopes <- function(results, draws = 1000L, seed = 902L,
+                                 min_n = NULL) {
+  set.seed(seed)
+  data <- dplyr::filter(
+    results, experiment == "vary_n", is.finite(time), time > 0
+  )
+  dplyr::bind_rows(lapply(unique(data$method), function(method) {
+    method_data <- data[data$method == method, , drop = FALSE]
+    ranges <- if (is.null(min_n)) c(FALSE, TRUE) else FALSE
+    dplyr::bind_rows(lapply(ranges, function(tail_only) {
+      values <- bootstrap_log_slope(
+        method_data, tail_only, min_n = min_n, draws = draws
+      )
+      data.frame(
+        method = method,
+        range = if (!is.null(min_n)) {
+          paste0("n >= ", min_n)
+        } else if (tail_only) {
+          "upper half"
+        } else {
+          "full grid"
+        },
+        exponent = values[["estimate"]],
+        lower = values[["lower"]], upper = values[["upper"]]
+      )
+    }))
+  }))
+}
+
+plot_gaussian_paper_time <- function(results, root, prefix = "gaussian_time") {
+  paper_base_size <- 14
+  summary_n <- summarise_gaussian_time_n(results)
+  slopes <- gaussian_time_slopes(results)
+  tail_min_n <- 1000L
+  tail_slopes <- gaussian_time_slopes(results, min_n = tail_min_n)
+  slope_labels <- summary_n[summary_n$n == max(summary_n$n), , drop = FALSE]
+  slope_labels <- merge(
+    slope_labels,
+    tail_slopes[, c("method", "exponent")],
+    by = "method",
+    all.x = TRUE,
+    sort = FALSE
+  )
+  slope_labels$label <- paste0(
+    sub(" / c =.*$", "", sub(
+      "SVP Gaussian / ", "", slope_labels$method, fixed = TRUE
+    )),
+    ": ", sprintf("%.3f", slope_labels$exponent)
+  )
+  slope_labels$vjust <- ifelse(
+    slope_labels$method == "PELT", -0.8,
+    ifelse(grepl(" / none / ", slope_labels$method), 1.5, 0.5)
+  )
+  panel_a <- ggplot2::ggplot(
+    summary_n, ggplot2::aes(n, median_time, colour = method, fill = method)
+  ) +
+    ggplot2::geom_ribbon(
+      ggplot2::aes(ymin = lower, ymax = upper),
+      alpha = 0.12,
+      colour = NA
+    ) +
+    ggplot2::geom_line(linewidth = 0.8) +
+    ggplot2::geom_point(size = 1.2) +
+    ggplot2::geom_text(
+      data = slope_labels,
+      ggplot2::aes(label = label),
+      hjust = 1.05,
+      vjust = slope_labels$vjust,
+      show.legend = FALSE
+    ) +
+    ggplot2::scale_x_log10() +
+    ggplot2::scale_y_log10() +
+    ggplot2::labs(
+      x = "Sequence length", y = "Median time (s)", colour = "Method",
+      fill = "Method", title = NULL, subtitle = NULL, caption = NULL
+    ) +
+    ggplot2::theme_minimal(base_size = paper_base_size) +
+    ggplot2::theme(
+      panel.grid.minor = ggplot2::element_blank(),
+      plot.title = ggplot2::element_blank(),
+      plot.subtitle = ggplot2::element_blank(),
+      plot.caption = ggplot2::element_blank()
+    )
+
+  positive <- dplyr::filter(results, is.finite(time), time > 0)
+  panel_b <- ggplot2::ggplot(
+    positive, ggplot2::aes(detected, time, colour = method)
+  ) +
+    ggplot2::geom_point(alpha = 0.08, size = 0.5) +
+    ggplot2::geom_smooth(method = "loess", se = TRUE, linewidth = 0.8) +
+    ggplot2::scale_y_log10() +
+    ggplot2::labs(
+      x = "Detected number of segments", y = "Time (s)", colour = "Method"
+    ) +
+    ggplot2::theme_minimal(base_size = paper_base_size) +
+    ggplot2::theme(panel.grid.minor = ggplot2::element_blank())
+
+  vary_k <- dplyr::filter(results, experiment == "vary_k", time > 0)
+  time_k <- ggplot2::ggplot(vary_k, ggplot2::aes(k, time, colour = method)) +
+    ggplot2::geom_smooth(method = "loess", se = TRUE, linewidth = 0.8) +
+    ggplot2::scale_y_log10() +
+    ggplot2::labs(
+      x = "True number of changes", y = "Time (s)", colour = "Method"
+    ) +
+    ggplot2::theme_minimal(base_size = paper_base_size)
+
+  plot_root <- file.path(GAUSSIAN_TIME_ROOT, "plots")
+  dir.create(plot_root, recursive = TRUE, showWarnings = FALSE)
+  dir.create(root, recursive = TRUE, showWarnings = FALSE)
+  ggplot2::ggsave(file.path(plot_root, paste0(prefix, "_time_vs_n.pdf")),
+    panel_a,
+    width = 9, height = 5.2
+  )
+  ggplot2::ggsave(file.path(plot_root, paste0(prefix, "_time_vs_detected.pdf")),
+    panel_b,
+    width = 9, height = 5.2
+  )
+  ggplot2::ggsave(file.path(plot_root, paste0(prefix, "_time_vs_k.pdf")),
+    time_k,
+    width = 9, height = 5.2
+  )
+  ggplot2::ggsave(file.path(root, "2_exp1_time_vs_n.pdf"),
+    panel_a,
+    width = 9, height = 5.2
+  )
+  ggplot2::ggsave(file.path(root, "2_time_vs_detected_changes.pdf"),
+    panel_b,
+    width = 9, height = 5.2
+  )
+  ggplot2::ggsave(file.path(root, "2_exp2_time_vs_k.pdf"),
+    time_k,
+    width = 9, height = 5.2
+  )
+  ggplot2::ggsave(file.path(root, "2_gaussian_time_vs_n.pdf"),
+    panel_a,
+    width = 9, height = 5.2
+  )
+  ggplot2::ggsave(file.path(root, "2_gaussian_time_vs_detected.pdf"),
+    panel_b,
+    width = 9, height = 5.2
+  )
+  if (requireNamespace("patchwork", quietly = TRUE)) {
+    combined <- panel_a +
+      (panel_b + ggplot2::theme(legend.position = "none"))
+    ggplot2::ggsave(file.path(root, "Figure5_gaussian_runtime.pdf"),
+      combined,
+      width = 12, height = 5.2
+    )
+  }
+  utils::write.csv(summary_n, file.path(
+    GAUSSIAN_TIME_ROOT,
+    "gaussian_time_summary_by_n.csv"
+  ),
+  row.names = FALSE
+  )
+  utils::write.csv(slopes, file.path(
+    GAUSSIAN_TIME_ROOT,
+    "gaussian_time_slopes.csv"
+  ),
+  row.names = FALSE
+  )
+  invisible(list(panel_a = panel_a, panel_b = panel_b, slopes = slopes))
 }
 
 run_and_save_time_gaussian <- function(prefix = "gaussian_time") {
   results <- run_time_gaussian()
-  save_time_outputs(results, GAUSSIAN_TIME_ROOT, prefix)
+  dir.create(GAUSSIAN_TIME_ROOT, recursive = TRUE, showWarnings = FALSE)
+  saveRDS(results, file.path(GAUSSIAN_TIME_ROOT, paste0(prefix, "_results.rds")))
+  utils::write.csv(
+    results, file.path(GAUSSIAN_TIME_ROOT, paste0(prefix, "_results.csv")),
+    row.names = FALSE
+  )
+  plot_gaussian_paper_time(
+    results,
+    normalizePath(file.path("..", "SVP_NEW_Figures2"), mustWork = FALSE),
+    prefix
+  )
+  manifest <- c(
+    paste0("timestamp = ", format(Sys.time(), tz = "UTC", usetz = TRUE)),
+    paste0("svpChange2 = ", as.character(utils::packageVersion("svpChange2"))),
+    paste0("changepoint = ", as.character(utils::packageVersion("changepoint"))),
+    paste0("R = ", R.version.string),
+    paste0("platform = ", R.version$platform),
+    paste0("machine = ", Sys.info()[["machine"]]),
+    paste0("system = ", Sys.info()[["sysname"]], " ", Sys.info()[["release"]]),
+    paste0("git_sha = ", system2("git", c("rev-parse", "HEAD"), stdout = TRUE)),
+    "timer = proc.time elapsed; adaptive batching target 0.05 s"
+  )
+  writeLines(
+    manifest,
+    file.path(GAUSSIAN_TIME_ROOT, paste0(prefix, "_manifest.txt"))
+  )
+  invisible(results)
 }
 
 if (identical(tolower(Sys.getenv("SVP_RUN_SIMULATIONS")), "true")) {

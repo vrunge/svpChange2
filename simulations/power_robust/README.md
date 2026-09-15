@@ -1,38 +1,41 @@
-# Heavy-tail power study
+# Corrected Student-t(2) Section 5.2 power study
 
 Run from the `svpChange2` package root:
 
 ```r
-Sys.setenv(SVP_RUN_SIMULATIONS = "true")
+source("simulations/power_robust/calibrate_robust.R")
+calibration <- run_robust_calibration(workers = 8L)
 source("simulations/power_robust/run_power.R")
+run_and_save_robust(workers = 8L)
 ```
 
-On macOS/Linux the default uses all detected physical cores except one through
-`parallel::mclapply()`. Set `run_and_save_robust(workers = 1L)` for a
-sequential run or pass another explicit worker count.
+The default calibration uses 20,000 independent Student-t(2) null series and
+10,000 independent validation series. Seeds, candidate values, Wilson
+intervals, the selected parameters, and both PELT benchmarks are stored in
+`true_true_calibration.csv` and `robust_calibration.rds`.
 
-The separately calibrated TRUE/TRUE Wilcoxon constant is 1.75; see
-`true_true_calibration.csv`. The reported boundaries are the direct output of
-`SVP()`, without post-processing. In the final study this method has rand1 F1
-0.595 (RFPOP paper: 0.688) and
-no-change F1 0.998.
+The RFPOP multiplier is the smallest candidate whose corrected null F1 is at
+least 0.99. Wilcoxon and Median-Mood candidates are then selected by closest
+corrected null F1 to that RFPOP target. The four headline algorithms are
+fixed Gaussian PELT with penalty `2*log(n)`, calibrated RFPOP with biweight
+loss and `lthreshold = 3`, `SVP MedianMood / right`, and `SVP Wilcoxon /
+right`. There are no `both` or `multiscale` SVP calls in this study.
 
-The design reproduces the Student-t(2) study in `SVP_Paper.pdf`: `n=1000`,
-four scenarios, jumps from 0.1 to 4, 100 replications, and the paper's PELT,
-RFPOP, Median-Mood SVP, and Wilcoxon SVP configurations.
+The Wilcoxon threshold is
 
-`SVP Wilcoxon multiscale` is the Wilcoxon method with TRUE/TRUE pruning. The original
-`RFPOP paper` result is
-retained in the result files but excluded from the primary legend. `RFPOP`
-uses the smallest penalty multiplier
-attaining at least 98% no-change recovery in an independent 200-replicate null
-calibration; its calibration table is saved as `rfpop_null_calibration.csv`.
-This makes the false-positive trade-off explicit rather than altering the paper
-curve without disclosure.
+```text
+gamma_W(c, K) = c * sqrt((n/K)^3 / 12)
+```
 
-The single-scale Median-Mood and Wilcoxon calls use `subtests = "right"` to
-match the historical API; only the multiscale Wilcoxon call uses
-`subtests = "both"`.
+and the Mood threshold uses the Pearson chi-square law with
+`alpha_s = 1 - (1 - alpha)^(1/(n/K - 1))`. Here `K` is passed to the fitting
+code as `oracle_segments`: it is the known data-generating segment count in
+this power experiment, not an available input in practical use.
 
-The seven PDFs and result files have the same meanings as in the Gaussian
-folder.
+Metrics use the shared corrected framework: the mandatory endpoint `n` is
+removed, tolerance matches are one-to-one, and F1, precision, recall,
+correct-number probability, MSE, segment count, and localization error are
+reported. The Gaussian-PELT null F1 is an external benchmark from the
+corrected Gaussian evaluation; the heavy-tail PELT fit is intentionally
+reported separately because its misspecified Gaussian SSE fit has almost
+universal false positives under t(2).

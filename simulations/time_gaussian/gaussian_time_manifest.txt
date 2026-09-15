@@ -1,0 +1,9 @@
+timestamp = 2026-09-15 13:50:33 UTC
+svpChange2 = 0.2.0
+changepoint = 2.3
+R = R version 4.6.1 (2026-06-24)
+platform = aarch64-apple-darwin23
+machine = arm64
+system = Darwin 25.6.0
+git_sha = bad593bef029c96638e8eb3587e8a9792229b01f
+timer = proc.time elapsed; adaptive batching target 0.05 s

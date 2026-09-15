@@ -63,4 +63,10 @@ excluded from the two logarithmic-time plots.
 | `time_ar1` | `run_time.R` | `ar1_time_time_vs_n.pdf`, `ar1_time_time_vs_k.pdf`, `ar1_time_time_vs_detected.pdf` |
 
 The AR(1) power study requires the optional `DeCAFS` package. Robust power
-comparisons additionally require `robseg`.
+comparisons additionally require `robseg`. The corrected heavy-tail study
+uses the dedicated calibration driver in `power_robust/calibrate_robust.R`;
+its four-method output, paired audit, and Section 5.2 replacement memo are
+documented in `power_robust/README.md` and `z_robust/`.
+The corrected AR(1) study uses `power_ar1/calibrate_ar1.R`; its four-method
+output, calibration table, review, and Section 5.3 replacement memo are
+documented in `power_ar1/README.md` and `z_AR1/`.

@@ -130,28 +130,53 @@ power_scenario_plot <- function(n, jump, simulate_noise, seed = 999L,
   plot
 }
 
-paper_metrics <- function(true_boundaries, estimated_boundaries, tolerance) {
-  truth <- as.integer(true_boundaries)
-  estimate <- as.integer(estimated_boundaries)
-  distances <- abs(outer(truth, estimate, "-"))
-  used <- rep(FALSE, length(estimate))
+internal_changepoints <- function(boundaries, terminal) {
+  sort(unique(as.integer(boundaries[as.integer(boundaries) != terminal])))
+}
+
+maximum_tolerance_matches <- function(truth, estimate, tolerance) {
+  truth <- sort(as.integer(truth))
+  estimate <- sort(as.integer(estimate))
+  i <- 1L
+  j <- 1L
   matched <- 0L
-  for (i in seq_along(truth)) {
-    available <- which(!used & distances[i, ] <= tolerance)
-    if (length(available)) {
-      best <- available[which.min(distances[i, available])]
-      used[best] <- TRUE
+  while (i <= length(truth) && j <= length(estimate)) {
+    if (abs(truth[i] - estimate[j]) <= tolerance) {
       matched <- matched + 1L
+      i <- i + 1L
+      j <- j + 1L
+    } else if (estimate[j] < truth[i] - tolerance) {
+      j <- j + 1L
+    } else {
+      i <- i + 1L
     }
   }
-  precision <- matched / length(estimate)
-  recall <- matched / length(truth)
-  f1 <- if (precision + recall) 2 * precision * recall / (precision + recall) else 0
+  matched
+}
+
+paper_metrics <- function(true_boundaries, estimated_boundaries, tolerance,
+                          terminal = max(c(true_boundaries,
+                                           estimated_boundaries))) {
+  truth <- internal_changepoints(true_boundaries, terminal)
+  estimate <- internal_changepoints(estimated_boundaries, terminal)
+  matched <- maximum_tolerance_matches(truth, estimate, tolerance)
+
+  if (!length(truth) && !length(estimate)) {
+    precision <- recall <- f1 <- 1
+  } else if (!length(truth) || !length(estimate)) {
+    precision <- recall <- f1 <- 0
+  } else {
+    precision <- matched / length(estimate)
+    recall <- matched / length(truth)
+    f1 <- if (precision + recall > 0) {
+      2 * precision * recall / (precision + recall)
+    } else {
+      0
+    }
+  }
   c(Precision = precision, Recall = recall, F1 = f1,
     CorrectNumCP = as.numeric(length(estimate) == length(truth)),
-    LocalizationError = localization_error(
-      head(truth, -1L), head(estimate, -1L)
-    ))
+    LocalizationError = localization_error(truth, estimate))
 }
 
 fitted_piecewise_mean <- function(y, boundaries) {
@@ -163,7 +188,7 @@ fitted_piecewise_mean <- function(y, boundaries) {
 
 result_row <- function(pattern, jump, rep, algorithm, boundaries,
                        truth, mu, fitted, tolerance) {
-  metric <- paper_metrics(truth, boundaries, tolerance)
+  metric <- paper_metrics(truth, boundaries, tolerance, terminal = length(mu))
   data.frame(
     pattern = pattern, jump = jump, rep = rep, algorithm = algorithm,
     Precision = metric[["Precision"]], Recall = metric[["Recall"]],
@@ -174,8 +199,8 @@ result_row <- function(pattern, jump, rep, algorithm, boundaries,
   )
 }
 
-paper_theme <- function() {
-  ggplot2::theme_minimal(base_size = 11) +
+paper_theme <- function(base_size = 14) {
+  ggplot2::theme_minimal(base_size = base_size) +
     ggplot2::theme(
       panel.grid.minor = ggplot2::element_blank(),
       strip.text = ggplot2::element_text(face = "plain"),

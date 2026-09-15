@@ -14,6 +14,10 @@ power/runtime workflows:
   historical outputs.
 - `pre_refactor_power_results/`: power outputs generated before canonical
   method naming and before DeCAFS was added to the AR(1) study.
+- `power_robust_legacy_20260915/`: the robust Section 5.2 outputs archived
+  immediately before the corrected Student-t(2) refresh.
+- `power_ar1_legacy_20260915/`: the AR(1) Section 5.3 outputs archived before
+  the corrected four-method calibration refresh.
 - `all_method_refinement/`: isolated test of boundary refinement applied to
   every method in each of the three power frameworks.
 

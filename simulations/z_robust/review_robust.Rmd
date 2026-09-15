@@ -1,0 +1,158 @@
+---
+title: "Review of the corrected heavy-tail Section 5.2 refresh"
+author: "SVP simulation audit"
+date: "2026-09-15"
+output:
+  pdf_document:
+    keep_tex: true
+geometry: margin=0.8in
+fontsize: 10pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(dplyr)
+root <- if (file.exists(file.path("simulations", "power_robust"))) {
+  normalizePath(".", mustWork = TRUE)
+} else {
+  normalizePath(file.path("..", ".."), mustWork = TRUE)
+}
+setwd(root)
+source_path <- if (file.exists(file.path(
+  "simulations", "power_robust", "run_power.R"
+))) file.path("simulations", "power_robust", "run_power.R") else
+  file.path("..", "power_robust", "run_power.R")
+source(source_path)
+robust_root <- file.path(root, "simulations", "power_robust")
+legacy_root <- file.path(
+  root, "simulations", "other_simus", "power_robust_legacy_20260915"
+)
+calibration <- readRDS(file.path(robust_root, "robust_calibration.rds"))
+calibration_table <- read.csv(
+  file.path(robust_root, "true_true_calibration.csv"),
+  stringsAsFactors = FALSE
+)
+new <- readRDS(file.path(robust_root, "results.rds"))
+old <- readRDS(file.path(legacy_root, "results.rds"))
+new <- new |> filter(algorithm %in% c(
+  "PELT", "RFPOP", robust_method_labels(calibration)[[3L]],
+  robust_method_labels(calibration)[[4L]]
+))
+old <- old |> filter(algorithm %in% c(
+  "PELT", "RFPOP paper", "SVP MedianMood", "SVP Wilcoxon"
+))
+rename_old <- c(
+  "PELT" = "PELT", "RFPOP paper" = "RFPOP",
+  "SVP MedianMood" = "SVP MedianMood", "SVP Wilcoxon" = "SVP Wilcoxon"
+)
+rename_new <- c(
+  "PELT" = "PELT", "RFPOP" = "RFPOP",
+  setNames("SVP MedianMood", robust_method_labels(calibration)[[3L]]),
+  setNames("SVP Wilcoxon", robust_method_labels(calibration)[[4L]])
+)
+old$method <- unname(rename_old[old$algorithm])
+new$method <- unname(rename_new[new$algorithm])
+metrics <- c("F1", "Precision", "Recall", "CorrectNumCP", "MSE", "NumSegments")
+comparison <- full_join(
+  new |> group_by(pattern, jump, method) |>
+    summarise(across(all_of(metrics), mean), .groups = "drop") |>
+    rename_with(~ paste0("new_", .x), all_of(metrics)),
+  old |> group_by(pattern, jump, method) |>
+    summarise(across(all_of(metrics), mean), .groups = "drop") |>
+    rename_with(~ paste0("old_", .x), all_of(metrics)),
+  by = c("pattern", "jump", "method")
+) |>
+  mutate(across(starts_with("new_"), as.numeric),
+         across(starts_with("old_"), as.numeric)) |>
+  mutate(delta_F1 = new_F1 - old_F1,
+         delta_Precision = new_Precision - old_Precision,
+         delta_Recall = new_Recall - old_Recall,
+         delta_CorrectNumCP = new_CorrectNumCP - old_CorrectNumCP,
+         delta_MSE = new_MSE - old_MSE,
+         delta_NumSegments = new_NumSegments - old_NumSegments)
+write.csv(comparison, file.path(root, "simulations", "z_robust",
+                                 "paired_comparison.csv"), row.names = FALSE)
+selected_comparison <- comparison |>
+  group_by(pattern, method) |>
+  summarise(across(starts_with("delta_"), mean), .groups = "drop") |>
+  rename(
+    dF1 = delta_F1, dPrecision = delta_Precision, dRecall = delta_Recall,
+    dCorrect = delta_CorrectNumCP, dMSE = delta_MSE, dSegments = delta_NumSegments
+  )
+selected_table <- data.frame(
+  method = c("RFPOP", "Wilcoxon", "MedianMood"),
+  selected_parameter = c(
+    calibration$selected$rfpop_constant,
+    calibration$selected$wilcoxon_constant,
+    calibration$selected$mood_alpha
+  )
+)
+```
+
+# Scope and acceptance checks
+
+The regenerated study has `r nrow(new)` method rows, `r length(unique(new$algorithm))`
+canonical algorithms, four patterns, 40 jump sizes, and 100 replications.
+The calibration uses `r calibration$selected$calibration_reps` calibration and
+`r calibration$selected$validation_reps` validation null series. The nominal
+RFPOP target is `r calibration$target_nominal` corrected null F1; the selected
+calibration estimate is `r round(calibration$selected$rfpop_target_f1, 5)`.
+
+```{r selected}
+knitr::kable(selected_table, digits = 6,
+             caption = "Selected robust calibration parameters.")
+```
+
+The Gaussian-PELT external null-F1 benchmark is
+`r round(calibration$gaussian_pelt_benchmark$gaussian_pelt_null_f1, 5)`.
+The intentionally misspecified Gaussian PELT fit evaluated on the Student-t(2)
+validation stream has null F1
+`r round(calibration$student_pelt_benchmark$student_pelt_null_f1, 5)`.
+
+# Calibration table
+
+The full candidate table, including Wilson intervals, seeds, target, and
+selection flags, is stored in `true_true_calibration.csv` in the robust study
+folder. The
+selected validation rows are shown here.
+
+```{r calibration}
+calibration_table |>
+  filter(stage == "validation") |>
+  select(method, candidate, null_f1, null_f1_lower, null_f1_upper,
+         rfpop_target_f1, selected, seed) |>
+  knitr::kable(digits = 5,
+               caption = "Independent validation of selected null thresholds.")
+```
+
+# Paired before/after comparison
+
+The detailed comparison is in `paired_comparison.csv`, indexed by pattern,
+jump, and method. The table below reports the mean change over jump sizes for
+each pattern. Positive values improve the metric; for MSE and segment count,
+negative values are preferable.
+
+```{r comparison}
+selected_comparison |>
+  knitr::kable(digits = 4,
+               caption = "Mean new-minus-legacy metric change by pattern and method.")
+```
+
+# Revised Section 5.2 wording
+
+Section 5.2 should describe the Student-t(2) experiment as a stress test with
+the fixed Gaussian PELT baseline and calibrated robust procedures. All noise is
+generated by `ts_generator(type = "student", df = 2, scale = 1)` for
+`n=1000`, four signal patterns, jump sizes `0.1,...,4`, and 100 replications.
+The endpoint `n` is excluded before one-to-one matching within the framework
+tolerance. Precision, recall, F1, correct-number probability, MSE, segment
+count, and localization error are then computed from the same metric code as
+the Gaussian study.
+
+RFPOP uses biweight loss (the `robseg` name is `loss = "Outlier"`) with
+`lthreshold = 3` and `lambda = c_RF log(n)`. Its multiplier is calibrated on
+independent t(2) null streams for at least 0.99 corrected null F1. The
+Median-Mood and Wilcoxon SVP thresholds are independently selected to match
+that RFPOP target and use `subtests = "right"` only. Their K-dependent formulas
+use `oracle_segments`, the known data-generating number of segments in this
+power experiment; this oracle is not available in ordinary applications.

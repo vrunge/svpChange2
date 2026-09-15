@@ -16,27 +16,6 @@
 // test used by the public dispatcher.
 namespace svp_detail {
 
-// Check the two directional validity histories needed by the inclusive-left
-// pruning rule. If every prefix in forward order and every suffix in reverse
-// order is valid, the full series is a valid one-segment partition and is
-// therefore the lexicographic optimum. This is intentionally enabled only by
-// tests that opt into svp_supports_both_preflight.
-template <typename Test, typename... Args>
-bool whole_series_both_valid(const std::vector<double>& data,
-                             double gamma,
-                             Args&... args)
-{
-  Test forward(args...);
-  Test backward(args...);
-
-  for (std::size_t length = 1; length <= data.size(); ++length) {
-    forward.update(data[length - 1]);
-    backward.update(data[data.size() - length]);
-    if (!forward.passes(gamma) || !backward.passes(gamma)) return false;
-  }
-  return true;
-}
-
 // Return the within-segment sum of squared errors for data[s + 1:t]. The
 // boundaries use the SVP convention: s is zero-based and t is one-based.
 inline double segment_cost(const std::vector<double>& S1,
@@ -241,34 +220,6 @@ Rcpp::List svp_impl(const std::vector<double>& data,
   if (no_pruning) {
     candidates_by_K.resize(n + 1);
     candidates_by_K[0].push_back(0);
-  }
-
-  // Under the Gaussian FOCUS test, a successful bidirectional preflight
-  // certifies the one-segment optimum. Populate the complete diagnostic
-  // arrays exactly as the dynamic program would have done, so this shortcut
-  // changes runtime but not the public result shape or tie-breaking.
-  if (subtests == "both" &&
-      svp_supports_both_preflight<Test>::value &&
-      whole_series_both_valid<Test>(data, gamma, args...)) {
-    for (std::size_t t = 1; t <= n; ++t) {
-      Q[t] = segment_cost(S1, S2, 0, t);
-      K[t] = 1;
-      previous[t] = 0;
-      nb[t - 1] = t;
-    }
-
-    std::vector<std::size_t> all_candidates(n + 1);
-    for (std::size_t i = 0; i <= n; ++i) {
-      all_candidates[i] = n - i;
-    }
-
-    return Rcpp::List::create(
-      Rcpp::Named("changepoints") = std::vector<std::size_t>{n},
-      Rcpp::Named("lastIndexSet") = all_candidates,
-      Rcpp::Named("nb") = nb,
-      Rcpp::Named("costQ") = R_NilValue,
-      Rcpp::Named("R") = build_R_matrix(Q, K, previous)
-    );
   }
 
   // Dynamic-programming loop over endpoints t = 1, ..., n.

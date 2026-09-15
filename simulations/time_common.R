@@ -22,7 +22,8 @@ extract_svp_boundaries <- function(fit, n) {
 
 benchmark_time_study <- function(
     n_values, k_values, fixed_n, reps_n, reps_k, methods,
-    simulate_data, fit_method, seed) {
+    simulate_data, fit_method, seed, min_batch_time = 0,
+    randomize_method_order = FALSE) {
   total <- length(methods) *
     (length(n_values) * reps_n + length(k_values) * reps_k)
   if (total == 0L) return(data.frame())
@@ -39,10 +40,26 @@ benchmark_time_study <- function(
         k <- k_for(value)
         set.seed(seed_for(value, rep))
         data <- simulate_data(n, k)
-        for (method in methods) {
-          elapsed <- system.time({
-            boundaries <- fit_method(data, method)
-          })[["elapsed"]]
+        method_order <- if (randomize_method_order) sample(methods) else methods
+        for (method in method_order) {
+          gc(FALSE)
+          batch <- 1L
+          repeat {
+            started <- proc.time()[["elapsed"]]
+            for (batch_index in seq_len(batch)) {
+              boundaries <- fit_method(data, method)
+            }
+            block_elapsed <- proc.time()[["elapsed"]] - started
+            if (min_batch_time <= 0 || block_elapsed >= min_batch_time ||
+                batch >= 10000L) break
+            growth <- if (block_elapsed <= 0) {
+              10
+            } else {
+              max(2, ceiling(1.1 * min_batch_time / block_elapsed))
+            }
+            batch <- min(10000L, as.integer(batch * growth))
+          }
+          elapsed <- block_elapsed / batch
           completed <<- completed + 1L
           rows[[completed]] <<- data.frame(
             experiment = experiment,
@@ -51,6 +68,8 @@ benchmark_time_study <- function(
             rep = rep,
             method = method,
             time = elapsed,
+            batch = batch,
+            block_elapsed = block_elapsed,
             detected = length(boundaries)
           )
           utils::setTxtProgressBar(progress, completed)
