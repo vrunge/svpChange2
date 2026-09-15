@@ -47,6 +47,10 @@ ar1_null_stream <- function(n, rho, reps, seed) {
 # not comparable against earlier builds, so the version is checked up front.
 DECAFS_MIN_VERSION <- "3.3.6"
 
+decafs_version <- function() {
+  as.character(utils::packageVersion("DeCAFS"))
+}
+
 require_decafs <- function() {
   if (!requireNamespace("DeCAFS", quietly = TRUE)) {
     stop("the optional package 'DeCAFS' is required for the AR(1) study")
@@ -181,6 +185,7 @@ evaluate_ar1_candidates <- function(
       n = n,
       rho = rho,
       tolerance = tolerance,
+      decafs_version = decafs_version(),
       stringsAsFactors = FALSE
     )
   }
@@ -209,6 +214,7 @@ evaluate_fixed_ar1_method <- function(
     n = n,
     rho = rho,
     tolerance = tolerance,
+    decafs_version = decafs_version(),
     seed = seed,
     stage = "fixed",
     stringsAsFactors = FALSE
@@ -247,6 +253,7 @@ attach_ar1_metadata <- function(
   scores$calibration_seed <- calibration_seed
   scores$validation_seed <- validation_seed
   scores$target_nominal <- AR1_NULL_TARGET
+  scores$decafs_version <- decafs_version()
   scores
 }
 
@@ -305,7 +312,8 @@ run_ar1_calibration <- function(
     calibration_reps = calibration_reps,
     validation_reps = validation_reps,
     calibration_seed = calibration_seed,
-    validation_seed = validation_seed
+    validation_seed = validation_seed,
+    decafs_version = decafs_version()
   )
 
   validation_null <- ar1_null_stream(n, rho, validation_reps, validation_seed)
@@ -353,6 +361,7 @@ run_ar1_calibration <- function(
   result <- list(
     selected = selected,
     target_nominal = AR1_NULL_TARGET,
+    decafs_version = decafs_version(),
     candidate_tables = list(
       decafs = decafs_scores,
       approximate = approximate_scores,
@@ -387,6 +396,7 @@ run_ar1_calibration <- function(
           selected$svp_constant
         ),
         target_f1 = target_f1,
+        decafs_version = decafs_version(),
         stringsAsFactors = FALSE
       ),
       file.path(AR1_ROOT, "selected_parameters.csv"),

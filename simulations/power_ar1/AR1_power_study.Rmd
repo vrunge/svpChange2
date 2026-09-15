@@ -58,6 +58,7 @@ stopifnot(
 # DeCAFS version
 
 DeCAFS 3.3.6 is required, and `calibrate_ar1.R` stops against anything older.
+The exact installed version is recorded in the calibration output.
 Equation (4) of the DeCAFS paper, and the package's own README, put the
 stationary AR(1) precision \((1-\phi^2)/\sigma_\nu^2\) on
 \((y_1-\mu_1)^2\); builds before 3.3.6 initialised the dynamic programme with
@@ -101,7 +102,9 @@ localisation error given the correct number of changes falls from 1.61 to 0.31
 
 The DeCAFS AR(1) penalty is `beta = c_D log(n)` with
 `modelParam = list(sdEta = 0, sdNu = sqrt(1-rho^2), phi = rho)`. The smallest
-candidate whose corrected null F1 is at least 0.99 is selected. The
+candidate whose corrected null F1 is at least 0.99 is selected. The selected
+empirical DeCAFS target is then used for matching; in the recorded run it is
+0.995, while 0.99 is the nominal target. The
 approximate AR(1) PELT penalty and AR1Focus threshold are then selected to have
 null F1 closest to the selected DeCAFS target. Calibration uses 1,000 null
 series and validation uses 1,000 independent null series; both stages use
@@ -180,12 +183,13 @@ knitr::kable(
 ```
 
 With DeCAFS corrected it is the strongest method on every non-null pattern,
-which is what the model predicts: it minimises the exact AR(1) penalised
-likelihood, while approximate PELT drops the dependence across segments and SVP
-keeps it only inside the validity test and the cost. Approximate PELT remains
+which is consistent with its exact AR(1) penalised-likelihood optimisation,
+while approximate PELT drops the dependence across segments and SVP uses a
+conditional validity test together with an approximate boundary-excluded cost.
+Approximate PELT remains
 the weakest of the four. Its transformed series has a spike at every change,
 `Z_{tau+1} = Y_{tau+1} - rho Y_tau`, whose mean is
 `mu_new - rho mu_old`; PELT fits that spike with short spurious segments, which
 is why it detects around ten segments where the truth has eight and why its
 localisation error is large even when the segment count happens to be right.
-Skipping that innovation is exactly what the SVP AR(1) cost does.
+Skipping that innovation is the defining approximation in the SVP AR(1) cost.

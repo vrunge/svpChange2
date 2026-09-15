@@ -8,6 +8,8 @@ Authors@R: c(
         person("Gaetano", "Romano", email = "g.romano@lancaster.ac.uk", role = c("aut")),
     person("Anica", "Kostic", email = "anica.kostic@gmail.com", role = c("ctb"))
             )
+Author: Vincent Runge [aut, cre, cph], Alexandre Combeau [aut], Gaetano Romano [aut], Anica Kostic [ctb]
+Maintainer: Vincent Runge <vincent.runge@univ-evry.fr>
 Description: Provides methods for detecting multiple change-points and
     segmenting univariate time series using Smallest Valid Partitioning
     (SVP). SVP searches for a partition with the smallest number of
@@ -26,7 +28,7 @@ Suggests:
     changepoint,
     dplyr,
     devtools,
-    DeCAFS,
+    DeCAFS (>= 3.3.6),
     ggplot2,
     patchwork,
     rmarkdown,

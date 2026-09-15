@@ -76,8 +76,8 @@ valid_FOCUS_last <- function(y, gamma) {
 #' AR(1) Mean-Change Validity Test
 #'
 #' @title AR(1) Mean-Change Validity Test
-#' @description Tests whether a segment is valid under an exact Gaussian AR(1)
-#' single-mean-change statistic implemented in R.
+#' @description Tests whether a segment is valid under a conditional Gaussian
+#' AR(1) single-mean-change statistic implemented in R.
 #' @param y A numeric AR(1) segment. At least four observations are needed for
 #' a non-trivial single-change scan.
 #' @param gamma A threshold for the AR(1) likelihood-ratio statistic.
@@ -93,8 +93,9 @@ valid_FOCUS_last <- function(y, gamma) {
 #' squares. This is useful when the innovation scale is unknown.
 #' @return `TRUE` if the AR(1) statistic is strictly below `gamma`; otherwise,
 #' `FALSE`.
-#' @details The function transforms the observations into AR(1) innovations and
-#' scans change locations that leave at least two observations on each side.
+#' @details The function conditions on the first observation, transforms the
+#' remaining observations into AR(1) innovations, and scans change locations
+#' that leave at least two observations on each side.
 #' The statistic is one half of the Gaussian likelihood-ratio statistic, using
 #' the same convention as [AR1_single_change()]. If `rho` is `NA`, the robust
 #' estimator requires at least three observations. The function can be passed

@@ -11,3 +11,11 @@ src/*.dll
 *.Rcheck/
 *.tar.gz
 tests/testthat/Rplots.pdf
+
+# Local-only simulation studies and temporary rendered artifacts.
+/simulations/other_simus/
+/simulations/z_AR1/
+/simulations/z_gaussian/
+/simulations/z_robust/
+/simulations/z_subtests/
+/tmp/

@@ -9,7 +9,7 @@
 #include <limits>
 #include <vector>
 
-// Exact fixed-rho AR(1) FOCuS likelihood recurrence.
+// Approximate fixed-rho AR(1) FOCuS likelihood recurrence.
 ////////////////////////////////////////////////////////////////////////////////
 
 class AR1FocusMeanChange : public TestBase
@@ -41,12 +41,15 @@ private:
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Exact fixed-rho likelihood scan for a change in the marginal AR(1) mean.
+// Conditional fixed-rho likelihood scan for a change in the marginal AR(1)
+// mean, conditional on the first observation.
 //
 // For a change after observation tau, the transition tau -> tau + 1 has residual
 //   x[tau + 1] - rho*x[tau] - mu2 + rho*mu1,
 // so it cannot be represented by an ordinary two-mean split of the innovations.
-// Prefix sums make each candidate tau O(1); scanning all tau is O(n).
+// Prefix sums make each candidate tau O(1); scanning all tau is O(n). The
+// initial stationary residual likelihood is omitted, consistently with the
+// conditional innovation likelihood used by the R validity reference.
 ////////////////////////////////////////////////////////////////////////////////
 
 class AR1ExactMeanChange : public TestBase

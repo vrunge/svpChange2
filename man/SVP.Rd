@@ -94,12 +94,13 @@ The available validity tests are:
   positive Gamma data (unit shape in the current implementation).
   \item \code{"gaussian_variance"}: the Gamma-rate test applied to squared
   observations, for variance changes around a known zero mean.
-  \item \code{"AR1"}: exact fixed-\code{rho} Gaussian likelihood-ratio scan
-  for a change in the marginal mean of an AR(1) series. In the AR(1) model, an
+  \item \code{"AR1"}: conditional fixed-\code{rho} Gaussian likelihood-ratio
+  scan for a change in the marginal mean of an AR(1) series, conditional on the
+  first observation. In the AR(1) model, an
   innovation is the new random shock after accounting for the previous
   observation and the AR(1) mean structure; \code{sigma2} is the variance of
   this shock, not the marginal variance of the observations.
-  \item \code{"AR1Profile"}: the same exact AR(1) scan, but profiling out the
+  \item \code{"AR1Profile"}: the same conditional AR(1) scan, but profiling out the
   innovation variance. The variance is estimated separately under the
   no-change and change models from their residual sums of squares, which is
   useful when the innovation scale is unknown.
@@ -170,8 +171,8 @@ marginal variance is \code{sigma2 / (1 - rho^2)}. In \code{ts_generator()},
 \code{sigma2 = sd_noise^2}.
 
 \code{"AR1"} treats \code{rho} and \code{sigma2} as fixed and uses the exact
-conditional Gaussian likelihood scan. \code{"AR1Profile"} uses the same exact
-scan but estimates the innovation variance separately under the no-change and
+conditional Gaussian likelihood scan given the first observation.
+\code{"AR1Profile"} uses the same conditional scan but estimates the innovation variance separately under the no-change and
 change models. This is useful when the innovation scale is unknown.
 \code{"AR1Focus"} is faster because it applies the Gaussian FOCUS calculation
 to the transformed innovations; it is an approximation and can produce

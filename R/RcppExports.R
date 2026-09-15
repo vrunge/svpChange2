@@ -169,13 +169,14 @@ AR1_single_change <- function(data, gamma, rho = NA_real_, sigma2 = 1.0, profile
 #'   positive Gamma observations (unit shape in the current implementation).
 #' * `"gaussian_variance"`: Gamma-rate test applied to squared observations,
 #'   for changes in Gaussian variance around a known zero mean.
-#' * `"AR1"`: exact fixed-`rho` Gaussian likelihood-ratio scan for a change in
-#'   the marginal mean of an AR(1) series. In the AR(1) model, an innovation is
+#' * `"AR1"`: conditional fixed-`rho` Gaussian likelihood-ratio scan for a
+#'   change in the marginal mean of an AR(1) series, conditional on the first
+#'   observation. In the AR(1) model, an innovation is
 #'   the new random shock after accounting for the previous observation and the
 #'   AR(1) mean structure; `sigma2` is the variance of this shock, not the
 #'   marginal variance of the observations.
-#' * `"AR1Profile"`: the same exact AR(1) scan, but profiling out the innovation
-#'   variance. The variance is estimated separately under the no-change and
+#' * `"AR1Profile"`: the same conditional AR(1) scan, but profiling out the
+#'   innovation variance. The variance is estimated separately under the no-change and
 #'   change models from their residual sums of squares, which is useful when
 #'   the innovation scale is unknown.
 #' * `"AR1Focus"`: faster approximate AR(1) test that applies Gaussian FOCUS
@@ -238,9 +239,10 @@ AR1_single_change <- function(data, gamma, rho = NA_real_, sigma2 = 1.0, profile
 #' `sd_noise` is the innovation standard deviation, so use
 #' `sigma2 = sd_noise^2`.
 #'
-#' `"AR1"` treats `rho` and `sigma2` as fixed and uses the exact conditional
-#' Gaussian likelihood scan. `"AR1Profile"` uses the same exact scan but
-#' estimates the innovation variance separately under the no-change and
+#' `"AR1"` treats `rho` and `sigma2` as fixed and uses the conditional
+#' Gaussian likelihood scan given the first observation. `"AR1Profile"` uses
+#' the same conditional scan but estimates the innovation variance separately
+#' under the no-change and
 #' change models. This is useful when the innovation scale is unknown.
 #' `"AR1Focus"` is faster because it applies the Gaussian FOCUS calculation
 #' to the transformed innovations; it is an approximation and can produce
@@ -496,4 +498,3 @@ svp0 <- function(data, gamma, test, subtests = "both", PELT_pruning = FALSE) {
 svp_smuce_cpp <- function(y, q, sigma2 = 1.0) {
     .Call(`_svpChange2_svp_smuce_cpp`, y, q, sigma2)
 }
-

@@ -27,9 +27,9 @@ alternative residual sums of squares, estimated changepoint, and a logical
 validity indicator.
 }
 \description{
-Computes the exact fixed-\code{rho} likelihood-ratio scan for a change in the
-marginal mean of an AR(1) process. The residual crossing the candidate change
-uses both segment means.
+Computes the conditional fixed-\code{rho} likelihood-ratio scan for a change
+in the marginal mean of an AR(1) process, conditional on the first observation.
+The residual crossing the candidate change uses both segment means.
 }
 \references{
 Chakar, S., Lebarbier, E., Levy-Leduc, C. and Robin, S. (2017).

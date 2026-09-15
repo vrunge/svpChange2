@@ -2,6 +2,15 @@ project_root <- normalizePath(testthat::test_path("..", ".."))
 setwd(project_root)
 source(file.path(project_root, "simulations", "power_ar1", "run_power.R"))
 
+skip_if_unusable_decafs <- function() {
+  testthat::skip_if_not_installed("DeCAFS")
+  if (utils::packageVersion("DeCAFS") < DECAFS_MIN_VERSION) {
+    testthat::skip(
+      paste0("DeCAFS >= ", DECAFS_MIN_VERSION, " is required for this study")
+    )
+  }
+}
+
 test_that("AR(1) generator is deterministic and has the documented scale", {
   first <- simulate_ar1_null(600L, rho = 0.8, seed = 930001L)
   second <- simulate_ar1_null(600L, rho = 0.8, seed = 930001L)
@@ -14,7 +23,7 @@ test_that("AR(1) generator is deterministic and has the documented scale", {
 })
 
 test_that("AR(1) methods contain only the four requested algorithms", {
-  skip_if_not_installed("DeCAFS")
+  skip_if_unusable_decafs()
   calibration <- run_ar1_calibration(
     n = 96L,
     calibration_reps = 20L,
@@ -44,7 +53,7 @@ test_that("AR(1) methods contain only the four requested algorithms", {
 })
 
 test_that("AR(1) calibration selection is reproducible", {
-  skip_if_not_installed("DeCAFS")
+  skip_if_unusable_decafs()
   args <- list(
     n = 96L,
     calibration_reps = 20L,
@@ -64,7 +73,7 @@ test_that("AR(1) calibration selection is reproducible", {
 })
 
 test_that("small AR(1) power run has four methods and corrected metrics", {
-  skip_if_not_installed("DeCAFS")
+  skip_if_unusable_decafs()
   calibration <- run_ar1_calibration(
     n = 96L,
     calibration_reps = 20L,

@@ -30,12 +30,13 @@ valid_AR1(
 \code{FALSE}.
 }
 \description{
-Tests whether a segment is valid under an exact Gaussian AR(1)
+Tests whether a segment is valid under a conditional Gaussian AR(1)
 single-mean-change statistic implemented in R.
 }
 \details{
-The function transforms the observations into AR(1) innovations and scans
-change locations that leave at least two observations on each side. The
+The function conditions on the first observation, transforms the remaining
+observations into AR(1) innovations, and scans change locations that leave at
+least two observations on each side. The
 statistic is one half of the Gaussian likelihood-ratio statistic, using the
 same convention as \code{\link{AR1_single_change}}. If \code{rho} is
 \code{NA}, the robust estimator requires at least three observations. The

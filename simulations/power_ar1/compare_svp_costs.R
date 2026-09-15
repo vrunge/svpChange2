@@ -14,7 +14,7 @@ res <- run_power_grid(
   fit_methods = function(y, ...) list(
     ar1      = svp_ar1focus_boundaries(y, AR1_RHO, constant = cst, cost = "ar1"),
     gaussian = svp_ar1focus_boundaries(y, AR1_RHO, constant = cst, cost = "gaussian")),
-  tolerance = AR1_TOLERANCE, workers = 20L, seed = 123L)
+  tolerance = AR1_TOLERANCE, workers = power_default_workers(), seed = 123L)
 res <- complete_localization_error(res)
 
 loc <- res |> filter(CorrectNumCP == 1, pattern != "none",
@@ -29,6 +29,7 @@ tab <- res |> group_by(pattern, cost = algorithm) |>
 tab$constant <- cst
 tab$reps <- AR1_REPS
 tab$null_target_f1 <- cal$selected$target_f1
+tab$decafs_version <- cal$decafs_version
 write.csv(tab, file.path(AR1_ROOT, "svp_cost_comparison.csv"), row.names = FALSE)
 print(as.data.frame(tab[order(tab$pattern, tab$cost), ]), digits = 4)
 cat("\nsegment counts identical for every single series:",

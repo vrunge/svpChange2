@@ -25,7 +25,8 @@ fixed at `3*log(n)*(1+rho)/(1-rho)`.
 
 ## DeCAFS requires version 3.3.6 or later
 
-`calibrate_ar1.R` refuses to run against an older DeCAFS. Builds before 3.3.6
+`calibrate_ar1.R` refuses to run against an older DeCAFS. The calibration RDS
+and CSV tables record the exact DeCAFS version used. Builds before 3.3.6
 initialised the dynamic programme with precision `1/(sdNu^2 (1-phi^2))` on
 `(y[1]-mu[1])^2`, where equation (4) of the DeCAFS paper, and the package's own
 README, give the stationary AR(1) precision `(1-phi^2)/sdNu^2`. At `rho = 0.8`
@@ -74,7 +75,8 @@ mixes the two effects; the table above isolates the cost.
 
 DeCAFS is calibrated to corrected null F1 at least 0.99. The approximate PELT
 penalty and SVP AR1Focus threshold are selected to match the selected DeCAFS
-null F1. Calibration uses 1,000 null series and validation uses 1,000
+null F1; for the recorded run, this empirical target is 0.995 (the nominal
+target is 0.99). Calibration uses 1,000 null series and validation uses 1,000
 independent null series, with deterministic seeds and Wilson intervals.
 The selected values are in `selected_parameters.csv`.
 

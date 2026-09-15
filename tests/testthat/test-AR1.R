@@ -140,7 +140,7 @@ test_that("AR1 validity test works inside main SVP with pruning options", {
   expect_true(any(abs(head(result$changepoints, -1) - 200) <= 10))
 })
 
-test_that("AR1Focus reproduces exact AR1 SVP partitions", {
+test_that("AR1Focus matches the conditional AR1 SVP reference", {
   exact_validity <- function(rho, sigma2 = 1) {
     force(rho)
     force(sigma2)
@@ -183,6 +183,29 @@ test_that("AR1Focus reproduces exact AR1 SVP partitions", {
     expect_equal(
       length(focus$changepoints), length(reference$changepoints)
     )
+  }
+})
+
+test_that("AR1Focus matches the conditional reference on randomized streams", {
+  for (rho in c(-0.8, -0.4, 0, 0.4, 0.8, 0.95)) {
+    for (seed in seq_len(5L)) {
+      set.seed(1000 + seed)
+      n <- 80L
+      changepoint <- sample(15:65, 1L)
+      data <- simulate_ar1_change(
+        n, changepoint, c(0, 1.5), rho
+      )
+      gamma <- c(4, 6, 8, 10)[(seed %% 4L) + 1L]
+      exact <- SVP(
+        data, gamma = gamma, test = "AR1", rho = rho, sigma2 = 1,
+        subtests = "right", cost = "gaussian"
+      )
+      focus <- SVP(
+        data, gamma = gamma, test = "AR1Focus", rho = rho, sigma2 = 1,
+        subtests = "right", cost = "gaussian"
+      )
+      expect_equal(focus$changepoints, exact$changepoints)
+    }
   }
 })
 
